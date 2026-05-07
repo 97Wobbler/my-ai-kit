@@ -1,0 +1,28 @@
+Generate a heuristic file for the following framework.
+
+Name: {{display_name}}
+Slug: {{name}}
+Domain: {{domain}}
+One-liner (existing summary): {{one_liner}}
+
+Reference these heuristic examples for voice and format. Read them carefully
+and match their tone, density, and section structure exactly. Note that
+heuristics are noticeably shorter and sharper than the other lenslab
+classes.
+
+=== EXAMPLE 1 ===
+{{few_shot_1}}
+
+=== EXAMPLE 2 ===
+{{few_shot_2}}
+
+=== END EXAMPLES ===
+
+Now write the full heuristic file for "{{display_name}}". Follow the voice
+and section structure of the examples exactly. The Rule must be a single
+quotable sentence. When It Misleads and Common Misuse must be substantive
+and honest — a heuristic without real failure modes is a slogan, not a
+tool. How Agents Use It must name an embedded mode, a sanity-gate mode, or
+both, with a concrete check the agent can run. Stay terse — target 350-700
+words. Output frontmatter + body only, no preamble, no code fence around
+the whole file.

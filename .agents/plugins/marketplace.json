@@ -1,0 +1,80 @@
+{
+  "name": "my-ai-kit",
+  "interface": {
+    "displayName": "My AI Kit"
+  },
+  "plugins": [
+    {
+      "name": "stateful",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/stateful"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "restate",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/restate"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "autorun",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/autorun"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "skill-forge",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/skill-forge"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "studycoach",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/studycoach"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "prism",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/prism"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

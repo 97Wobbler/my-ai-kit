@@ -1,0 +1,163 @@
+phase: 1
+goal: "Rename lenslab → Prism, bump manifest to v0.1.0, ship as new public repo github.com/97Wobbler/prism"
+
+scope:
+  in:
+    - "Rename identifier fields (plugin.json, marketplace.json)"
+    - "Replace lenslab → Prism in user-facing docs (README, CLASSES.md, SKILL.md, PHASE3_RUN.md)"
+    - "Term update: 'framework' / 'tool' → 'instrument' where used as the 5-class umbrella term"
+    - "Rename scripts/lenslab_batch.py → scripts/prism_batch.py and update importers"
+    - "Rename script log/docstring lenslab references to Prism"
+    - "Create docs/ROADMAP.md describing v0.1 / v0.2 / v0.3 plan"
+    - "Tag v0.1.0"
+    - "Create new github.com/97Wobbler/prism repo and push main + tag"
+    - "Archive old lenslab repo on GitHub (after Prism is verified)"
+  out:
+    - "agents/examples/*.yml → docs/cookbook/*.md conversion (Phase 2)"
+    - "skills/agent-creator removal (Phase 2)"
+    - "New skills: search, make-instrument (Phase 2)"
+    - "3-layer custom instrument storage (Phase 2)"
+    - "sync_catalog.py --source flag (Phase 2)"
+    - "Any library/ content edits (out of scope for rename)"
+    - "docs/archive/CONSOLIDATION.md content changes (historical document, leave as-is)"
+    - "prompt templates in scripts/prompts/*.txt (will be rewritten in Phase 2)"
+
+conventions:
+  term_substitution_policy:
+    lenslab_to_prism:
+      - "Plugin identifier fields (plugin.json name, marketplace.json name, imports) → 'prism'"
+      - "User-facing prose and headings → 'Prism'"
+      - "File: scripts/lenslab_batch.py → rename to scripts/prism_batch.py"
+      - "Historical documents (docs/archive/CONSOLIDATION.md) → NOT CHANGED"
+      - "scripts/PHASE3_RUN.md → rename identifiers only, keep historical factual content"
+
+    framework_to_instrument:
+      - "Replace only when used as the 5-class umbrella term (e.g. 'structured analytical framework')"
+      - "Keep when referring to an individual framework as a subject (e.g. 'Porter is a strategic framework')"
+      - "library/ content → NOT CHANGED (each instrument's own body uses its own vocabulary)"
+      - "scripts/prompts/*.txt → leave for Phase 2 (will be rewritten anyway)"
+
+    other_terms:
+      - "'tool' → do not mass-replace; edit only in contexts clearly referring to 5-class umbrella"
+      - "'item' in code variable names → keep (Python idiom, not a semantic term)"
+
+  commit_style:
+    - "One commit per task (T1-T7). Use v0.1.0-rc prefix in messages"
+    - "No partial commits across tasks"
+    - "All commits must leave the tree in a buildable state (scripts still import correctly)"
+
+tasks:
+  - id: T1
+    subject: "Enumerate and classify all lenslab/framework references"
+    blocked_by: []
+    description: >
+      Grep the repo (excluding library/, .git/, .batch-state/, logs/, docs/archive/)
+      for 'lenslab' and 'framework'. For each hit, classify it into one of:
+      (a) must-replace (Phase 1), (b) must-rewrite-in-Phase-2, (c) leave-as-is-historical.
+      Produce docs/phase1-substitution-map.md with a file-by-file list of every hit
+      and the decided action. This is planning only — no file edits.
+    deliverables:
+      - docs/phase1-substitution-map.md
+    commit_on_done: "v0.1.0-rc: T1 map of lenslab/framework references"
+
+  - id: T2
+    subject: "Apply lenslab → Prism and framework → instrument substitutions"
+    blocked_by: [T1]
+    description: >
+      Using docs/phase1-substitution-map.md as the authoritative list, apply all
+      (a) must-replace substitutions in a single commit. Files expected to change:
+      .claude-plugin/plugin.json (name, description, version 0.3.0 → 0.1.0, keywords),
+      .claude-plugin/marketplace.json (name, metadata.description, metadata.version,
+      plugins[0].name), README.md, CLASSES.md, skills/agent-creator/SKILL.md,
+      scripts/PHASE3_RUN.md, scripts/sync_catalog.py (docstring/log strings only),
+      scripts/parallel_runner.py (credit comment), scripts/parse_consolidation.py
+      (docstring/log strings only), catalog.yml (header comment only).
+      Do NOT touch library/, docs/archive/, or scripts/prompts/*.txt.
+      Do NOT rename scripts/lenslab_batch.py yet (T3).
+    deliverables:
+      - Edited files per map
+    commit_on_done: "v0.1.0-rc: T2 rename lenslab → Prism (docs + manifests)"
+
+  - id: T3
+    subject: "Rename scripts/lenslab_batch.py → scripts/prism_batch.py"
+    blocked_by: [T2]
+    description: >
+      git mv the file. Grep the repo for any importer or reference to 'lenslab_batch'
+      and update them (including scripts/PHASE3_RUN.md command examples and README).
+      Verify python3 -m py_compile works on the renamed file. Verify no imports break.
+    deliverables:
+      - scripts/prism_batch.py (renamed)
+      - All lenslab_batch references updated
+    commit_on_done: "v0.1.0-rc: T3 rename lenslab_batch.py → prism_batch.py"
+
+  - id: T4
+    subject: "Write docs/ROADMAP.md"
+    blocked_by: []
+    description: >
+      Create docs/ROADMAP.md describing v0.1.0 (current), v0.2.0 (next), v0.3.0 (later),
+      and 'out of scope' sections. Based on the conversation notes:
+      - v0.1.0: renamed from lenslab, 657 instruments, catalog reference plugin identity
+      - v0.2.0: new skills (search, make-instrument), 3-layer custom storage,
+                agent-creator removed, cookbook for compositions, make-instrument uses
+                interview-style input then auto-generates via LLM
+      - v0.3.0: contribute-instrument skill (upstream PR), enhanced catalog search
+      - out of scope: meta-workflows, agent/skill generation
+      Independent of T1-T3, can run in parallel.
+    deliverables:
+      - docs/ROADMAP.md
+    commit_on_done: "v0.1.0-rc: T4 add ROADMAP"
+
+  - id: T5
+    subject: "Final sanity check and v0.1.0 tag preparation"
+    blocked_by: [T2, T3, T4]
+    description: >
+      Run: (1) python3 -c 'import sys; sys.path.insert(0, \"scripts\"); import prism_batch'
+      (2) python3 scripts/sync_catalog.py --stats (should still work, catalog unchanged)
+      (3) grep -rn 'lenslab' excluding docs/archive/, library/, .git/, scripts/prompts/
+          → should yield zero or only whitelisted hits
+      (4) grep for accidentally-introduced 'prismprism' or 'PrismPrism' typos
+      (5) Verify .claude-plugin/plugin.json is valid JSON and version is 0.1.0
+      (6) Verify .claude-plugin/marketplace.json plugins[0].source is still './'
+      Report findings. If all pass, create annotated tag v0.1.0 locally (don't push yet).
+    deliverables:
+      - All verifications passed
+      - Local v0.1.0 tag (unpushed)
+    commit_on_done: "(no new commit; produces tag v0.1.0 if verifications pass)"
+
+  - id: T6
+    subject: "Create prism repo, swap remote, push main + tag"
+    blocked_by: [T5]
+    description: >
+      gh repo create 97Wobbler/prism --public --description '...'
+      Rename current origin → origin-lenslab (backup).
+      Add new origin → prism repo.
+      git push -u origin main
+      git push origin v0.1.0
+      Verify by fetching a fresh plugin.json from raw.githubusercontent.com.
+      DO NOT archive the old lenslab repo yet (T7).
+    deliverables:
+      - New remote origin pointing to prism repo
+      - main branch and v0.1.0 tag pushed
+    commit_on_done: "(no new commit; remote/tag state change only)"
+
+  - id: T7
+    subject: "Archive lenslab repo on GitHub"
+    blocked_by: [T6]
+    description: >
+      Only after user confirms the Prism plugin installs and /prism:* commands
+      appear in Claude Code. Steps:
+      (1) Edit README on the lenslab repo (via gh api or clone) to add a top
+          banner: '⚠️ Renamed to Prism. See https://github.com/97Wobbler/prism'
+      (2) Use gh api to archive the lenslab repo (or prompt user to do via Settings)
+    deliverables:
+      - lenslab repo archived with redirect banner
+    commit_on_done: "(no local commit; remote state change only)"
+
+task_states:
+  T1: pending
+  T2: pending
+  T3: pending
+  T4: pending
+  T5: pending
+  T6: pending
+  T7: pending

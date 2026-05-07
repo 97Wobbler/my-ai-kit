@@ -1,0 +1,46 @@
+# Learning progress tracker
+# Domain: <domain-name>
+# Started: <YYYY-MM-DD>
+
+domain: <domain-id>
+
+current_state:
+  phase: phase-1
+  last_session_date: <YYYY-MM-DD>
+  total_sessions: 1
+  streak_days: 1
+
+sessions:
+  - id: session-001
+    type: diagnostic
+    date: <YYYY-MM-DD>
+    duration_minutes: <estimated>
+    phase: phase-1
+    topics_covered:
+      - diagnostic
+    key_insights:
+      - <what the diagnostic revealed>
+    concepts_understood: []
+    questions_raised:
+      - <question to revisit>
+    build_progress: null
+    next_suggested: topic-1-1
+    notes_file: null
+
+# Track how matrix items move between quadrants.
+# Entry schema:
+# - item_id: uu-001
+#   from: unknown_unknowns
+#   to: known_unknowns
+#   date: <YYYY-MM-DD>
+#   session: session-001
+#   trigger: <what caused the transition>
+transitions: []
+
+milestones:
+  - phase: phase-1
+    checkpoint_met: false
+    date: null
+    evidence: null
+
+reflections: []

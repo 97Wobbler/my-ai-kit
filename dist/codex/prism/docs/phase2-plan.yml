@@ -1,0 +1,285 @@
+phase: 2
+goal: "Restructure Prism as a pure catalog reference plugin. Replace agent-creator with search + make-instrument skills. Introduce 3-layer custom instrument storage. Convert agents/examples/ into docs/cookbook/ compositions. Ship as v0.2.0."
+
+predecessor: "Phase 1 completed at v0.1.0 (5f41be0). Rename lenslab → Prism, framework → instrument, lenslab_batch.py → prism_batch.py done. All infrastructure intact."
+
+principles:
+  - "Prism does not generate agents or skills. Prism provides a catalog that Claude Code native agent/skill creation mechanisms reference."
+  - "5 classes of instrument (lens / frame / model / stance / heuristic) are the content. Storage structure is 3-layer: bundle (read-only), global (~/.claude/prism/), project (./.claude/prism/)."
+  - "Lookup precedence: project > global > bundle. Closer context overrides broader context."
+  - "make-instrument uses interview-style input then auto-generates via LLM. No blank-template mode."
+  - "Every structural change stays in a single commit. No partial states across tasks."
+
+scope:
+  in:
+    - "Remove commands/create-agent.md"
+    - "Remove skills/agent-creator/ entirely (replaced by new skills)"
+    - "Create skills/search/SKILL.md (new, read-only catalog reference skill)"
+    - "Create skills/make-instrument/SKILL.md (new, interview-style LLM-driven instrument creation)"
+    - "Convert agents/examples/*.yml → docs/cookbook/*.md (4 files: security-analyst, curriculum-reviewer, product-strategist, film-critic)"
+    - "Remove agents/ directory after conversion (it becomes empty)"
+    - "Extend scripts/sync_catalog.py with --source {bundle|global|project} flag"
+    - "Implement 3-layer catalog view composition logic"
+    - "Update README: new skills, cookbook references, 3-layer storage explanation"
+    - "Update CLASSES.md if any instrument-class assumptions change"
+    - "Bump .claude-plugin/plugin.json version 0.1.0 → 0.2.0"
+    - "Bump .claude-plugin/marketplace.json metadata.version 0.1.0 → 0.2.0"
+    - "Tag v0.2.0"
+    - "Push main + v0.2.0 tag to github.com/97Wobbler/prism"
+  out:
+    - "contribute-instrument skill (PR upload) — v0.3.0 per ROADMAP"
+    - "Enhanced catalog search (fuzzy matching, graph) — v0.3.0"
+    - "Changes to library/ content (657 instruments stay untouched)"
+    - "Changes to scripts/parallel_runner.py core logic (only docstring/comment tweaks if any)"
+    - "Changes to scripts/prism_batch.py core logic (batch generation pipeline stays as-is, only updated if callers change)"
+    - "Changes to docs/archive/CONSOLIDATION.md (historical)"
+    - "Changes to scripts/prompts/*.txt (these are the batch generator prompts, not the interactive make-instrument skill — they stay)"
+
+conventions:
+  terminology:
+    - "'instrument' is the umbrella term for all 5 classes. Always use this, not 'framework' or 'tool'."
+    - "Plugin is 'Prism' (capitalized) in prose, 'prism' (lowercase) in identifiers."
+    - "Individual class names (lens / frame / model / stance / heuristic) stay as-is."
+
+  commit_style:
+    - "One commit per task. Prefix messages with 'v0.2.0-rc: T<N>'"
+    - "Each commit must leave the tree in a working state (scripts still import, JSON/YAML still parses)"
+    - "Verification step is part of the task, not a separate commit"
+
+  subagent_workflow:
+    - "Main session holds plan + orchestration. All actual file edits delegated to subagents."
+    - "Each task launched as subagent with a self-contained prompt referencing this plan"
+    - "After each subagent finishes, spawn an independent review subagent (Explore type) to verify"
+    - "Only mark task complete and move to next blocker-free task after review PASS"
+    - "Parallel tasks: launch as background, track via task IDs, wait for completion notification"
+    - "Dependent tasks: launch sequentially (foreground) so main can verify and feed output to next task"
+
+tasks:
+  - id: T1
+    subject: "Scaffold skills/search/SKILL.md"
+    blocked_by: []
+    parallelizable: true
+    description: >
+      Create a new SKILL.md at skills/search/. This is a READ-ONLY reference
+      skill. When invoked, it should guide Claude to read catalog.yml (the bundle
+      catalog), optionally the global catalog at ~/.claude/prism/catalog.yml if it
+      exists, and optionally the project catalog at ./.claude/prism/catalog.yml if
+      it exists, and return a unified view filtered by the user's query (domain,
+      class, free text).
+
+      The SKILL.md should include:
+      - Frontmatter (name: search, description: explorable instrument catalog...)
+      - When to invoke it (triggers: "what instruments exist for X", "show me the
+        catalog for Y domain", "what lenses are available for security")
+      - What NOT to invoke it for (do not try to create anything — that is
+        make-instrument's job; do not write agent configs — Claude Code native is
+        the tool)
+      - Lookup algorithm: scan bundle → scan global → scan project → merge with
+        project > global > bundle precedence → filter → return
+      - Output format: a grouped list by class, each entry showing name, class,
+        domain, one_liner, path
+      - Brief examples
+      - Length target: 100-180 lines
+    deliverables:
+      - skills/search/SKILL.md
+    commit_on_done: "v0.2.0-rc: T1 scaffold search skill"
+
+  - id: T2
+    subject: "Scaffold skills/make-instrument/SKILL.md"
+    blocked_by: []
+    parallelizable: true
+    description: >
+      Create a new SKILL.md at skills/make-instrument/. This is an INTERACTIVE
+      interview-style skill that creates new instruments (lens / frame / model /
+      stance / heuristic files).
+
+      Workflow the skill should guide:
+      1. Collect minimal input: framework name, domain (or infer if obvious)
+      2. Disambiguate: ask clarifying questions ONLY for genuinely ambiguous
+         fields (class undetermined, source unknown, output format unclear).
+         Max 3 questions.
+      3. Determine the target class using CLASSES.md's decision tree.
+      4. Generate the body with an LLM call. Use the existing scripts/prompts/
+         templates as the voice reference, but tailored to a single file.
+      5. Ask user where to save: global (~/.claude/prism/library/) or project
+         (./.claude/prism/library/). Bundle layer is read-only — never write there.
+      6. After save, instruct user to run sync_catalog.py --source {global|project}
+         to refresh the catalog view.
+
+      The SKILL.md should include:
+      - Frontmatter (name: make-instrument, description: interview-style
+        instrument creation)
+      - When to invoke: "create a new lens for X", "I want to add a framework for
+        Y domain", "make an instrument for Z"
+      - When NOT to invoke: when the user wants to batch-generate many instruments
+        (that is scripts/prism_batch.py's job), when the user just wants to browse
+        (that is search's job)
+      - Interview protocol: the 5 canonical questions and their decision trees
+      - Save location decision tree (project > global, never bundle)
+      - Reference to CLASSES.md for file format templates
+      - Length target: 120-200 lines
+    deliverables:
+      - skills/make-instrument/SKILL.md
+    commit_on_done: "v0.2.0-rc: T2 scaffold make-instrument skill"
+
+  - id: T3
+    subject: "Remove commands/create-agent.md and skills/agent-creator/"
+    blocked_by: [T1, T2]
+    parallelizable: false
+    description: >
+      T3 must run after T1 and T2 so there is no gap where the plugin has no
+      skills.
+      - git rm commands/create-agent.md
+      - git rm -r skills/agent-creator/
+      - Verify no remaining file references to these paths: grep the repo for
+        "agent-creator", "create-agent", "create_agent"
+      - If any references exist in docs/ (README, CLASSES.md, etc.), update them
+        to point to search or make-instrument as appropriate
+      - Do NOT touch docs/archive/ or docs/ROADMAP.md references (those are
+        historical / planned)
+    deliverables:
+      - agent-creator skill and create-agent command removed
+      - All cross-references updated
+    commit_on_done: "v0.2.0-rc: T3 remove agent-creator (replaced by search + make-instrument)"
+
+  - id: T4
+    subject: "Convert agents/examples/*.yml → docs/cookbook/*.md"
+    blocked_by: []
+    parallelizable: true
+    description: >
+      For each of the 4 example agent YAMLs, produce a markdown composition
+      recipe at docs/cookbook/<name>.md:
+      - security-analyst.yml → docs/cookbook/security-analyst.md
+      - curriculum-reviewer.yml → docs/cookbook/curriculum-reviewer.md
+      - product-strategist.yml → docs/cookbook/product-strategist.md
+      - film-critic.yml → docs/cookbook/film-critic.md
+
+      Each markdown file should:
+      - Start with a clear "Not an executable agent config" disclaimer
+      - Describe the persona / purpose in 2-3 sentences
+      - List the instruments used, grouped by class, with usage tags preserved
+        (always / when-relevant / on-request)
+      - Explain WHY this composition (the reasoning for picking these items
+        together) — this is the real value of the cookbook, not available from
+        the original yml files
+      - Optionally sketch the workflow steps the agent uses
+
+      After creating all 4 markdown files, git rm the original yml files and the
+      agents/ directory (it should be empty after).
+
+      Update README.md to reference docs/cookbook/ instead of agents/examples/.
+    deliverables:
+      - docs/cookbook/{4 files}.md
+      - agents/examples/ removed
+      - agents/ removed (empty)
+      - README references updated
+    commit_on_done: "v0.2.0-rc: T4 convert example agents to cookbook compositions"
+
+  - id: T5
+    subject: "Extend scripts/sync_catalog.py with --source flag"
+    blocked_by: []
+    parallelizable: true
+    description: >
+      Add a --source flag to sync_catalog.py supporting {bundle,global,project}.
+      Default: 'all' (the composite view).
+
+      - --source bundle: scan only ./library/ and rewrite ./catalog.yml (current behavior)
+      - --source global: scan ~/.claude/prism/library/ and rewrite ~/.claude/prism/catalog.yml
+      - --source project: scan ./.claude/prism/library/ and rewrite ./.claude/prism/catalog.yml
+      - --source all (default): scan all three layers, build composite view at
+        runtime, but do NOT write to disk. Output to stdout as a preview.
+        This is useful for make-instrument and search to read a live
+        merged view.
+
+      Implement merge precedence project > global > bundle: when the same
+      instrument name appears in multiple layers, the closer layer wins; log
+      a warning to stderr about the override.
+
+      Add --stats flag behavior: when combined with --source, show stats per
+      layer.
+
+      Do not break the existing no-flag invocation (which is equivalent to
+      --source bundle).
+    deliverables:
+      - scripts/sync_catalog.py updated with --source flag
+      - Existing behavior preserved as default
+      - --dry-run + --source {bundle,global,project,all} all work
+    commit_on_done: "v0.2.0-rc: T5 add sync_catalog.py --source flag for 3-layer storage"
+
+  - id: T6
+    subject: "Update README for v0.2.0 changes"
+    blocked_by: [T1, T2, T3, T4, T5]
+    parallelizable: false
+    description: >
+      Update README.md to reflect:
+      - Installation and usage section: remove /prism:create-agent references,
+        add /prism:search and /prism:make-instrument usage examples
+      - Extending the library section: update to mention 3-layer storage
+        (global and project layers in addition to bundle)
+      - Included items section: keep, maybe add a note that cookbook
+        compositions now live in docs/cookbook/
+      - Example agents section (if exists): replace with "Composition recipes"
+        pointing to docs/cookbook/
+      - Philosophy sections (persona vs instrument, 5 classes, agent workflow):
+        leave untouched
+    deliverables:
+      - README.md updated
+    commit_on_done: "v0.2.0-rc: T6 update README for search + make-instrument + cookbook"
+
+  - id: T7
+    subject: "Bump plugin manifest to v0.2.0 and sanity check"
+    blocked_by: [T1, T2, T3, T4, T5, T6]
+    parallelizable: false
+    description: >
+      - .claude-plugin/plugin.json: version 0.1.0 → 0.2.0
+      - .claude-plugin/marketplace.json: metadata.version 0.1.0 → 0.2.0
+      - Run full sanity checks:
+        * python3 -m py_compile scripts/sync_catalog.py scripts/prism_batch.py scripts/parallel_runner.py
+        * python3 -c "import json; json.load(open('.claude-plugin/plugin.json'))"
+        * python3 -c "import json; json.load(open('.claude-plugin/marketplace.json'))"
+        * python3 scripts/sync_catalog.py --stats (bundle layer still intact, 657 items)
+        * python3 scripts/sync_catalog.py --source bundle --dry-run
+        * python3 scripts/sync_catalog.py --source global --dry-run (should handle
+          missing global catalog gracefully)
+        * python3 scripts/sync_catalog.py --source project --dry-run (same)
+        * grep for leftover 'agent-creator' or 'create-agent' references — should
+          yield only docs/phase1-substitution-map.md, docs/phase2-plan.yml,
+          docs/ROADMAP.md (all meta docs)
+      - Create annotated tag v0.2.0 locally (don't push yet)
+    deliverables:
+      - v0.1.0 → 0.2.0 bump
+      - All sanity checks PASS
+      - Local v0.2.0 tag ready
+    commit_on_done: "v0.2.0-rc: T7 bump manifest to 0.2.0"
+
+  - id: T8
+    subject: "Push main and v0.2.0 tag to prism remote + verify install"
+    blocked_by: [T7]
+    parallelizable: false
+    description: >
+      - git push origin main
+      - git push origin v0.2.0
+      - Fetch raw plugin.json from raw.githubusercontent.com and verify version=0.2.0
+      - Prompt user to clean Claude Code plugin caches and re-install prism to
+        verify the new skill lineup (search, make-instrument) shows up
+        and agent-creator does NOT show up
+    deliverables:
+      - Pushed to github.com/97Wobbler/prism
+      - User-verified install
+    commit_on_done: "(no new commit; remote/tag state only)"
+
+task_states:
+  T1: pending
+  T2: pending
+  T3: pending
+  T4: pending
+  T5: pending
+  T6: pending
+  T7: pending
+  T8: pending
+
+parallelism_map:
+  "Round 1 (3 in parallel)": [T1, T2, T4, T5]
+  "Round 2 (after T1+T2)": [T3]
+  "Round 3 (after all content tasks)": [T6]
+  "Round 4 (final bump + push)": [T7, T8]

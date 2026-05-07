@@ -1,0 +1,25 @@
+Generate a model file for the following framework.
+
+Name: {{display_name}}
+Slug: {{name}}
+Domain: {{domain}}
+One-liner (existing summary): {{one_liner}}
+
+Reference these model examples for voice and format. Read them carefully and
+match their tone, density, and section structure exactly.
+
+=== EXAMPLE 1 ===
+{{few_shot_1}}
+
+=== EXAMPLE 2 ===
+{{few_shot_2}}
+
+=== END EXAMPLES ===
+
+Now write the full model file for "{{display_name}}". Follow the voice and
+section structure of the examples exactly. Core Variables and Relationships
+must be specific, not vague. Key Predictions must be non-obvious consequences
+the model actually generates. Boundary Conditions must name concrete
+situations where the model fails. The Output Format must include an explicit
+confidence signal that reflects both data quality and boundary-fit. Output
+frontmatter + body only, no preamble, no code fence around the whole file.

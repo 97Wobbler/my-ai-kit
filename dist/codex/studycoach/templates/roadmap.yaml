@@ -1,0 +1,41 @@
+# Learning roadmap
+# Domain: <domain-name>
+# Created: <YYYY-MM-DD>
+
+domain: <domain-id>
+
+learning_style:
+  direction: <systematic | practical | build-first | all>
+  time_commitment: <daily-30m | daily-1h | weekend-batch | flexible>
+  format_preferences:
+    - <dialogue | reading | building | mixed>
+
+phases:
+  - id: phase-1
+    title: <phase title>
+    estimated_duration: <e.g. "2-3 weeks">
+    description: <what this phase achieves>
+    topics:
+      - id: topic-1-1
+        title: <topic name>
+        description: <what to learn>
+        matrix_refs:
+          - ku-001
+          - uu-001
+        method: mixed
+        completed: false
+        completed_date: null
+    build_project:
+      title: <project name>
+      description: <what to build>
+      skills_practiced: <what this exercises>
+      started: false
+      completed: false
+    checkpoint:
+      description: <what the learner should be able to do>
+      met: false
+      met_date: null
+
+principles:
+  - Start from why each concept exists.
+  - Verify understanding through application, not recognition.

@@ -1,0 +1,37 @@
+{
+  "name": "skill-forge",
+  "version": "0.1.3",
+  "description": "Create runtime-neutral skill specs and compile them into Claude Code and Codex CLI skills.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "claude-code",
+    "skill",
+    "compiler",
+    "ssot"
+  ],
+  "skills": "./skills/codex/",
+  "interface": {
+    "displayName": "Skill Forge",
+    "shortDescription": "Create and compile cross-runtime skill specs",
+    "longDescription": "Skill Forge helps authors write runtime-neutral skill specs as a source of truth, then compile them into Claude Code and Codex CLI skill implementations with runtime capability differences called out explicitly.",
+    "developerName": "97Wobbler",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
+    "defaultPrompt": [
+      "Create a cross-runtime skill spec",
+      "Compile this skill spec for Claude and Codex"
+    ],
+    "brandColor": "#4F46E5"
+  }
+}

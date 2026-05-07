@@ -1,0 +1,53 @@
+# Rumsfeld Known/Unknown matrix
+# Domain: <domain-name>
+# Created: <YYYY-MM-DD>
+# Last updated: <YYYY-MM-DD>
+
+domain: <domain-id>
+domain_name: <display name>
+learner_context:
+  background: <relevant background>
+  motivation: <why learning this>
+  goals:
+    - <goal 1>
+    - <goal 2>
+
+known_knowns:
+  - id: kk-001
+    concept: <concept name>
+    description: <what the learner knows>
+    accuracy: full
+    notes: <what is correct, and what is missing if partial>
+    evidence: <what they said in diagnostic>
+    added: <YYYY-MM-DD>
+    transitioned_from: null
+
+known_unknowns:
+  - id: ku-001
+    concept: <concept name>
+    description: <what they know they do not know>
+    priority: high
+    evidence: <what they said>
+    added: <YYYY-MM-DD>
+    transitioned_to: null
+    transitioned_date: null
+
+unknown_knowns:
+  - id: uk-001
+    concept: <skill or intuition>
+    description: <what they already have>
+    transfer_target: <how it applies to this domain>
+    evidence: <what revealed this>
+    added: <YYYY-MM-DD>
+    realized: false
+    realized_date: null
+
+unknown_unknowns:
+  - id: uu-001
+    concept: <concept name>
+    description: <what they do not know they do not know>
+    why_it_matters: <consequences of not knowing>
+    estimated_impact: high
+    added: <YYYY-MM-DD>
+    transitioned_to: null
+    transitioned_date: null

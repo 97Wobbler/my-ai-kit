@@ -1,0 +1,25 @@
+schema_version: 1
+repo:
+  name: "{{REPO_NAME}}"
+skill:
+  name: "{{SKILL_NAME}}"
+  claude_trigger: "/{{SKILL_NAME}}"
+  codex_trigger: "${{SKILL_NAME}}"
+paths:
+  workplan: ".stateful/workplan.yaml"
+  state_json: ".stateful/state.json"
+  status: ".stateful/docs/status.md"
+  decisions: ".stateful/docs/decisions.md"
+  risks: ".stateful/docs/risks.md"
+  roadmap: ".stateful/docs/roadmap.md"
+  todo: ".stateful/docs/todo.md"
+  handoff: ".stateful/session/handoff.md"
+  autorun_protocol: ".stateful/protocols/autorun.md"
+policies:
+  task_id_prefix: "R"
+  one_task_one_commit: true
+  require_workplan_sync: true
+  batch_autorun: false
+  protected_human_only: true
+  require_wip_claim: true
+  cross_tool_handoff: true

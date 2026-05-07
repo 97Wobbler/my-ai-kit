@@ -1,0 +1,24 @@
+Generate a lens file for the following framework.
+
+Name: {{display_name}}
+Slug: {{name}}
+Domain: {{domain}}
+One-liner (existing summary): {{one_liner}}
+
+Reference these lens examples for voice and format. Read them carefully and
+match their tone, density, and section structure exactly.
+
+=== EXAMPLE 1 ===
+{{few_shot_1}}
+
+=== EXAMPLE 2 ===
+{{few_shot_2}}
+
+=== END EXAMPLES ===
+
+Now write the full lens file for "{{display_name}}". Follow the voice and
+section structure of the examples exactly. The Analytical Procedure must be
+concretely executable — every step actionable without prior knowledge of the
+framework. The Output Format must include an explicit confidence signal.
+Output frontmatter + body only, no preamble, no code fence around the whole
+file.

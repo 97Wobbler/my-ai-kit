@@ -1,0 +1,5 @@
+interface:
+  display_name: "Autorun"
+  short_description: "Plan and run dependency-aware workplans"
+  default_prompt: "Use $autorun to decompose this request into a workplan and run it through Codex orchestration."
+  brand_color: "#2563EB"

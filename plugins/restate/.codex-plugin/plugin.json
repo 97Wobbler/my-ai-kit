@@ -1,0 +1,36 @@
+{
+  "name": "restate",
+  "version": "0.1.2",
+  "description": "Restate and verify user intent before execution.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "claude-code",
+    "skill",
+    "requirements",
+    "clarification"
+  ],
+  "skills": "./skills/codex/",
+  "interface": {
+    "displayName": "Restate",
+    "shortDescription": "Verify user intent before execution",
+    "longDescription": "Restate pauses execution and turns the user's latest request into a concise requirements check: goal, scope, constraints, assumptions, unclear aspects, and confirmation.",
+    "developerName": "97Wobbler",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive"
+    ],
+    "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
+    "defaultPrompt": [
+      "Restate my request",
+      "Check your understanding before executing"
+    ],
+    "brandColor": "#0F766E"
+  }
+}

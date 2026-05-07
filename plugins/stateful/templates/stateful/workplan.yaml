@@ -1,0 +1,55 @@
+meta:
+  schema_version: 1
+  created: "2026-04-27"
+  last_updated: "2026-04-27"
+  source:
+    - ".stateful/docs/status.md"
+    - ".stateful/docs/todo.md"
+    - ".stateful/docs/decisions.md"
+  retired_ids: {}
+  human_gate_values:
+    null: "agent may execute without human approval"
+    approve: "agent prepares output; human approves before done"
+    execute: "human must perform the task"
+    debate: "multi-perspective agent debate may propose a decision"
+    review: "human owner must explicitly sign off"
+  execution_gate_values:
+    null: "normal foreground task"
+    batch: "long-running or expensive batch; never auto-run by default"
+
+tasks:
+  - id: R001
+    name: "Adopt Stateful scaffold"
+    summary: "Initial Stateful files installed; customize workplan and state docs for this repository."
+    track: infra
+    blocked_by: []
+    human_gate: null
+    execution_gate: null
+    done: false
+    spec: |
+      Review the generated Stateful scaffold and adapt the initial state files
+      to this repository:
+
+      - .stateful/docs/status.md
+      - .stateful/docs/decisions.md
+      - .stateful/docs/risks.md
+      - .stateful/docs/todo.md
+      - .stateful/session/handoff.md
+
+      Add the first real project tasks to this workplan and retire this
+      scaffold task once the repo-specific plan exists.
+    output:
+      - ".stateful/config.yaml"
+      - ".stateful/workplan.yaml"
+      - ".claude/skills/{{SKILL_NAME}}/SKILL.md"
+      - ".agents/skills/{{SKILL_NAME}}/SKILL.md"
+    verify_checks:
+      - "python3 scripts/stateful/validate-workplan.py passes"
+      - "python3 scripts/stateful/sync-state.py --check passes after sync"
+    wip:
+      active: false
+      tool: null
+      started_at: null
+      branch: null
+      commit: null
+      summary: null

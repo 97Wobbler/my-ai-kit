@@ -1,0 +1,38 @@
+{
+  "name": "prism",
+  "version": "0.5.6",
+  "description": "Create domain-expert analysis agents by composing structured instruments: lenses, frames, models, stances, and heuristics.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "plugin",
+    "analysis",
+    "instruments",
+    "lenses",
+    "agents"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Prism",
+    "shortDescription": "Discover and compose analytical instruments",
+    "longDescription": "Prism provides a catalog of structured analytical instruments: lenses, frames, models, stances, and heuristics. Use its skills to search the catalog, prepare instruments for subagents, create new instruments, and run multi-perspective debate workflows.",
+    "developerName": "97Wobbler",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
+    "defaultPrompt": [
+      "Find Prism instruments for a security review"
+    ],
+    "brandColor": "#5B6EE1"
+  }
+}

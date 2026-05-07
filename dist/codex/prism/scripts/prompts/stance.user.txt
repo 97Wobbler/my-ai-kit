@@ -1,0 +1,26 @@
+Generate a stance file for the following framework.
+
+Name: {{display_name}}
+Slug: {{name}}
+Domain: {{domain}}
+One-liner (existing summary): {{one_liner}}
+
+Reference these stance examples for voice and format. Read them carefully
+and match their tone, density, and section structure exactly.
+
+=== EXAMPLE 1 ===
+{{few_shot_1}}
+
+=== EXAMPLE 2 ===
+{{few_shot_2}}
+
+=== END EXAMPLES ===
+
+Now write the full stance file for "{{display_name}}". Follow the voice and
+section structure of the examples exactly. Foundational Commitments must
+state real axioms, not platitudes. Guiding Questions must be the questions
+the stance actually deploys, grouped thematically. What It Reveals and What
+It Obscures must both be substantive and honest — the obscures section is
+not a disclaimer, it is part of the stance's intellectual integrity. The
+stance is not a lens; do not invent procedures or scoring. Output frontmatter
++ body only, no preamble, no code fence around the whole file.

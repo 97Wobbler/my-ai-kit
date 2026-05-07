@@ -1,0 +1,36 @@
+{
+  "name": "my-ai-kit",
+  "owner": {
+    "name": "97Wobbler"
+  },
+  "metadata": {
+    "description": "Personal Claude Code and Codex plugin marketplace.",
+    "version": "0.1.1"
+  },
+  "plugins": [
+    {
+      "name": "stateful",
+      "source": "./plugins/stateful"
+    },
+    {
+      "name": "restate",
+      "source": "./plugins/restate"
+    },
+    {
+      "name": "autorun",
+      "source": "./plugins/autorun"
+    },
+    {
+      "name": "skill-forge",
+      "source": "./plugins/skill-forge"
+    },
+    {
+      "name": "studycoach",
+      "source": "./plugins/studycoach"
+    },
+    {
+      "name": "prism",
+      "source": "./plugins/prism"
+    }
+  ]
+}

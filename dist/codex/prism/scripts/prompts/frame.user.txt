@@ -1,0 +1,25 @@
+Generate a frame file for the following framework.
+
+Name: {{display_name}}
+Slug: {{name}}
+Domain: {{domain}}
+One-liner (existing summary): {{one_liner}}
+
+Reference these frame examples for voice and format. Read them carefully and
+match their tone, density, and section structure exactly.
+
+=== EXAMPLE 1 ===
+{{few_shot_1}}
+
+=== EXAMPLE 2 ===
+{{few_shot_2}}
+
+=== END EXAMPLES ===
+
+Now write the full frame file for "{{display_name}}". Follow the voice and
+section structure of the examples exactly. Categories must be enumerated
+exhaustively with discriminating criteria. The Classification Procedure must
+get a real instance to a category in a small number of steps. Do not add an
+Output Format or Confidence section — those belong to lenses, not frames.
+Output frontmatter + body only, no preamble, no code fence around the whole
+file.
