@@ -6,7 +6,7 @@ description: "User-facing entry point for the Prism plugin. Use this skill to EX
 # Prism
 
 This skill was compiled from a Skill Forge runtime-neutral spec for the
-Codex CLI runtime.
+Claude Code runtime.
 
 Source spec: private Skill Forge source (not included in distribution): `prism.skill.md`
 
@@ -15,8 +15,8 @@ recompile and review the generated output.
 
 ## Runtime Notes
 
-- Use `request_user_input` only in Plan Mode. In Default mode, ask a concise direct question and wait.
-- For manual file edits, use `apply_patch` and preserve unrelated user changes.
+- Use Claude Code's native blocking question flow when clarification is required.
+- Follow repository edit instructions and preserve unrelated user changes.
 - Use network access only when current or external facts are required.
 - Run the relevant validation checks before reporting completion.
 
@@ -115,6 +115,5 @@ need to restate it.
 
 ## Runtime Overrides
 
-In Codex, plugin skills are invoked through the installed skill name, for example `$prism`, `use prism:prism`, or a natural-language request that matches this skill.
-Use `request_user_input` only in Plan Mode. In Default mode, ask concise plain-text questions and wait when the save layer or instrument details are blocking.
-For manual file edits, prefer `apply_patch` and preserve unrelated user changes in project/global Prism layers.
+In Claude Code, plugin skills are invoked with the plugin namespace, for example `/prism:prism`; existing user shorthand such as `/prism` may also appear in Prism documentation.
+Use Claude Code's native user-question flow when the save layer or instrument details are blocking.

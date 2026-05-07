@@ -1,0 +1,22 @@
+{
+  "name": "studycoach",
+  "version": "0.1.0",
+  "description": "Coach project-local self-study sessions with a Rumsfeld Known/Unknown matrix.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "skills": "./skills/",
+  "keywords": [
+    "claude-code",
+    "codex",
+    "skill",
+    "learning",
+    "self-study",
+    "coach",
+    "rumsfeld"
+  ]
+}

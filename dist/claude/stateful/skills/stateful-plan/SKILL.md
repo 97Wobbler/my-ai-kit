@@ -6,7 +6,7 @@ description: "Convert Stateful roadmap material into proposed workplan tasks. Us
 # Stateful Plan
 
 This skill was compiled from a Skill Forge runtime-neutral spec for the
-Codex CLI runtime.
+Claude Code runtime.
 
 Source spec: private Skill Forge source (not included in distribution): `stateful-plan.skill.md`
 
@@ -15,8 +15,8 @@ recompile and review the generated output.
 
 ## Runtime Notes
 
-- Use `request_user_input` only in Plan Mode. In Default mode, ask a concise direct question and wait.
-- For manual file edits, use `apply_patch` and preserve unrelated user changes.
+- Use Claude Code's native blocking question flow when clarification is required.
+- Follow repository edit instructions and preserve unrelated user changes.
 - Run the relevant validation checks before reporting completion.
 
 # stateful-plan
@@ -68,4 +68,4 @@ Use this skill to bridge future-oriented roadmap notes into executable
 
 ## Runtime Overrides
 
-Ask for explicit approval before applying roadmap-to-workplan changes. In Plan Mode use structured user input when needed; in Default mode ask concise direct questions and wait.
+Ask for explicit approval before applying roadmap-to-workplan changes. If blocking clarification is required, use Claude Code native question flow.

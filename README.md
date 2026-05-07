@@ -11,10 +11,8 @@ general public framework.
 
 The repository currently contains six installable plugins.
 
-The `stateful` plugin installs a repository-local state system based on the pattern
-documented in
-[`repo-stateful-harness-report.md`](repo-stateful-harness-report.md): keep
-agent session state in the repository, not in chat memory.
+The `stateful` plugin installs a repository-local state system based on a
+simple rule: keep agent session state in the repository, not in chat memory.
 
 The selected future plugin names are:
 
@@ -42,17 +40,18 @@ my-ai-kit/
 │   └── plugins/
 │       └── marketplace.json
 ├── plugins/
-│   ├── stateful/
-│   ├── restate/
-│   ├── autorun/
-│   ├── skill-forge/
-│   ├── studycoach/
-│   └── prism/
+│   └── <plugin>/              # private development source
+├── dist/
+│   ├── claude/
+│   │   └── <plugin>/          # Claude Code install package
+│   └── codex/
+│       └── <plugin>/          # Codex CLI install package
 └── docs/
 ```
 
-The original root-level `harness` plugin has been moved into
-`plugins/stateful/`.
+The marketplace catalogs point at `dist/claude/<plugin>` and
+`dist/codex/<plugin>`. `plugins/<plugin>` contains private development source,
+including Skill Forge specs, and is not a public install target.
 
 ## Install The Marketplace
 
@@ -95,7 +94,7 @@ In the Codex plugin browser, choose the `my-ai-kit` marketplace and install
 From any target repository, run the current installer from this checkout:
 
 ```bash
-python3 /path/to/my-ai-kit/plugins/stateful/scripts/stateful_init.py --root . --skill repo
+python3 /path/to/my-ai-kit/dist/claude/stateful/scripts/stateful_init.py --root . --skill repo
 ```
 
 Inside Claude Code, the current plugin also exposes:
@@ -113,7 +112,7 @@ In Codex, use the installed plugin skill:
 Use a different `--skill` value if you want another repo-local skill name:
 
 ```bash
-python3 /path/to/my-ai-kit/plugins/stateful/scripts/stateful_init.py --root . --skill stateful
+python3 /path/to/my-ai-kit/dist/claude/stateful/scripts/stateful_init.py --root . --skill stateful
 ```
 
 The installer is conservative. Existing scaffold files are left untouched
@@ -161,6 +160,7 @@ Validate the current plugin files:
 
 ```bash
 claude plugin validate .
+python3 scripts/plugins/build-plugin-dist.py
 python3 -m py_compile plugins/stateful/scripts/*.py scripts/stateful/*.py
 python3 scripts/plugins/check-codex-installed-drift.py
 ```
@@ -169,6 +169,10 @@ python3 scripts/plugins/check-codex-installed-drift.py
 the rebuilt `dist/codex` plugins with the copies currently installed under
 `~/.codex`. If it reports stale files, refresh the Codex plugin installation
 before relying on local skill behavior.
+
+`scripts/plugins/build-codex-dist.py` is kept only as a compatibility wrapper;
+new release and verification work should run `build-plugin-dist.py`, which
+builds both `dist/claude` and `dist/codex`.
 
 Validate the stateful workplan:
 

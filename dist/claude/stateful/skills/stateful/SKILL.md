@@ -6,7 +6,7 @@ description: "Router for the Stateful plugin. Use when the user asks what Statef
 # Stateful
 
 This skill was compiled from a Skill Forge runtime-neutral spec for the
-Codex CLI runtime.
+Claude Code runtime.
 
 Source spec: private Skill Forge source (not included in distribution): `stateful.skill.md`
 
@@ -15,7 +15,7 @@ recompile and review the generated output.
 
 ## Runtime Notes
 
-- Ask clarification questions sparingly; `request_user_input` is Plan Mode only.
+- Ask clarification questions only when they materially change the result.
 
 # stateful
 
@@ -118,4 +118,4 @@ chat memory.
 
 ## Runtime Overrides
 
-Use Codex invocation examples and AGENTS.md naming when explaining installed repo-local state. For status examples, prefer --tool codex.
+Use Claude Code invocation examples and CLAUDE.md naming when explaining installed repo-local state. For status examples, prefer --tool claude.

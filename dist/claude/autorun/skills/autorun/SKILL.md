@@ -6,7 +6,7 @@ description: "Turn a broad coding request into a dependency-aware project-root w
 # Autorun
 
 This skill was compiled from a Skill Forge runtime-neutral spec for the
-Codex CLI runtime.
+Claude Code runtime.
 
 Source spec: private Skill Forge source (not included in distribution): `autorun.skill.md`
 
@@ -15,8 +15,8 @@ recompile and review the generated output.
 
 ## Runtime Notes
 
-- Ask clarification questions sparingly; `request_user_input` is Plan Mode only.
-- For manual file edits, use `apply_patch` and preserve unrelated user changes.
+- Ask clarification questions only when they materially change the result.
+- Follow repository edit instructions and preserve unrelated user changes.
 - Delegate only when the runtime supports subagents and the task can run safely in parallel.
 - Run the relevant validation checks before reporting completion.
 
@@ -115,4 +115,4 @@ Use `assets/subagent-prompt-template.md` as the worker prompt template.
 
 ## Runtime Overrides
 
-Use Codex update_plan for RUN task tracking. Use spawn_agent and wait_agent for required implementation delegation. Read AGENTS.md first when present, and also read CLAUDE.md when the repository still uses it for useful project rules.
+Use Claude Code native progress tracking for RUN tasks. Claude Code Agent-style subagents are the required implementation mechanism. Read CLAUDE.md first when present.

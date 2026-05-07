@@ -6,7 +6,7 @@ description: "Prepare Prism instruments for delivery to subagents, agents, or sk
 # Fetch
 
 This skill was compiled from a Skill Forge runtime-neutral spec for the
-Codex CLI runtime.
+Claude Code runtime.
 
 Source spec: private Skill Forge source (not included in distribution): `fetch.skill.md`
 
@@ -15,7 +15,7 @@ recompile and review the generated output.
 
 ## Runtime Notes
 
-- Ask clarification questions sparingly; `request_user_input` is Plan Mode only.
+- Ask clarification questions only when they materially change the result.
 - Run the relevant validation checks before reporting completion.
 
 # fetch
@@ -127,5 +127,5 @@ notes:
 
 ## Runtime Overrides
 
-In Codex, plugin skills are invoked through the installed skill name, for example `$fetch`, `use prism:fetch`, or a natural-language request that matches this skill.
-Use `rg`/file reads to inspect catalogs and instrument files. Ask concise plain-text clarification questions in Default mode if an instrument name is ambiguous.
+In Claude Code, plugin skills are invoked with the plugin namespace, for example `/prism:fetch`.
+Use Claude Code file reading/glob capabilities to resolve catalog paths and verify instrument files.

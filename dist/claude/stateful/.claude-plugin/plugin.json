@@ -1,0 +1,21 @@
+{
+  "name": "stateful",
+  "version": "0.1.4",
+  "description": "Install and operate repository-local state, workplans, handoffs, roadmap planning, and archival review for Claude Code and Codex workflows.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "skills": "./skills/",
+  "keywords": [
+    "claude-code",
+    "codex",
+    "plugin",
+    "state",
+    "workplan",
+    "handoff"
+  ]
+}

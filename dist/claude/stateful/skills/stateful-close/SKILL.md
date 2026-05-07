@@ -6,7 +6,7 @@ description: "Workflow for closing a working session by updating Stateful handof
 # Stateful Close
 
 This skill was compiled from a Skill Forge runtime-neutral spec for the
-Codex CLI runtime.
+Claude Code runtime.
 
 Source spec: private Skill Forge source (not included in distribution): `stateful-close.skill.md`
 
@@ -15,8 +15,8 @@ recompile and review the generated output.
 
 ## Runtime Notes
 
-- Ask clarification questions sparingly; `request_user_input` is Plan Mode only.
-- For manual file edits, use `apply_patch` and preserve unrelated user changes.
+- Ask clarification questions only when they materially change the result.
+- Follow repository edit instructions and preserve unrelated user changes.
 - Run the relevant validation checks before reporting completion.
 
 # stateful-close
@@ -73,4 +73,4 @@ python3 scripts/stateful/sync-state.py
 
 ## Runtime Overrides
 
-Use --tool codex by default and hand off to claude only when the user asks for a Claude Code continuation.
+Use --tool claude by default and hand off to codex only when the user asks for a Codex continuation.

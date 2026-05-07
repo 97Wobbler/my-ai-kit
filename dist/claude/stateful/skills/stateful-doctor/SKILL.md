@@ -6,7 +6,7 @@ description: "Workflow for validating an installed Stateful state system. Checks
 # Stateful Doctor
 
 This skill was compiled from a Skill Forge runtime-neutral spec for the
-Codex CLI runtime.
+Claude Code runtime.
 
 Source spec: private Skill Forge source (not included in distribution): `stateful-doctor.skill.md`
 
@@ -15,7 +15,7 @@ recompile and review the generated output.
 
 ## Runtime Notes
 
-- For manual file edits, use `apply_patch` and preserve unrelated user changes.
+- Follow repository edit instructions and preserve unrelated user changes.
 - Run the relevant validation checks before reporting completion.
 
 # stateful-doctor
@@ -56,4 +56,4 @@ python3 scripts/stateful/sync-state.py
 
 ## Runtime Overrides
 
-Run status with --tool codex when the target script accepts a tool argument.
+Run status with --tool claude when the target script accepts a tool argument.

@@ -6,7 +6,7 @@ description: "Create runtime-neutral SSOT skill specs for Claude Code and Codex 
 # Skill Forge Spec
 
 This skill was compiled from a Skill Forge runtime-neutral spec for the
-Codex CLI runtime.
+Claude Code runtime.
 
 Source spec: private Skill Forge source (not included in distribution): `skill-forge-spec.skill.md`
 
@@ -15,8 +15,8 @@ recompile and review the generated output.
 
 ## Runtime Notes
 
-- Ask clarification questions sparingly; `request_user_input` is Plan Mode only.
-- For manual file edits, use `apply_patch` and preserve unrelated user changes.
+- Ask clarification questions only when they materially change the result.
+- Follow repository edit instructions and preserve unrelated user changes.
 - Run the relevant validation checks before reporting completion.
 
 Use this skill to create the source-of-truth spec for a cross-runtime skill.
@@ -78,4 +78,4 @@ current.
 
 ## Runtime Overrides
 
-Ask clarification questions sparingly. In Plan Mode, structured user input is available; in Default mode, ask concise direct questions and wait.
+Ask clarification questions only when they materially change the generated spec.

@@ -6,7 +6,7 @@ description: "Project-local self-study coach using the Rumsfeld Known/Unknown ma
 # Studycoach
 
 This skill was compiled from a Skill Forge runtime-neutral spec for the
-Codex CLI runtime.
+Claude Code runtime.
 
 Source spec: private Skill Forge source (not included in distribution): `studycoach.skill.md`
 
@@ -15,8 +15,8 @@ recompile and review the generated output.
 
 ## Runtime Notes
 
-- Use `request_user_input` only in Plan Mode. In Default mode, ask a concise direct question and wait.
-- For manual file edits, use `apply_patch` and preserve unrelated user changes.
+- Use Claude Code's native blocking question flow when clarification is required.
+- Follow repository edit instructions and preserve unrelated user changes.
 - Run the relevant validation checks before reporting completion.
 
 ## Purpose
@@ -115,6 +115,5 @@ Session mode teaches through dialogue, not lecture. Start with why the concept e
 
 ## Runtime Overrides
 
-In Codex, plugin skills are invoked through the installed skill name, for example `$studycoach` or "use studycoach".
-Use `request_user_input` only in Plan Mode. In Default mode, ask concise plain-text questions and wait for the answer.
-For manual file edits, prefer `apply_patch`; when generating YAML from templates, preserve unrelated user changes.
+In Claude Code, plugin skills are invoked with the plugin namespace, for example `/studycoach:studycoach`.
+Use Claude Code's native user-question flow when the user must choose init, skip, append, replace, or a study topic.

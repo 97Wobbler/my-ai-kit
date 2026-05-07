@@ -6,7 +6,7 @@ description: "Proactive Prism catalog recommender for curated analytical instrum
 # Search
 
 This skill was compiled from a Skill Forge runtime-neutral spec for the
-Codex CLI runtime.
+Claude Code runtime.
 
 Source spec: private Skill Forge source (not included in distribution): `search.skill.md`
 
@@ -15,7 +15,7 @@ recompile and review the generated output.
 
 ## Runtime Notes
 
-- Ask clarification questions sparingly; `request_user_input` is Plan Mode only.
+- Ask clarification questions only when they materially change the result.
 - Run the relevant validation checks before reporting completion.
 
 # search
@@ -194,5 +194,5 @@ heuristic, not exact).
 
 ## Runtime Overrides
 
-In Codex, plugin skills are invoked through the installed skill name, for example `$search`, `use prism:search`, or a natural-language request that matches this skill.
-Use `rg`/file reads to inspect catalog layers. Ask concise plain-text clarification questions in Default mode if the lookup target is ambiguous.
+In Claude Code, plugin skills are invoked with the plugin namespace, for example `/prism:search`.
+Use Claude Code file reading/glob capabilities to inspect catalog layers.

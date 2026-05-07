@@ -6,7 +6,7 @@ description: "Installer for Stateful. Creates .stateful files, both Codex and Cl
 # Stateful Init
 
 This skill was compiled from a Skill Forge runtime-neutral spec for the
-Codex CLI runtime.
+Claude Code runtime.
 
 Source spec: private Skill Forge source (not included in distribution): `stateful-init.skill.md`
 
@@ -15,8 +15,8 @@ recompile and review the generated output.
 
 ## Runtime Notes
 
-- Ask clarification questions sparingly; `request_user_input` is Plan Mode only.
-- For manual file edits, use `apply_patch` and preserve unrelated user changes.
+- Ask clarification questions only when they materially change the result.
+- Follow repository edit instructions and preserve unrelated user changes.
 - Run the relevant validation checks before reporting completion.
 
 # stateful-init
@@ -57,4 +57,4 @@ python3 scripts/stateful/status.py
 
 ## Runtime Overrides
 
-Use local shell commands for installer execution. Describe installed Codex entry points before Claude entry points when ordering matters.
+Prefer the stateful-init executable when exposed by Claude Code. Describe installed Claude entry points before Codex entry points when ordering matters.

@@ -10,27 +10,27 @@
   "plugins": [
     {
       "name": "stateful",
-      "source": "./plugins/stateful"
+      "source": "./dist/claude/stateful"
     },
     {
       "name": "restate",
-      "source": "./plugins/restate"
+      "source": "./dist/claude/restate"
     },
     {
       "name": "autorun",
-      "source": "./plugins/autorun"
+      "source": "./dist/claude/autorun"
     },
     {
       "name": "skill-forge",
-      "source": "./plugins/skill-forge"
+      "source": "./dist/claude/skill-forge"
     },
     {
       "name": "studycoach",
-      "source": "./plugins/studycoach"
+      "source": "./dist/claude/studycoach"
     },
     {
       "name": "prism",
-      "source": "./plugins/prism"
+      "source": "./dist/claude/prism"
     }
   ]
 }

@@ -6,7 +6,7 @@ description: "Validate and compile Skill Forge runtime-neutral specs into Claude
 # Skill Forge Compile
 
 This skill was compiled from a Skill Forge runtime-neutral spec for the
-Codex CLI runtime.
+Claude Code runtime.
 
 Source spec: private Skill Forge source (not included in distribution): `skill-forge-compile.skill.md`
 
@@ -15,8 +15,8 @@ recompile and review the generated output.
 
 ## Runtime Notes
 
-- Ask clarification questions sparingly; `request_user_input` is Plan Mode only.
-- For manual file edits, use `apply_patch` and preserve unrelated user changes.
+- Ask clarification questions only when they materially change the result.
+- Follow repository edit instructions and preserve unrelated user changes.
 - Run the relevant validation checks before reporting completion.
 
 Use this skill when a runtime-neutral Skill Forge spec already exists and the
@@ -77,4 +77,4 @@ python3 plugins/skill-forge/scripts/compile_skill.py <spec> --target all --check
 
 ## Runtime Overrides
 
-Use apply_patch for manual corrections to specs, templates, or generated files. Structured user input is Plan Mode only; in Default mode, ask concise direct questions and wait.
+Follow repository edit instructions when writing compiled skill outputs.

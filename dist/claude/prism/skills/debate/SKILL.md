@@ -6,7 +6,7 @@ description: "Instrumented multi-agent debate where each participant analyzes a 
 # Debate
 
 This skill was compiled from a Skill Forge runtime-neutral spec for the
-Codex CLI runtime.
+Claude Code runtime.
 
 Source spec: private Skill Forge source (not included in distribution): `debate.skill.md`
 
@@ -15,7 +15,7 @@ recompile and review the generated output.
 
 ## Runtime Notes
 
-- Use `request_user_input` only in Plan Mode. In Default mode, ask a concise direct question and wait.
+- Use Claude Code's native blocking question flow when clarification is required.
 - Delegate only when the runtime supports subagents and the task can run safely in parallel.
 - Run the relevant validation checks before reporting completion.
 
@@ -612,6 +612,5 @@ Generated when exit conditions are met or MAX_ROUNDS is exhausted.
 
 ## Runtime Overrides
 
-In Codex, plugin skills are invoked through the installed skill name, for example `$debate`, `use prism:debate`, or a natural-language request that matches this skill.
-Use `request_user_input` only in Plan Mode. In Default mode, ask concise plain-text questions and wait when participant selection is blocking.
-Spawn subagents only when the user explicitly asks for debate, multiple agents, or parallel agent work; otherwise explain the missing prerequisite and stop.
+In Claude Code, plugin skills are invoked with the plugin namespace, for example `/prism:debate`.
+Use Claude Code's native user-question and subagent/task orchestration capabilities when the workflow requires participant confirmation or parallel persona analysis.

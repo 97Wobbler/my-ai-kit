@@ -6,7 +6,7 @@ description: "Meta-analyze and restate user requests to verify comprehension bef
 # Restate
 
 This skill was compiled from a Skill Forge runtime-neutral spec for the
-Codex CLI runtime.
+Claude Code runtime.
 
 Source spec: private Skill Forge source (not included in distribution): `restate.skill.md`
 
@@ -101,4 +101,4 @@ Understand "Add better error handling" refers to "the authentication module"
 
 ## Runtime Overrides
 
-Do not use request_user_input for this skill; produce the restatement directly in the conversation.
+No target-specific behavior is required.
