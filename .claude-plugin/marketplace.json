@@ -31,6 +31,10 @@
     {
       "name": "prism",
       "source": "./dist/claude/prism"
+    },
+    {
+      "name": "lucid",
+      "source": "./dist/claude/lucid"
     }
   ]
 }

@@ -1,0 +1,37 @@
+{
+  "name": "lucid",
+  "version": "0.1.0",
+  "description": "Clarify ambiguous requests into selectable branches and executable briefs.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "claude-code",
+    "skill",
+    "requirements",
+    "clarification",
+    "brief"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Lucid",
+    "shortDescription": "Clarify ambiguous requests before execution",
+    "longDescription": "Lucid complements Restate. Use branch when a request can be interpreted multiple ways and the user needs selectable options. Use brief after choices are made to capture objective, scope, decisions, requirements, success criteria, and blocking or non-blocking open questions.",
+    "developerName": "97Wobbler",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive"
+    ],
+    "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
+    "defaultPrompt": [
+      "Use lucid:branch to split this request into options",
+      "Use lucid:brief to turn these decisions into an execution brief"
+    ],
+    "brandColor": "#0E7490"
+  }
+}
