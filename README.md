@@ -1,182 +1,121 @@
 # my-ai-kit
 
-`my-ai-kit` is a personal Claude Code and Codex CLI plugin marketplace. It is
-for versioning and reinstalling the AI workflows, repo state tools, and future
-MCP-backed utilities I use across machines.
+`my-ai-kit`은 Claude Code와 Codex CLI에서 함께 사용할 수 있는 개인용
+플러그인 마켓플레이스입니다.
 
-This repository is private-first. The goal is repeatable personal setup, not a
-general public framework.
+반복해서 사용하는 에이전트 워크플로우를 런타임별 설치 가능한 플러그인으로
+묶어 배포합니다.
 
-## Current Contents
+## 플러그인
 
-The repository currently contains six installable plugins.
+### `autorun`
 
-The `stateful` plugin installs a repository-local state system based on a
-simple rule: keep agent session state in the repository, not in chat memory.
+- 큰 작업을 dependency-aware `workplan.yaml`로 나눈 뒤, 검증과 커밋 단위로
+  자동 실행하는 오케스트레이션 워크플로우입니다.
+- 막연한 "알아서 해줘"를 추적 가능한 작업 그래프로 바꾸고, 각 단계가 검증과
+  커밋으로 남도록 합니다.
 
-The selected future plugin names are:
+#### 스킬 목록
 
-| Plugin | Purpose | Status |
-|---|---|---|
-| `stateful` | Install and operate repo-local workplan, handoff, roadmap, and recovery state | Available |
-| `restate` | Restate and verify user intent before execution | Available |
-| `autorun` | Run dependency-aware workplans with bounded autonomous execution | Available |
-| `skill-forge` | Author one Skill Forge spec and compile Claude/Codex runtime skills | Available |
-| `studycoach` | Coach project-local self-study roadmaps and Rumsfeld Known/Unknown matrices | Available |
-| `prism` | Discover and compose analytical instruments for multi-perspective analysis | Available |
+- `autorun`: PLAN 모드에서 작업 그래프를 만들고, RUN 모드에서 실행 가능한
+  작업을 위임, 검증, 커밋.
 
-MCP plugin work is intentionally deferred until there is a concrete MCP server
-to package.
+### `skill-forge`
 
-## Repository Direction
+- Claude Code와 Codex CLI용 skill을 하나의 runtime-neutral spec에서
+  관리하기 위한 작성/컴파일 도구입니다.
+- 같은 workflow를 두 런타임에 따로 손으로 맞추는 대신, 하나의 원형을
+  관리하고 런타임 차이만 명시적으로 분리합니다.
 
-The target layout is a marketplace monorepo:
+#### 스킬 목록
 
-```text
-my-ai-kit/
-├── .claude-plugin/
-│   └── marketplace.json
-├── .agents/
-│   └── plugins/
-│       └── marketplace.json
-├── plugins/
-│   └── <plugin>/              # private development source
-├── dist/
-│   ├── claude/
-│   │   └── <plugin>/          # Claude Code install package
-│   └── codex/
-│       └── <plugin>/          # Codex CLI install package
-└── docs/
-```
+- `skill-forge-spec`: cross-runtime skill의 원형 spec을 작성.
+- `skill-forge-compile`: spec을 Claude Code와 Codex CLI용 `SKILL.md`로 컴파일.
 
-The marketplace catalogs point at `dist/claude/<plugin>` and
-`dist/codex/<plugin>`. `plugins/<plugin>` contains private development source,
-including Skill Forge specs, and is not a public install target.
+### `restate`
 
-## Install The Marketplace
+- 작업을 시작하기 전에 사용자 요청을 다시 서술해 목표, 범위, 제약, 가정을
+  확인합니다.
+- 작은 오해가 큰 구현 낭비로 이어지기 전에, 에이전트가 이해한 내용을 먼저
+  드러내고 사용자가 바로잡을 수 있게 합니다.
 
-Install from GitHub:
+#### 스킬 목록
 
-```bash
-claude plugin marketplace add 97Wobbler/my-ai-kit
-codex plugin marketplace add 97Wobbler/my-ai-kit
-```
+- `restate`: 최신 요청을 실행 가능한 요구사항 요약으로 바꾸고 확인을 요청.
 
-Local checkout alternative:
+### `prism`
 
-```bash
-claude plugin marketplace add /path/to/my-ai-kit
-codex plugin marketplace add /path/to/my-ai-kit
-```
+- 렌즈, 프레임, 모델, 스탠스, 휴리스틱 같은 분석 도구를 찾아 조합해 더
+  구조적인 검토와 토론을 돕습니다.
+- 막연한 "전문가처럼 봐줘" 대신, 어떤 관점과 분석 도구로 볼지 명시해
+  검토의 밀도와 재현성을 높입니다.
 
-## Stateful Plugin Usage
+#### 스킬 목록
 
-The stateful plugin is installed from the `my-ai-kit` marketplace.
+- `prism`: Prism 소개와 새 instrument 생성 라우터.
+- `search`: 상황에 맞는 Prism instrument를 검색.
+- `fetch`: 선택한 instrument를 subagent나 다른 workflow에 전달할 수 있게 준비.
+- `debate`: 여러 instrument 관점으로 문서, 제안, 문제를 검토하거나 해결.
+
+### `studycoach`
+
+- 프로젝트 로컬 학습 상태를 기반으로 자기주도 학습을 이어갈 수 있게 돕는
+  학습 코치입니다.
+- 무엇을 알고 모르는지부터 정리해, 학습을 일회성 메모가 아니라 이어지는
+  프로젝트로 관리합니다.
+
+#### 스킬 목록
+
+- `studycoach`: 학습 목표를 진단하고 Known/Unknown 매트릭스, 로드맵, 세션
+  기록을 관리.
+
+### `stateful`
+
+- 레포지토리 안에 agent state를 남겨 다음 세션이 채팅 기억에 의존하지 않고
+  복구할 수 있게 합니다.
+- 긴 작업을 여러 세션에 걸쳐 이어갈 때, "어디까지 했는지"를 다시 설명하는
+  시간을 줄이고 workplan, 결정, handoff를 파일로 남깁니다.
+
+#### 스킬 목록
+
+- `stateful`: Stateful 플러그인의 라우터.
+- `stateful-init`: 현재 레포지토리에 `.stateful/`, 복구 스크립트, 런타임별
+  진입 지침을 설치.
+- `stateful-doctor`: workplan과 generated state의 정합성을 검사.
+- `stateful-close`: 다음 세션을 위한 handoff를 기록.
+- `stateful-plan`: roadmap 내용을 실행 가능한 workplan 후보로 변환.
+- `stateful-archive`: 완료된 workplan 작업을 검토하고 durable summary를 제안.
+
+## 설치
 
 Claude Code:
 
 ```bash
+claude plugin marketplace add 97Wobbler/my-ai-kit
 claude plugin install stateful@my-ai-kit
 ```
 
 Codex CLI:
 
 ```bash
+codex plugin marketplace add 97Wobbler/my-ai-kit
 codex
 /plugins
 ```
 
-In the Codex plugin browser, choose the `my-ai-kit` marketplace and install
-`stateful`.
+마켓플레이스를 추가한 뒤 Codex 플러그인 브라우저에서 필요한 플러그인을
+설치합니다.
 
-## Install Stateful Workflow Into A Repository
+## 저장소 구성
 
-From any target repository, run the current installer from this checkout:
-
-```bash
-python3 /path/to/my-ai-kit/dist/claude/stateful/scripts/stateful_init.py --root . --skill repo
-```
-
-Inside Claude Code, the current plugin also exposes:
-
-```bash
-stateful-init --root . --skill repo
-```
-
-In Codex, use the installed plugin skill:
+이 공개 저장소에는 마켓플레이스 manifest와 런타임별 배포 패키지만 포함됩니다.
 
 ```text
-@stateful-init
+.claude-plugin/       Claude Code 마켓플레이스 카탈로그
+.agents/plugins/      Codex CLI 마켓플레이스 카탈로그
+dist/claude/          Claude Code 플러그인 패키지
+dist/codex/           Codex CLI 플러그인 패키지
 ```
 
-Use a different `--skill` value if you want another repo-local skill name:
-
-```bash
-python3 /path/to/my-ai-kit/dist/claude/stateful/scripts/stateful_init.py --root . --skill stateful
-```
-
-The installer is conservative. Existing scaffold files are left untouched
-unless `--force` is passed.
-
-## Daily Commands In an Installed Repo
-
-```bash
-python3 scripts/stateful/validate-workplan.py
-python3 scripts/stateful/sync-state.py
-python3 scripts/stateful/status.py --tool codex
-python3 scripts/stateful/task.py claim R002 --tool codex --summary "Implementing R002"
-python3 scripts/stateful/plan.py --dry-run
-python3 scripts/stateful/archive.py --dry-run
-python3 scripts/stateful/close-session.py --tool codex --handoff-to claude --summary "Where to continue"
-```
-
-Fresh agent sessions should start with the generated repo-local skill:
-
-```text
-Claude Code: /repo
-Codex: $repo or "use repo skill"
-```
-
-## Project State
-
-This repository now dogfoods its own stateful workflow.
-
-Start future sessions by reading:
-
-1. `AGENTS.md` or `CLAUDE.md`
-2. `.stateful/config.yaml`
-3. `.stateful/workplan.yaml`
-4. `.stateful/session/handoff.md`
-
-Then run:
-
-```bash
-python3 scripts/stateful/status.py --tool codex
-```
-
-## Development Checks
-
-Validate the current plugin files:
-
-```bash
-claude plugin validate .
-python3 scripts/plugins/build-plugin-dist.py
-python3 -m py_compile plugins/stateful/scripts/*.py scripts/stateful/*.py
-python3 scripts/plugins/check-codex-installed-drift.py
-```
-
-`check-codex-installed-drift.py` is a local guardrail for Codex: it compares
-the rebuilt `dist/codex` plugins with the copies currently installed under
-`~/.codex`. If it reports stale files, refresh the Codex plugin installation
-before relying on local skill behavior.
-
-`scripts/plugins/build-codex-dist.py` is kept only as a compatibility wrapper;
-new release and verification work should run `build-plugin-dist.py`, which
-builds both `dist/claude` and `dist/codex`.
-
-Validate the stateful workplan:
-
-```bash
-python3 scripts/stateful/validate-workplan.py
-python3 scripts/stateful/sync-state.py --check
-```
+개발 소스, Skill Forge spec, private state, report는 공개 스냅샷에 포함하지
+않습니다.
