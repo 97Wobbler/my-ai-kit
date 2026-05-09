@@ -14,7 +14,35 @@ RUN 모드 진입 시점마다 (첫 실행 + 세션 재개 모두):
 4. workplan에 wip 주석이 있으면 재개 지점 파악.
 5. **TaskCreate 호출 (필수, 생략 금지)**: 미완료 태스크 전부를 Claude Code 네이티브 task list에 등록. 각 항목 텍스트는 `<T번호> <태스크명>` 형식, 초기 status는 `pending`. 세션 재개 시 이미 TaskList가 있으면 workplan과 대조해서 정합성만 맞춘다. 이 단계를 건너뛰면 루프 도는 동안 메인 세션이 진행 상태를 잃는다 — 예외 없음.
 
-## Step 1: SCAN — 실행 가능 태스크 탐색
+## Step 1: DRAIN — background 잔여 수확
+
+이전 루프에서 `run_in_background: true`로 띄운 subagent가 있는지 확인. 완료 알림이 왔으면 결과를 가져와 VERIFY 수행. 미완료면 상태만 기록하고 새 태스크로 진행.
+
+**첫 루프이거나 background 잔여가 없으면 이 단계 스킵.**
+
+## Step 2: HUMAN-GATE PREFLIGHT — 준비된 인간 게이트 우선 확인
+
+조건:
+- `done: false`
+- `blocked_by` 내 모든 태스크가 `done: true` (빈 배열이면 자동 충족)
+- `human_gate: approve` 또는 `human_gate: execute`
+
+매칭되는 태스크가 있으면 새 자동 worker를 spawn하기 전에 사용자에게 먼저 보고한다.
+각 gate마다 다음을 포함한다:
+- 태스크 id/name
+- `approve`인지 `execute`인지
+- 승인/수행 판단에 필요한 산출물 또는 사람이 해야 할 행동
+- 이 gate를 기다리는 후속 태스크
+
+동시에 `human_gate: null`인 자동 태스크도 실행 가능하다면, 자동 태스크를 먼저
+돌리지 말고 인간 gate를 지금 처리하거나 명시적으로 미룰지 물어본다. 사용자가
+"미루고 자동 진행"처럼 명시적으로 답하면 그 RUN 세션에서는 같은 ready gate를
+반복 질문하지 않고, 새로 ready가 된 human gate만 다시 보고한다.
+
+모든 ready task가 human_gate뿐이면 정상적인 gate 대기 상태로 멈추고
+`workplan.yaml`을 남긴다.
+
+## Step 3: SCAN — 자동 실행 가능 태스크 탐색
 
 조건:
 - `done: false`
@@ -23,13 +51,7 @@ RUN 모드 진입 시점마다 (첫 실행 + 세션 재개 모두):
 
 매칭되는 태스크들의 리스트를 메모. 수가 많으면 다음 루프에 남겨도 OK.
 
-## Step 2: DRAIN — background 잔여 수확
-
-이전 루프에서 `run_in_background: true`로 띄운 subagent가 있는지 확인. 완료 알림이 왔으면 결과를 가져와 VERIFY 수행. 미완료면 상태만 기록하고 새 태스크로 진행.
-
-**첫 루프이거나 background 잔여가 없으면 이 단계 스킵.**
-
-## Step 3: PLAN — 배치 구성 + fg/bg 결정
+## Step 4: PLAN — 배치 구성 + fg/bg 결정
 
 SCAN 결과를 다음 기준으로 배치로 묶는다:
 
@@ -58,7 +80,7 @@ SCAN 결과를 다음 기준으로 배치로 묶는다:
 
 **주의:** background로 띄워놓고 메인이 다른 태스크를 병행 진행할 때는 **두 태스크가 같은 파일이나 환경을 건드리지 않는지** 반드시 확인. race condition 위험.
 
-## Step 4: EXEC — subagent 위임
+## Step 5: EXEC — subagent 위임
 
 **먼저 TaskUpdate**: 이 태스크(들)를 `in_progress`로 변경. 병렬로 여러 개 동시 위임할 땐 전부 in_progress로. Agent 툴 호출 **직전**에 반드시 업데이트.
 
@@ -79,7 +101,7 @@ Agent 툴로 위임. 프롬프트는 `assets/subagent-prompt-template.md` 기반
 - 계획 수립 → `Plan`
 - 프로젝트에 도메인 전문 agent가 있으면 그걸 사용
 
-## Step 5: VERIFY — 독립 검증
+## Step 6: VERIFY — 독립 검증
 
 메인이 수행하는 3계층 검증. subagent self-check는 **신뢰하되 의존하지 않는다**.
 
@@ -128,7 +150,7 @@ Agent({
 1. 1차 실패 → 원인 분석 후 재시도 1회 (subagent 새로 위임)
 2. 2차 실패 → 즉시 정지. 사용자에게 보고.
 
-## Step 6: COMMIT
+## Step 7: COMMIT
 
 검증 통과한 태스크만 커밋.
 
@@ -142,11 +164,11 @@ Agent({
 4. workplan과 산출물을 같은 커밋에. **스테이징은 명시적으로** — `git add workplan.yaml <산출물 경로들>` 식으로 파일을 나열한다. `git add -A` / `git add .` 금지 (사용자의 무관한 dirty 변경을 끌고 들어가지 않게).
 5. **TaskUpdate → completed** (즉시, 커밋 직후). 다음 태스크로 넘어가기 전에 반드시. 여러 태스크를 몰아서 한꺼번에 완료 처리하지 말 것 — 하나 끝날 때마다 즉시 갱신해야 세션 복구/추적이 정확하다.
 
-## Step 7: LOOP
+## Step 8: LOOP
 
 SCAN으로 복귀. 반복.
 
-## Step 8: TEARDOWN — 모든 태스크 done 시 삭제 커밋
+## Step 9: TEARDOWN — 모든 태스크 done 시 삭제 커밋
 
 SCAN 결과 미완료 태스크가 0이 되면(전부 done이 되면) workplan.yaml을 삭제하고 커밋한다.
 

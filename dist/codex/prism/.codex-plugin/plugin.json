@@ -1,6 +1,6 @@
 {
   "name": "prism",
-  "version": "0.5.6",
+  "version": "0.5.7",
   "description": "Create domain-expert analysis agents by composing structured instruments: lenses, frames, models, stances, and heuristics.",
   "author": {
     "name": "97Wobbler",

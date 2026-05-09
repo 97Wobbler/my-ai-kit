@@ -16,7 +16,7 @@ recompile and review the generated output.
 ## Runtime Notes
 
 - Use `request_user_input` only in Plan Mode. In Default mode, ask a concise direct question and wait.
-- Delegate only when the runtime supports subagents and the task can run safely in parallel.
+- This skill requires subagent delegation for workflow steps that call for it; the main session orchestrates and verifies instead of doing delegated work locally.
 - Run the relevant validation checks before reporting completion.
 
 # debate

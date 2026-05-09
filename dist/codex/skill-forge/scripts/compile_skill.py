@@ -44,7 +44,12 @@ def runtime_notes(target: str, capabilities: dict[str, object]) -> str:
         else:
             notes.append("Follow repository edit instructions and preserve unrelated user changes.")
 
-    if capabilities["subagents"] in {"optional", "required"}:
+    if capabilities["subagents"] == "required":
+        notes.append(
+            "This skill requires subagent delegation for workflow steps that call for it; "
+            "the main session orchestrates and verifies instead of doing delegated work locally."
+        )
+    elif capabilities["subagents"] == "optional":
         notes.append("Delegate only when the runtime supports subagents and the task can run safely in parallel.")
 
     if capabilities["plan_mode"] == "required" and target == "codex":

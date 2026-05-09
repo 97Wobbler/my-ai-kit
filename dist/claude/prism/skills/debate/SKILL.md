@@ -16,7 +16,7 @@ recompile and review the generated output.
 ## Runtime Notes
 
 - Use Claude Code's native blocking question flow when clarification is required.
-- Delegate only when the runtime supports subagents and the task can run safely in parallel.
+- This skill requires subagent delegation for workflow steps that call for it; the main session orchestrates and verifies instead of doing delegated work locally.
 - Run the relevant validation checks before reporting completion.
 
 # debate

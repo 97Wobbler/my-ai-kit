@@ -17,7 +17,7 @@ recompile and review the generated output.
 
 - Ask clarification questions only when they materially change the result.
 - Follow repository edit instructions and preserve unrelated user changes.
-- Delegate only when the runtime supports subagents and the task can run safely in parallel.
+- This skill requires subagent delegation for workflow steps that call for it; the main session orchestrates and verifies instead of doing delegated work locally.
 - Run the relevant validation checks before reporting completion.
 
 Convert a broad task into a dependency graph and execute it through a controlled orchestration loop.
@@ -32,6 +32,7 @@ Convert a broad task into a dependency graph and execute it through a controlled
 6. **Verify independently.** Treat a worker's self-check as useful but insufficient. The main session runs L2/L3 checks, and can use a separate read-only subagent for high-risk or large tasks.
 7. **One task = one commit.** Include the task's outputs and the `workplan.yaml` state update in the same commit. Stage explicit paths only; never use `git add -A` or `git add .`.
 8. **`workplan.yaml` lifecycle is fixed.** The file lives at the Git repository root. Commit it when RUN starts, update it per task, and remove it in a final completion commit only when every automatic task is done.
+9. **Ready human gates are handled before new automatic work.** If any unfinished human-gated task has all blockers done, surface it before spawning more implementation workers. When ready human gates and automatic tasks are both available, recommend handling or explicitly deferring the human gate first.
 
 Main-session exceptions are limited to reading files, planning, updating `workplan.yaml`, running verification commands, applying narrow integration fixes required to reconcile a returned worker patch, and creating commits. Those exceptions do not permit implementing an undelegated workplan task locally.
 
@@ -45,7 +46,7 @@ Use this when the user gives a broad spec and asks the agent to break it down or
 4. Write a concrete to-be state.
 5. Split the gap into tasks that are suitable for one worker each. Add real dependencies in `blocked_by`; avoid artificial chains.
 6. Create project-root `workplan.yaml` from `assets/workplan-template.yaml`. Use `references/workplan-schema.md` for the schema.
-7. Summarize phases, task count, dependencies, and gates. Ask before entering RUN mode unless the user's prompt already clearly said to start running.
+7. Summarize phases, task count, dependencies, and gates. If any human-gated task is initially ready (`blocked_by: []`), call it out first and recommend resolving or explicitly deferring it before RUN starts automatic work. Ask before entering RUN mode unless the user's prompt already clearly said to start running.
 8. On RUN approval, commit only `workplan.yaml`:
 
 ```bash
@@ -70,13 +71,14 @@ Preload:
 
 Loop:
 
-1. **SCAN**: Find tasks where `done: false`, every `blocked_by` task is done, and `human_gate: null`.
-2. **DRAIN**: Collect completed background subagents, then verify and commit their outputs.
-3. **PLAN**: Batch independent tasks that do not touch the same files. Keep dependent chains foreground.
-4. **EXEC**: Mark tasks in progress. Delegate every runnable automatic implementation task. For dependency chains, delegate foreground and wait only when the result is needed for the next step. For independent tasks with disjoint write scopes, spawn workers in parallel. Tell each worker they are not alone in the codebase, not to revert others' edits, and to list changed paths. Do not implement the task locally if delegation is unavailable.
-5. **VERIFY**: Run L2/L3 checks from `references/verification.md`. Use a separate read-only subagent for large or risky changes when useful.
-6. **COMMIT**: Set the task `done: true` in `workplan.yaml`, stage explicit task output paths plus `workplan.yaml`, commit, then mark the plan item completed.
-7. **LOOP**: Continue until no automatic task is runnable.
+1. **DRAIN**: Collect completed background subagents, then verify and commit their outputs.
+2. **HUMAN-GATE PREFLIGHT**: Find tasks where `done: false`, every `blocked_by` task is done, and `human_gate` is `approve` or `execute`. If any exist, report them before starting new automatic work. If automatic tasks are also runnable, recommend that the user handle or explicitly defer the human gate first; do not spawn more workers until the user chooses.
+3. **SCAN**: Find automatic tasks where `done: false`, every `blocked_by` task is done, and `human_gate: null`.
+4. **PLAN**: Batch independent tasks that do not touch the same files. Keep dependent chains foreground.
+5. **EXEC**: Mark tasks in progress. Delegate every runnable automatic implementation task. For dependency chains, delegate foreground and wait only when the result is needed for the next step. For independent tasks with disjoint write scopes, spawn workers in parallel. Tell each worker they are not alone in the codebase, not to revert others' edits, and to list changed paths. Do not implement the task locally if delegation is unavailable.
+6. **VERIFY**: Run L2/L3 checks from `references/verification.md`. Use a separate read-only subagent for large or risky changes when useful.
+7. **COMMIT**: Set the task `done: true` in `workplan.yaml`, stage explicit task output paths plus `workplan.yaml`, commit, then mark the plan item completed.
+8. **LOOP**: Continue until no automatic task is runnable.
 
 Completion:
 
