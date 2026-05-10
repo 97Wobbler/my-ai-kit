@@ -1,6 +1,6 @@
 {
   "name": "autorun",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "Plan and execute dependency-aware coding workplans.",
   "author": {
     "name": "97Wobbler",
@@ -17,6 +17,7 @@
     "automation"
   ],
   "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Autorun",
     "shortDescription": "Run dependency-aware coding workplans",
