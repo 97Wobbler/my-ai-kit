@@ -12,13 +12,19 @@
 
 - 큰 작업을 dependency-aware `workplan.yaml`로 나눈 뒤, 검증과 커밋 단위로
   자동 실행하는 오케스트레이션 워크플로우입니다.
+- `0.2.0`부터 Claude Code와 Codex CLI에 번들 MCP 서버를 함께 제공해,
+  계획 생성, 검증, task split, 실행 배치, lifecycle 상태 전이를 MCP tool로
+  관리할 수 있습니다.
 - 막연한 "알아서 해줘"를 추적 가능한 작업 그래프로 바꾸고, 각 단계가 검증과
   커밋으로 남도록 합니다.
+- MCP가 등록되지 않았거나 실행 환경에서 사용할 수 없으면 기존
+  project-root `workplan.yaml` 방식으로 계속 동작합니다.
 
 #### 스킬 목록
 
 - `autorun`: PLAN 모드에서 작업 그래프를 만들고, RUN 모드에서 실행 가능한
-  작업을 위임, 검증, 커밋.
+  작업을 MCP-backed state 또는 `workplan.yaml` fallback으로 위임, 검증,
+  커밋.
 
 ### `skill-forge`
 
@@ -119,6 +125,9 @@ codex
 
 마켓플레이스를 추가한 뒤 Codex 플러그인 브라우저에서 필요한 플러그인을
 설치합니다.
+
+Autorun MCP tools는 플러그인 설치 후 새 세션에서 노출됩니다. Codex에서는
+`/mcp`로 `autorun` 서버와 tools 상태를 확인할 수 있습니다.
 
 ## 저장소 구성
 
