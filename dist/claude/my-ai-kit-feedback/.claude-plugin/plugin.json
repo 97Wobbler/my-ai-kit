@@ -1,0 +1,22 @@
+{
+  "name": "my-ai-kit-feedback",
+  "version": "0.1.0",
+  "description": "Draft privacy-conscious feedback issues for my-ai-kit plugin and skill behavior.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "skills": "./skills/",
+  "keywords": [
+    "claude-code",
+    "codex",
+    "skill",
+    "feedback",
+    "dogfooding",
+    "github-issues",
+    "privacy"
+  ]
+}

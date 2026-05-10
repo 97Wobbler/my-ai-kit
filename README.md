@@ -63,6 +63,22 @@
   확인 질문을 제시.
 - `brief`: 선택된 의도와 결정 사항을 실행 가능한 브리프로 정리.
 
+### `my-ai-kit-feedback`
+
+- my-ai-kit 플러그인이나 스킬을 쓰다가 이상하다고 느낀 점을 GitHub issue
+  draft로 정리하는 피드백 워크플로우입니다.
+- 사용자가 명시적으로 호출하고 제공한 세션 근거만 분석합니다. `.codex`,
+  `.claude`, 로컬 로그, transcript를 자동으로 수집하지 않습니다.
+- 최소 3단계 동의 흐름을 사용합니다: 분석 범위와 근거 출처 확인, 근거 요약과
+  redaction 승인, GitHub issue 발행 전 최종 승인.
+- 기본은 요약 중심이며, 민감정보와 개인/회사/경로 정보는 issue draft에
+  포함하기 전에 redaction합니다.
+
+#### 스킬 목록
+
+- `my-ai-kit-feedback`: 기대 동작, 실제 동작, 사용 runtime, 사용자가 제공한
+  근거를 바탕으로 privacy-conscious GitHub issue draft를 작성.
+
 ### `prism`
 
 - 렌즈, 프레임, 모델, 스탠스, 휴리스틱 같은 분석 도구를 찾아 조합해 더

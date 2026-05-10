@@ -35,6 +35,10 @@
     {
       "name": "lucid",
       "source": "./dist/claude/lucid"
+    },
+    {
+      "name": "my-ai-kit-feedback",
+      "source": "./dist/claude/my-ai-kit-feedback"
     }
   ]
 }

@@ -1,0 +1,39 @@
+{
+  "name": "my-ai-kit-feedback",
+  "version": "0.1.0",
+  "description": "Draft privacy-conscious feedback issues for my-ai-kit plugin and skill behavior.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "claude-code",
+    "skill",
+    "feedback",
+    "dogfooding",
+    "github-issues",
+    "privacy"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "My AI Kit Feedback",
+    "shortDescription": "Turn plugin dogfooding friction into a safe issue draft",
+    "longDescription": "My AI Kit Feedback helps users turn an explicitly reported plugin or skill problem into a privacy-conscious GitHub issue draft. It guides users to collect only relevant session evidence, summarize expected versus actual behavior, redact sensitive details, and optionally create an issue after explicit approval.",
+    "developerName": "97Wobbler",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Interactive"
+    ],
+    "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
+    "defaultPrompt": [
+      "Use my-ai-kit-feedback to draft an issue about a plugin behavior problem",
+      "Use my-ai-kit-feedback to analyze these session snippets and prepare a GitHub issue"
+    ],
+    "brandColor": "#7C3AED"
+  }
+}
