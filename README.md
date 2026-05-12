@@ -12,9 +12,11 @@
 
 - 큰 작업을 dependency-aware `workplan.yaml`로 나눈 뒤, 검증과 커밋 단위로
   자동 실행하는 오케스트레이션 워크플로우입니다.
-- `0.2.1` 기준 Claude Code와 Codex CLI에 번들 MCP 서버를 함께 제공해,
+- `0.2.2` 기준 Claude Code와 Codex CLI에 번들 MCP 서버를 함께 제공해,
   계획 생성, 검증, task split, 실행 배치, lifecycle 상태 전이를 MCP tool로
   관리할 수 있습니다.
+- OpenAI/Codex tool schema 변환과 호환되도록 MCP tool input schema는
+  object-root 형태로 노출합니다.
 - MCP tool은 별도 숨은 plan state가 아니라 project-root `workplan.yaml`을
   직접 읽고 쓰며, 이 파일이 durable source of truth입니다.
 - 막연한 "알아서 해줘"를 추적 가능한 작업 그래프로 바꾸고, 각 단계가 검증과

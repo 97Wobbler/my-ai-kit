@@ -13,7 +13,7 @@ from autorun_mcp.protocol import JsonRpcError, JsonRpcProtocol, TOOL_ERROR
 from autorun_mcp.state import legacy_plan_state_exists
 
 SERVER_NAME = "autorun"
-SERVER_VERSION = "0.2.0"
+SERVER_VERSION = "0.2.2"
 PROTOCOL_VERSION = "2024-11-05"
 TOOL_AUTORUN_STATUS = "autorun_status"
 TOOL_AUTORUN_PLAN_CREATE = "autorun_plan_create"
@@ -78,7 +78,6 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                     "run_policy": {"type": "object"},
                 },
                 ["meta", "tasks"],
-                any_of=[{"required": ["repo_root"]}, {"required": ["workplan_path"]}],
             ),
             _plan_tool(
                 TOOL_AUTORUN_PLAN_VALIDATE,
@@ -97,7 +96,6 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                     "replacement_tasks": {"type": "array", "items": {"type": "object"}},
                 },
                 ["task_id", "replacement_tasks"],
-                any_of=[{"required": ["repo_root"]}, {"required": ["workplan_path"]}],
             ),
             _plan_tool(
                 TOOL_AUTORUN_NEXT_BATCH,
@@ -129,7 +127,6 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                     "plan_id": _string("Deprecated compatibility id. Does not select a state file."),
                     "run_policy": {"type": "object"},
                 },
-                any_of=[{"required": ["repo_root"]}, {"required": ["workplan_path"]}],
             ),
             _tool(
                 TOOL_AUTORUN_EXPORT_WORKPLAN,
@@ -138,7 +135,6 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                     **_plan_properties(),
                     "force": {"type": "boolean", "description": "Export even when validation has errors."},
                 },
-                any_of=[{"required": ["repo_root"]}, {"required": ["workplan_path"]}],
             ),
             _tool(
                 TOOL_AUTORUN_WORKER_START,
@@ -176,7 +172,6 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                         "description": "Optional positive maximum bytes per artifact summary.",
                     },
                 },
-                any_of=_worker_lookup_any_of(),
             ),
             _worker_lookup_tool(
                 TOOL_AUTORUN_WORKER_CANCEL,
@@ -334,7 +329,6 @@ def _tool(
     description: str,
     properties: Mapping[str, Any],
     required: list[str] | None = None,
-    any_of: list[dict[str, Any]] | None = None,
 ) -> dict[str, Any]:
     input_schema: dict[str, Any] = {
         "type": "object",
@@ -342,8 +336,6 @@ def _tool(
         "required": required or [],
         "additionalProperties": False,
     }
-    if any_of:
-        input_schema["anyOf"] = any_of
     return {
         "name": name,
         "description": description,
@@ -356,7 +348,6 @@ def _plan_tool(name: str, description: str) -> dict[str, Any]:
         name,
         description,
         _plan_properties(),
-        any_of=[{"required": ["repo_root"]}, {"required": ["workplan_path"]}],
     )
 
 
@@ -371,7 +362,6 @@ def _task_lifecycle_tool(name: str, description: str) -> dict[str, Any]:
             "commit": _string("Optional commit identifier to record on committed lifecycle updates."),
         },
         ["task_id"],
-        any_of=[{"required": ["repo_root"]}, {"required": ["workplan_path"]}],
     )
 
 
@@ -380,7 +370,6 @@ def _worker_lookup_tool(name: str, description: str) -> dict[str, Any]:
         name,
         description,
         _worker_lookup_properties(),
-        any_of=_worker_lookup_any_of(),
     )
 
 
@@ -402,15 +391,6 @@ def _worker_lookup_properties() -> dict[str, Any]:
         "task_id": _string("Task id, required when worker_id is omitted."),
         "worker_id": _string("Worker id, required when plan_id and task_id are omitted."),
     }
-
-
-def _worker_lookup_any_of() -> list[dict[str, list[str]]]:
-    return [
-        {"required": ["artifact_dir", "worker_id"]},
-        {"required": ["repo_root", "worker_id"]},
-        {"required": ["artifact_dir", "plan_id", "task_id"]},
-        {"required": ["repo_root", "plan_id", "task_id"]},
-    ]
 
 
 def _string(description: str) -> dict[str, str]:
