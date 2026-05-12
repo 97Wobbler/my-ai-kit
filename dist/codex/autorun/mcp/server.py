@@ -8,8 +8,9 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
-from autorun_mcp import planner, workplan_io
+from autorun_mcp import planner, workers, workplan_io
 from autorun_mcp.protocol import JsonRpcError, JsonRpcProtocol, TOOL_ERROR
+from autorun_mcp.state import legacy_plan_state_exists
 
 SERVER_NAME = "autorun"
 SERVER_VERSION = "0.2.0"
@@ -26,6 +27,16 @@ TOOL_AUTORUN_TASK_MARK_COMMITTED = "autorun_task_mark_committed"
 TOOL_AUTORUN_PLAN_STATUS = "autorun_plan_status"
 TOOL_AUTORUN_IMPORT_WORKPLAN = "autorun_import_workplan"
 TOOL_AUTORUN_EXPORT_WORKPLAN = "autorun_export_workplan"
+TOOL_AUTORUN_WORKER_START = "autorun_worker_start"
+TOOL_AUTORUN_WORKER_STATUS = "autorun_worker_status"
+TOOL_AUTORUN_WORKER_COLLECT = "autorun_worker_collect"
+TOOL_AUTORUN_WORKER_CANCEL = "autorun_worker_cancel"
+WORKER_TOOLS = {
+    TOOL_AUTORUN_WORKER_START,
+    TOOL_AUTORUN_WORKER_STATUS,
+    TOOL_AUTORUN_WORKER_COLLECT,
+    TOOL_AUTORUN_WORKER_CANCEL,
+}
 
 
 def initialize(_params: Mapping[str, Any]) -> dict[str, Any]:
@@ -47,24 +58,27 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                     "properties": {
                         "repo_root": {
                             "type": "string",
-                            "description": "Optional repository root path. Defaults to the server cwd.",
+                            "description": "Repository root path for the active user project.",
                         }
                     },
+                    "required": ["repo_root"],
                     "additionalProperties": False,
                 },
             },
             _tool(
                 TOOL_AUTORUN_PLAN_CREATE,
-                "Store model-drafted meta/tasks as an Autorun MCP plan.",
+                "Create or replace repo-root workplan.yaml from model-drafted meta/tasks.",
                 {
-                    "repo_root": _string("Optional repository root. Defaults to server cwd."),
-                    "state_dir": _string("Optional state root. Defaults to <repo_root>/.autorun/mcp/."),
-                    "plan_id": _string("Optional file-safe plan id. Generated when omitted."),
+                    "repo_root": _string("Repository root path for the active user project."),
+                    "workplan_path": _string("Optional workplan path. Defaults to <repo_root>/workplan.yaml."),
+                    "state_dir": _string("Deprecated compatibility input; plan state is stored in workplan.yaml."),
+                    "plan_id": _string("Deprecated compatibility id. Does not select a state file."),
                     "meta": {"type": "object"},
                     "tasks": {"type": "array", "items": {"type": "object"}},
                     "run_policy": {"type": "object"},
                 },
                 ["meta", "tasks"],
+                any_of=[{"required": ["repo_root"]}, {"required": ["workplan_path"]}],
             ),
             _plan_tool(
                 TOOL_AUTORUN_PLAN_VALIDATE,
@@ -82,7 +96,8 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                     "task_id": _string("Task id to retire."),
                     "replacement_tasks": {"type": "array", "items": {"type": "object"}},
                 },
-                ["plan_id", "task_id", "replacement_tasks"],
+                ["task_id", "replacement_tasks"],
+                any_of=[{"required": ["repo_root"]}, {"required": ["workplan_path"]}],
             ),
             _plan_tool(
                 TOOL_AUTORUN_NEXT_BATCH,
@@ -106,22 +121,66 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
             ),
             _tool(
                 TOOL_AUTORUN_IMPORT_WORKPLAN,
-                "Import repo-root workplan.yaml into Autorun MCP JSON state.",
+                "Deprecated compatibility shim: validate workplan.yaml, which is already MCP state.",
                 {
-                    "repo_root": _string("Optional repository root. Defaults to server cwd."),
-                    "state_dir": _string("Optional state root. Defaults to <repo_root>/.autorun/mcp/."),
-                    "plan_id": _string("Optional file-safe plan id. Generated when omitted."),
+                    "repo_root": _string("Repository root path for the active user project."),
+                    "workplan_path": _string("Optional workplan path. Defaults to <repo_root>/workplan.yaml."),
+                    "state_dir": _string("Deprecated compatibility input; ignored for plan state."),
+                    "plan_id": _string("Deprecated compatibility id. Does not select a state file."),
                     "run_policy": {"type": "object"},
                 },
+                any_of=[{"required": ["repo_root"]}, {"required": ["workplan_path"]}],
             ),
             _tool(
                 TOOL_AUTORUN_EXPORT_WORKPLAN,
-                "Export Autorun MCP JSON state to repo-root workplan.yaml.",
+                "Deprecated compatibility shim: validate and return current workplan.yaml.",
                 {
                     **_plan_properties(),
                     "force": {"type": "boolean", "description": "Export even when validation has errors."},
                 },
-                ["plan_id"],
+                any_of=[{"required": ["repo_root"]}, {"required": ["workplan_path"]}],
+            ),
+            _tool(
+                TOOL_AUTORUN_WORKER_START,
+                "Start an experimental Autorun worker process for a task.",
+                {
+                    "repo_root": _string("Repository root path for the active user project."),
+                    "artifact_dir": _string("Optional worker artifact root. Defaults to user state outside the repo."),
+                    "state_dir": _string("Deprecated alias for artifact_dir."),
+                    "workplan_path": _string("Optional workplan path. Defaults to <repo_root>/workplan.yaml."),
+                    "plan_id": _string("Deprecated compatibility id."),
+                    "task_id": _string("Task id."),
+                    "worker_id": _string("Optional file-safe worker id. Defaults to <plan_id>-<task_id>."),
+                    "prompt": _string("Worker prompt to pass to the runtime."),
+                    "runtime": _string("Optional worker runtime. Defaults to codex."),
+                    "timeout_seconds": {
+                        "type": "integer",
+                        "description": "Optional positive timeout for callers to track.",
+                    },
+                    "command": _string_list("Optional command override list for tests."),
+                    "command_override": _string_list("Optional command override list for tests."),
+                },
+                ["repo_root", "plan_id", "task_id", "prompt"],
+            ),
+            _worker_lookup_tool(
+                TOOL_AUTORUN_WORKER_STATUS,
+                "Return status for an experimental Autorun worker process.",
+            ),
+            _tool(
+                TOOL_AUTORUN_WORKER_COLLECT,
+                "Return worker status, artifact paths, and concise artifact summaries.",
+                {
+                    **_worker_lookup_properties(),
+                    "max_summary_bytes": {
+                        "type": "integer",
+                        "description": "Optional positive maximum bytes per artifact summary.",
+                    },
+                },
+                any_of=_worker_lookup_any_of(),
+            ),
+            _worker_lookup_tool(
+                TOOL_AUTORUN_WORKER_CANCEL,
+                "Cancel a running experimental Autorun worker process.",
             ),
         ]
     }
@@ -173,13 +232,21 @@ def _call_tool(name: Any, arguments: Mapping[str, Any]) -> dict[str, Any]:
         return workplan_io.import_workplan(arguments)
     if name == TOOL_AUTORUN_EXPORT_WORKPLAN:
         return workplan_io.export_workplan(arguments)
+    if name == TOOL_AUTORUN_WORKER_START:
+        return workers.worker_start(arguments)
+    if name == TOOL_AUTORUN_WORKER_STATUS:
+        return workers.worker_status(arguments)
+    if name == TOOL_AUTORUN_WORKER_COLLECT:
+        return workers.worker_collect(arguments)
+    if name == TOOL_AUTORUN_WORKER_CANCEL:
+        return workers.worker_cancel(arguments)
     raise JsonRpcError(TOOL_ERROR, f"Unknown tool: {name}")
 
 
 def autorun_status(arguments: Mapping[str, Any]) -> dict[str, Any]:
     repo_root_arg = arguments.get("repo_root")
-    if repo_root_arg is not None and not isinstance(repo_root_arg, str):
-        raise ValueError("repo_root must be a string when provided")
+    if not isinstance(repo_root_arg, str) or not repo_root_arg:
+        raise ValueError("repo_root must be a non-empty string")
 
     cwd = Path.cwd().resolve()
     repo_root = _resolve_repo_root(repo_root_arg, cwd)
@@ -210,6 +277,7 @@ def _state_backend_availability(repo_root: Path) -> dict[str, Any]:
         "available": repo_root.exists() and repo_root.is_dir(),
         "repo_root_exists": repo_root.exists(),
         "workplan_exists": workplan.exists(),
+        "legacy_json_plans_exist": legacy_plan_state_exists({"repo_root": str(repo_root)}),
         "git_metadata_exists": git_dir.exists(),
     }
 
@@ -221,8 +289,9 @@ def format_status(status: Mapping[str, Any]) -> str:
             f"Autorun MCP server {status['server']['version']}",
             f"cwd: {status['cwd']}",
             f"repo_root: {status['repo_root']}",
-            f"state_backend: {state['backend']} available={state['available']}",
+            f"state_backend: workplan.yaml available={state['available']}",
             f"workplan_exists: {state['workplan_exists']}",
+            f"legacy_json_plans_exist: {state['legacy_json_plans_exist']}",
         ]
     )
 
@@ -230,6 +299,11 @@ def format_status(status: Mapping[str, Any]) -> str:
 def format_tool_result(name: Any, result: Mapping[str, Any]) -> str:
     if name == TOOL_AUTORUN_STATUS:
         return format_status(result)
+    if name in WORKER_TOOLS:
+        return (
+            f"{name}: worker_id={result.get('worker_id')} "
+            f"task_id={result.get('task_id')} status={result.get('status')}"
+        )
     plan_id = result.get("plan_id")
     if not plan_id and isinstance(result.get("plan"), dict):
         plan_id = result["plan"].get("plan_id")
@@ -255,42 +329,101 @@ def format_tool_result(name: Any, result: Mapping[str, Any]) -> str:
     return prefix
 
 
-def _tool(name: str, description: str, properties: Mapping[str, Any], required: list[str] | None = None) -> dict[str, Any]:
+def _tool(
+    name: str,
+    description: str,
+    properties: Mapping[str, Any],
+    required: list[str] | None = None,
+    any_of: list[dict[str, Any]] | None = None,
+) -> dict[str, Any]:
+    input_schema: dict[str, Any] = {
+        "type": "object",
+        "properties": dict(properties),
+        "required": required or [],
+        "additionalProperties": False,
+    }
+    if any_of:
+        input_schema["anyOf"] = any_of
     return {
         "name": name,
         "description": description,
-        "inputSchema": {
-            "type": "object",
-            "properties": dict(properties),
-            "required": required or [],
-            "additionalProperties": False,
-        },
+        "inputSchema": input_schema,
     }
 
 
 def _plan_tool(name: str, description: str) -> dict[str, Any]:
-    return _tool(name, description, _plan_properties(), ["plan_id"])
+    return _tool(
+        name,
+        description,
+        _plan_properties(),
+        any_of=[{"required": ["repo_root"]}, {"required": ["workplan_path"]}],
+    )
 
 
 def _task_lifecycle_tool(name: str, description: str) -> dict[str, Any]:
     return _tool(
         name,
         description,
-        {**_plan_properties(), "task_id": _string("Task id.")},
-        ["plan_id", "task_id"],
+        {
+            **_plan_properties(),
+            "task_id": _string("Task id."),
+            "worker_id": _string("Optional worker id to record on verified lifecycle updates."),
+            "commit": _string("Optional commit identifier to record on committed lifecycle updates."),
+        },
+        ["task_id"],
+        any_of=[{"required": ["repo_root"]}, {"required": ["workplan_path"]}],
+    )
+
+
+def _worker_lookup_tool(name: str, description: str) -> dict[str, Any]:
+    return _tool(
+        name,
+        description,
+        _worker_lookup_properties(),
+        any_of=_worker_lookup_any_of(),
     )
 
 
 def _plan_properties() -> dict[str, Any]:
     return {
-        "repo_root": _string("Optional repository root. Defaults to server cwd."),
-        "state_dir": _string("Optional state root. Defaults to <repo_root>/.autorun/mcp/."),
-        "plan_id": _string("Plan id."),
+        "repo_root": _string("Repository root path for the active user project."),
+        "workplan_path": _string("Optional workplan path. Defaults to <repo_root>/workplan.yaml."),
+        "state_dir": _string("Deprecated compatibility input; plan state is stored in workplan.yaml."),
+        "plan_id": _string("Deprecated compatibility id. Does not select a state file."),
     }
+
+
+def _worker_lookup_properties() -> dict[str, Any]:
+    return {
+        "repo_root": _string("Repository root path for the active user project."),
+        "artifact_dir": _string("Optional worker artifact root. Defaults to user state outside the repo."),
+        "state_dir": _string("Deprecated alias for artifact_dir."),
+        "plan_id": _string("Compatibility plan id, required when worker_id is omitted."),
+        "task_id": _string("Task id, required when worker_id is omitted."),
+        "worker_id": _string("Worker id, required when plan_id and task_id are omitted."),
+    }
+
+
+def _worker_lookup_any_of() -> list[dict[str, list[str]]]:
+    return [
+        {"required": ["artifact_dir", "worker_id"]},
+        {"required": ["repo_root", "worker_id"]},
+        {"required": ["artifact_dir", "plan_id", "task_id"]},
+        {"required": ["repo_root", "plan_id", "task_id"]},
+    ]
 
 
 def _string(description: str) -> dict[str, str]:
     return {"type": "string", "description": description}
+
+
+def _string_list(description: str) -> dict[str, Any]:
+    return {
+        "type": "array",
+        "items": {"type": "string"},
+        "minItems": 1,
+        "description": description,
+    }
 
 
 def build_protocol() -> JsonRpcProtocol:

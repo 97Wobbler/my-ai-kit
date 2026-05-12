@@ -2,10 +2,8 @@
 
 from __future__ import annotations
 
-from datetime import datetime, timezone
 from pathlib import PurePosixPath
 from typing import Any, Mapping
-from uuid import uuid4
 
 from .schema import (
     has_metadata_issue,
@@ -14,13 +12,18 @@ from .schema import (
     normalize_output,
     validate_plan,
 )
-from .state import load_plan, resolve_state_root, save_plan
-
-PENDING = "pending"
-STARTED = "started"
-VERIFIED = "verified"
-COMMITTED = "committed"
-RETIRED = "retired"
+from .workplan_io import (
+    COMMITTED,
+    PENDING,
+    RETIRED,
+    STARTED,
+    VERIFIED,
+    load_workplan,
+    normalize_lifecycle,
+    normalize_task_status,
+    now_utc,
+    save_workplan,
+)
 
 
 def plan_create(arguments: Mapping[str, Any]) -> dict[str, Any]:
@@ -31,40 +34,28 @@ def plan_create(arguments: Mapping[str, Any]) -> dict[str, Any]:
     if not isinstance(tasks, list) or not all(isinstance(task, dict) for task in tasks):
         raise ValueError("tasks must be a list of objects")
 
-    now = _now()
-    plan_id = arguments.get("plan_id")
-    if plan_id is None:
-        plan_id = f"plan-{uuid4().hex[:12]}"
-    if not isinstance(plan_id, str) or not plan_id:
-        raise ValueError("plan_id must be a non-empty string")
-
     run_policy = arguments.get("run_policy", {})
-    if not isinstance(run_policy, dict):
+    if run_policy is not None and not isinstance(run_policy, dict):
         raise ValueError("run_policy must be an object when provided")
 
     normalized_tasks = [_normalize_task(task) for task in tasks]
     plan = {
-        "plan_id": plan_id,
-        "created_at": now,
-        "updated_at": now,
-        "run_policy": run_policy,
-        "task_status": {
-            task["id"]: COMMITTED if task.get("done") else PENDING
-            for task in normalized_tasks
-            if isinstance(task.get("id"), str)
-        },
-        "meta": meta,
+        "plan_id": _plan_id(arguments),
+        "meta": dict(meta),
         "tasks": normalized_tasks,
     }
-    state_root = resolve_state_root(arguments)
-    path = save_plan(state_root, plan)
+    if run_policy:
+        plan["meta"].setdefault("run_policy", run_policy)
+
+    path = save_workplan(arguments, plan)
+    plan["workplan_path"] = path
     validation = validate_plan(plan)
-    return {"plan": plan, "path": str(path), "validation": validation}
+    return {"plan": plan, "path": path, "workplan_path": path, "validation": validation}
 
 
 def plan_validate(arguments: Mapping[str, Any]) -> dict[str, Any]:
     plan = _load(arguments)
-    return {"plan_id": plan["plan_id"], "validation": validate_plan(plan)}
+    return {"plan_id": plan["plan_id"], "workplan_path": plan["workplan_path"], "validation": validate_plan(plan)}
 
 
 def plan_refine(arguments: Mapping[str, Any]) -> dict[str, Any]:
@@ -85,6 +76,7 @@ def plan_refine(arguments: Mapping[str, Any]) -> dict[str, Any]:
 
     return {
         "plan_id": plan["plan_id"],
+        "workplan_path": plan["workplan_path"],
         "next_action": action,
         "validation": validation,
         "human_gates": ready_human_gates,
@@ -97,10 +89,10 @@ def task_split(arguments: Mapping[str, Any]) -> dict[str, Any]:
     if not isinstance(replacements, list) or not all(isinstance(task, dict) for task in replacements):
         raise ValueError("replacement_tasks must be a list of objects")
 
-    plan = _load(arguments)
+    plan = _load_checked(arguments)
     tasks = plan["tasks"]
     original = _task_by_id(plan, task_id)
-    if original.get("done") and not original.get("retired"):
+    if _task_status(original) == COMMITTED and not original.get("retired"):
         raise ValueError(f"cannot split completed task {task_id}")
 
     existing_ids = {task.get("id") for task in tasks if isinstance(task, dict)}
@@ -118,17 +110,22 @@ def task_split(arguments: Mapping[str, Any]) -> dict[str, Any]:
 
     original["retired"] = True
     original["done"] = True
-    plan["task_status"][task_id] = RETIRED
+    original["status"] = RETIRED
+    original["lifecycle"] = _lifecycle(original)
     for replacement in normalized_replacements:
         tasks.append(replacement)
-        plan["task_status"][replacement["id"]] = PENDING
 
-    _touch_and_save(arguments, plan)
-    return {"plan_id": plan["plan_id"], "retired": task_id, "added": [task["id"] for task in normalized_replacements]}
+    _save(arguments, plan)
+    return {
+        "plan_id": plan["plan_id"],
+        "workplan_path": plan["workplan_path"],
+        "retired": task_id,
+        "added": [task["id"] for task in normalized_replacements],
+    }
 
 
 def next_batch(arguments: Mapping[str, Any]) -> dict[str, Any]:
-    plan = _load(arguments)
+    plan = _load_checked(arguments)
     done_ids = _done_ids(plan)
     selected: list[dict[str, Any]] = []
     selected_outputs: list[str] = []
@@ -139,7 +136,7 @@ def next_batch(arguments: Mapping[str, Any]) -> dict[str, Any]:
             continue
         if normalize_human_gate(task.get("human_gate")) is not None:
             continue
-        if plan.get("task_status", {}).get(task_id) not in (None, PENDING):
+        if _task_status(task) != PENDING:
             continue
         if not all(dep in done_ids for dep in task.get("blocked_by") or []):
             continue
@@ -152,19 +149,40 @@ def next_batch(arguments: Mapping[str, Any]) -> dict[str, Any]:
         selected.append(task)
         selected_outputs.extend(outputs)
 
-    return {"plan_id": plan["plan_id"], "tasks": selected, "task_ids": [task["id"] for task in selected]}
+    return {
+        "plan_id": plan["plan_id"],
+        "workplan_path": plan["workplan_path"],
+        "tasks": selected,
+        "task_ids": [task["id"] for task in selected],
+    }
 
 
 def task_mark_started(arguments: Mapping[str, Any]) -> dict[str, Any]:
-    return _transition(arguments, PENDING, STARTED, done=False)
+    return _transition(arguments, PENDING, STARTED, timestamp_field="started_at", done=False)
 
 
 def task_mark_verified(arguments: Mapping[str, Any]) -> dict[str, Any]:
-    return _transition(arguments, STARTED, VERIFIED, done=False)
+    worker_id = arguments.get("worker_id")
+    return _transition(
+        arguments,
+        STARTED,
+        VERIFIED,
+        timestamp_field="verified_at",
+        done=False,
+        lifecycle_updates={"worker_id": worker_id} if isinstance(worker_id, str) and worker_id else None,
+    )
 
 
 def task_mark_committed(arguments: Mapping[str, Any]) -> dict[str, Any]:
-    return _transition(arguments, VERIFIED, COMMITTED, done=True)
+    commit = arguments.get("commit")
+    return _transition(
+        arguments,
+        VERIFIED,
+        COMMITTED,
+        timestamp_field="committed_at",
+        done=True,
+        lifecycle_updates={"commit": commit} if isinstance(commit, str) and commit else None,
+    )
 
 
 def plan_status(arguments: Mapping[str, Any]) -> dict[str, Any]:
@@ -178,7 +196,7 @@ def plan_status(arguments: Mapping[str, Any]) -> dict[str, Any]:
 
     for task in tasks:
         task_id = task["id"]
-        status = plan.get("task_status", {}).get(task_id, PENDING)
+        status = _task_status(task)
         blockers_done = all(dep in done_ids for dep in task.get("blocked_by") or [])
         gate = normalize_human_gate(task.get("human_gate"))
 
@@ -186,7 +204,7 @@ def plan_status(arguments: Mapping[str, Any]) -> dict[str, Any]:
             active.append(task_id)
         if task.get("done"):
             continue
-        if blockers_done and gate is None and status in (PENDING, None):
+        if blockers_done and gate is None and status == PENDING:
             runnable.append(task_id)
         elif blockers_done and gate is not None:
             human_gates.append(task_id)
@@ -197,7 +215,13 @@ def plan_status(arguments: Mapping[str, Any]) -> dict[str, Any]:
     done = len([task for task in tasks if task.get("done")])
     return {
         "plan_id": plan["plan_id"],
-        "progress": {"total": total, "done": done, "pending": total - done, "percent": 100 if total == 0 else round(done * 100 / total, 2)},
+        "workplan_path": plan["workplan_path"],
+        "progress": {
+            "total": total,
+            "done": done,
+            "pending": total - done,
+            "percent": 100 if total == 0 else round(done * 100 / total, 2),
+        },
         "runnable": runnable,
         "blocked": blocked,
         "human_gates": human_gates,
@@ -205,27 +229,59 @@ def plan_status(arguments: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
-def _transition(arguments: Mapping[str, Any], expected: str, next_status: str, done: bool) -> dict[str, Any]:
+def _transition(
+    arguments: Mapping[str, Any],
+    expected: str,
+    next_status: str,
+    *,
+    timestamp_field: str,
+    done: bool,
+    lifecycle_updates: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
     task_id = _required_str(arguments, "task_id")
     plan = _load(arguments)
+    _raise_if_invalid(plan)
     task = _task_by_id(plan, task_id)
-    current = plan.setdefault("task_status", {}).get(task_id, COMMITTED if task.get("done") else PENDING)
+    current = _task_status(task)
     if current != expected:
         raise ValueError(f"{task_id}: invalid lifecycle transition {current} -> {next_status}; expected {expected}")
     task["done"] = done
-    plan["task_status"][task_id] = next_status
-    _touch_and_save(arguments, plan)
-    return {"plan_id": plan["plan_id"], "task_id": task_id, "status": next_status}
+    task["status"] = next_status
+    lifecycle = _lifecycle(task)
+    lifecycle[timestamp_field] = now_utc()
+    if lifecycle_updates:
+        for key, value in lifecycle_updates.items():
+            if value is not None:
+                lifecycle[key] = value
+    task["lifecycle"] = lifecycle
+    _save(arguments, plan)
+    return {
+        "plan_id": plan["plan_id"],
+        "workplan_path": plan["workplan_path"],
+        "task_id": task_id,
+        "status": next_status,
+    }
 
 
 def _load(arguments: Mapping[str, Any]) -> dict[str, Any]:
-    plan_id = _required_str(arguments, "plan_id")
-    return load_plan(resolve_state_root(arguments), plan_id)
+    return load_workplan(arguments)
 
 
-def _touch_and_save(arguments: Mapping[str, Any], plan: dict[str, Any]) -> None:
-    plan["updated_at"] = _now()
-    save_plan(resolve_state_root(arguments), plan)
+def _load_checked(arguments: Mapping[str, Any]) -> dict[str, Any]:
+    plan = _load(arguments)
+    _raise_if_invalid(plan)
+    return plan
+
+
+def _raise_if_invalid(plan: Mapping[str, Any]) -> None:
+    validation = validate_plan(plan)
+    if validation.get("errors"):
+        codes = ", ".join(str(issue.get("code")) for issue in validation["errors"])
+        raise ValueError(f"plan validation failed: {codes}")
+
+
+def _save(arguments: Mapping[str, Any], plan: dict[str, Any]) -> None:
+    plan["workplan_path"] = save_workplan(arguments, plan)
 
 
 def _normalize_task(task: Mapping[str, Any]) -> dict[str, Any]:
@@ -234,10 +290,12 @@ def _normalize_task(task: Mapping[str, Any]) -> dict[str, Any]:
         normalized["blocked_by"] = []
     if "done" not in normalized:
         normalized["done"] = False
-    if "human_gate" in normalized:
-        normalized["human_gate"] = normalize_human_gate(normalized["human_gate"])
-    else:
-        normalized["human_gate"] = None
+    normalized["human_gate"] = normalize_human_gate(normalized.get("human_gate"))
+    status = normalize_task_status(normalized)
+    normalized["status"] = status
+    if status == RETIRED:
+        normalized["retired"] = True
+    normalized["lifecycle"] = _lifecycle(normalized)
     return normalized
 
 
@@ -277,6 +335,14 @@ def _ready_human_gates(plan: Mapping[str, Any]) -> list[str]:
     return ready
 
 
+def _task_status(task: Mapping[str, Any]) -> str:
+    return normalize_task_status(task)
+
+
+def _lifecycle(task: Mapping[str, Any]) -> dict[str, Any]:
+    return normalize_lifecycle(task.get("lifecycle"))
+
+
 def _paths_overlap(left: str, right: str) -> bool:
     left_norm = _normalize_path(left)
     right_norm = _normalize_path(right)
@@ -299,5 +365,8 @@ def _required_str(arguments: Mapping[str, Any], key: str) -> str:
     return value
 
 
-def _now() -> str:
-    return datetime.now(timezone.utc).replace(microsecond=0).isoformat().replace("+00:00", "Z")
+def _plan_id(arguments: Mapping[str, Any]) -> str:
+    value = arguments.get("plan_id")
+    if isinstance(value, str) and value:
+        return value
+    return "workplan"

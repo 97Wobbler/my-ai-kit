@@ -1,17 +1,18 @@
-"""Filesystem state backend for Autorun MCP plans."""
+"""Filesystem path helpers for Autorun MCP state."""
 
 from __future__ import annotations
 
-import json
 import os
 import tempfile
 from pathlib import Path
 from typing import Any, Mapping
 
 
-def resolve_repo_root(repo_root_arg: Any, cwd: Path | None = None) -> Path:
+def resolve_repo_root(repo_root_arg: Any, cwd: Path | None = None, *, required: bool = False) -> Path:
     cwd = (cwd or Path.cwd()).resolve()
     if repo_root_arg is None or repo_root_arg == "":
+        if required:
+            raise ValueError("repo_root is required when workplan_path is not provided")
         return cwd
     if not isinstance(repo_root_arg, str):
         raise ValueError("repo_root must be a string when provided")
@@ -21,46 +22,22 @@ def resolve_repo_root(repo_root_arg: Any, cwd: Path | None = None) -> Path:
     return path.resolve()
 
 
-def resolve_state_root(arguments: Mapping[str, Any], cwd: Path | None = None) -> Path:
+def resolve_workplan_path(arguments: Mapping[str, Any], cwd: Path | None = None) -> Path:
     cwd = (cwd or Path.cwd()).resolve()
-    state_dir = arguments.get("state_dir")
-    if state_dir is not None:
-        if not isinstance(state_dir, str):
-            raise ValueError("state_dir must be a string when provided")
-        path = Path(os.path.expanduser(state_dir))
+    explicit = arguments.get("workplan_path")
+    if explicit is not None:
+        if not isinstance(explicit, str) or not explicit:
+            raise ValueError("workplan_path must be a non-empty string when provided")
+        path = Path(os.path.expanduser(explicit))
         if not path.is_absolute():
             path = cwd / path
         return path.resolve()
-    return resolve_repo_root(arguments.get("repo_root"), cwd) / ".autorun" / "mcp"
+    return resolve_repo_root(arguments.get("repo_root"), cwd, required=True) / "workplan.yaml"
 
 
-def plan_path(state_root: Path, plan_id: str) -> Path:
-    if not plan_id or "/" in plan_id or "\\" in plan_id or plan_id in {".", ".."}:
-        raise ValueError("plan_id must be a non-empty file-safe id")
-    return state_root / "plans" / f"{plan_id}.json"
-
-
-def load_plan(state_root: Path, plan_id: str) -> dict[str, Any]:
-    path = plan_path(state_root, plan_id)
-    if not path.exists():
-        raise FileNotFoundError(f"plan not found: {plan_id}")
-    with path.open("r", encoding="utf-8") as handle:
-        data = json.load(handle)
-    if not isinstance(data, dict):
-        raise ValueError(f"plan file is not an object: {plan_id}")
-    return data
-
-
-def save_plan(state_root: Path, plan: Mapping[str, Any]) -> Path:
-    plan_id = plan.get("plan_id")
-    if not isinstance(plan_id, str):
-        raise ValueError("plan_id is required")
-
-    path = plan_path(state_root, plan_id)
+def atomic_write_text(path: Path, payload: str) -> Path:
     path.parent.mkdir(parents=True, exist_ok=True)
-    payload = json.dumps(plan, ensure_ascii=False, indent=2, sort_keys=True) + "\n"
-
-    fd, tmp_name = tempfile.mkstemp(prefix=f".{plan_id}.", suffix=".tmp", dir=str(path.parent))
+    fd, tmp_name = tempfile.mkstemp(prefix=f".{path.name}.", suffix=".tmp", dir=str(path.parent))
     try:
         with os.fdopen(fd, "w", encoding="utf-8") as handle:
             handle.write(payload)
@@ -76,8 +53,18 @@ def save_plan(state_root: Path, plan: Mapping[str, Any]) -> Path:
     return path
 
 
-def list_plan_ids(state_root: Path) -> list[str]:
-    plans_dir = state_root / "plans"
-    if not plans_dir.exists():
-        return []
-    return sorted(path.stem for path in plans_dir.glob("*.json") if path.is_file())
+def legacy_state_root(arguments: Mapping[str, Any], cwd: Path | None = None) -> Path:
+    cwd = (cwd or Path.cwd()).resolve()
+    state_dir = arguments.get("state_dir")
+    if state_dir is not None:
+        if not isinstance(state_dir, str):
+            raise ValueError("state_dir must be a string when provided")
+        path = Path(os.path.expanduser(state_dir))
+        if not path.is_absolute():
+            path = cwd / path
+        return path.resolve()
+    return resolve_repo_root(arguments.get("repo_root"), cwd) / ".autorun" / "mcp"
+
+
+def legacy_plan_state_exists(arguments: Mapping[str, Any], cwd: Path | None = None) -> bool:
+    return (legacy_state_root(arguments, cwd) / "plans").exists()

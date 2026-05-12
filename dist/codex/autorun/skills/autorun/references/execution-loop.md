@@ -9,7 +9,7 @@ RUN 모드 진입 시점마다 (첫 실행 + 세션 재개 모두):
 **0. (세션 재개 한정) workplan.yaml 발견 시 사용자 확인.** PLAN 직후 같은 세션에서 RUN으로 넘어온 게 아니라 새 세션에서 workplan.yaml을 발견했다면, 자동 진입 금지. "이전 workplan을 발견했습니다 — 재개 / 폐기 / 무시 중 어떻게 할까요?" 명시 확인 후 "재개" 응답이 있어야 아래 절차로 들어간다.
 
 1. 프로젝트 `AGENTS.md` 읽기 (있으면). `CLAUDE.md`도 있으면 보조 컨텍스트로 읽어 프로젝트 고유 용어/원칙 파악.
-2. workplan.yaml 전체 읽기. 각 태스크의 `done`, `blocked_by`, `human_gate` 상태 스캔.
+2. MCP가 있으면 `autorun_plan_status`로 루트 `workplan.yaml` 상태를 읽고, 없으면 workplan.yaml 전체를 직접 읽는다. 각 태스크의 `done`, `status`, `blocked_by`, `human_gate` 상태를 스캔.
 3. `git log --oneline -20` 확인. `chore(autorun): start workplan` 커밋이 라이프사이클 시작점, 그 이후 `<type>: <T번호>` 커밋들이 진행분. 마지막 완료된 태스크와 커밋 시점 확인.
 4. workplan에 wip 주석이 있으면 재개 지점 파악.
 5. **Codex `update_plan` 호출 (필수, 생략 금지)**: 미완료 태스크 전부를 Codex plan에 등록. 각 항목 텍스트는 `<T번호> <태스크명>` 형식, 초기 status는 `pending`. 세션 재개 시 이미 plan이 있으면 workplan과 대조해서 정합성만 맞춘다. 이 단계를 건너뛰면 루프 도는 동안 메인 세션이 진행 상태를 잃는다.
@@ -46,6 +46,7 @@ RUN 모드 진입 시점마다 (첫 실행 + 세션 재개 모두):
 
 조건:
 - `done: false`
+- `status`가 없거나 `pending`
 - `blocked_by` 내 모든 태스크가 `done: true` (빈 배열이면 자동 충족)
 - `human_gate: null`
 
@@ -157,7 +158,7 @@ spawn_agent({
 
 검증 통과한 태스크만 커밋.
 
-1. **workplan.yaml 수정**: 해당 태스크의 `done: false` → `done: true`. 필요하면 주석에 완료 노트.
+1. **workplan.yaml 수정**: MCP가 있으면 `autorun_task_mark_verified` 후 `autorun_task_mark_committed`를 호출한다. MCP가 없으면 해당 태스크의 `status`를 `committed`, `done`을 `true`, `lifecycle.committed_at`을 현재 시각으로 직접 수정한다.
 2. **관련 추적 문서 업데이트** (있다면): todo.md 체크, status.md 등.
 3. **git commit**: 태스크 1개 = 커밋 1개. 메시지 형식:
    ```

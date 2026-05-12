@@ -104,7 +104,7 @@ as-is → to-be 사이의 차이를 태스크로 쪼갠다.
 
 ## Step 6. workplan.yaml 작성
 
-**파일 위치는 고정**: 프로젝트 루트의 `workplan.yaml`. 단일 파일. 서브 디렉토리(`.workplan/`, `.autorun/` 등)에 두지 않는다. 한 저장소에 동시에 여러 workplan을 두지 않는다.
+**파일 위치는 고정**: 프로젝트 루트의 `workplan.yaml`. 단일 파일. 서브 디렉토리(`.workplan/`, `.autorun/` 등)에 두지 않는다. 한 저장소에 동시에 여러 workplan을 두지 않는다. MCP를 사용할 때도 이 파일이 durable source of truth다.
 
 **전제 조건**: PLAN 모드 진입 시점에 이미 `git rev-parse --is-inside-work-tree`로 git 저장소임을 확인했어야 한다. 안 했다면 지금 확인. 실패면 중단.
 
@@ -115,10 +115,12 @@ as-is → to-be 사이의 차이를 태스크로 쪼갠다.
 - `name`: 한 줄 이름
 - `blocked_by`: 의존 태스크 id 배열
 - `done: false`
+- `status: pending`
 - `human_gate`: null / approve / execute
 - `spec`: subagent에 그대로 전달할 상세 명세 (멀티라인)
 - `output`: 기대 산출물 경로(들)
 - `verify_checks`: 내용 검증 기준 (선택, 텍스트 산출물에만)
+- `lifecycle`: started/verified/committed 시각, worker id, commit 메타데이터 기본값
 
 이 단계에서는 파일을 디스크에 쓰되 **커밋하지 않는다.** 사용자 승인 후에 커밋한다 (Step 8).
 
@@ -129,6 +131,7 @@ workplan 저장 후 사용자에게 요약 보고:
 - phase 구조 (의존성 레벨별 그룹)
 - human_gate 지점 (있다면)
 - 예상 병렬성 / 직렬 체인
+- MCP로 생성/검증했는지, MCP 실패로 직접 YAML을 편집했는지
 
 `blocked_by: []`인 human_gate 태스크가 있으면 요약의 맨 앞에 배치한다.
 이는 RUN 진입 직후 자동 태스크와 동시에 실행 가능해지는 인간 확인 작업이다.

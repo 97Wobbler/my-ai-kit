@@ -40,6 +40,7 @@ tasks:
     blocked_by: []
     human_gate: null
     done: false
+    status: pending
     category: feat
     spec: |
       subagent에 그대로 전달할 상세 명세.
@@ -49,12 +50,19 @@ tasks:
       - 어떤 입력/출력
       구체적일수록 subagent가 정확히 구현한다.
     output: path/to/expected/output
+    lifecycle:
+      started_at: null
+      verified_at: null
+      committed_at: null
+      worker_id: null
+      commit: null
 
   - id: T02
     name: 예시 태스크 — T01에 의존
     blocked_by: [T01]
     human_gate: null
     done: false
+    status: pending
     category: feat
     spec: |
       T01의 산출물을 사용하여 다음 단계 수행.
@@ -62,14 +70,27 @@ tasks:
     verify_checks:
       - "L3 내용 검증에서 확인할 첫 번째 기준"
       - "두 번째 기준"
+    lifecycle:
+      started_at: null
+      verified_at: null
+      committed_at: null
+      worker_id: null
+      commit: null
 
   - id: T03
     name: 예시 태스크 — 선행 산출물 승인 대기
     blocked_by: [T02]
     human_gate: approve
     done: false
+    status: pending
     category: review
     spec: |
       T02의 산출물을 인간이 검토하고 승인한다.
       승인 전에는 후속 구현/적용 태스크를 진행하지 않는다.
     notes: "승인 판단 산출물은 T02처럼 human_gate: null인 선행 task에서 생성한다."
+    lifecycle:
+      started_at: null
+      verified_at: null
+      committed_at: null
+      worker_id: null
+      commit: null

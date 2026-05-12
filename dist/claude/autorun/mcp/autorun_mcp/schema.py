@@ -5,6 +5,7 @@ from __future__ import annotations
 from typing import Any, Mapping
 
 VALID_HUMAN_GATES = {None, "approve", "execute"}
+VALID_STATUSES = {"pending", "started", "verified", "committed", "retired"}
 BROAD_KEYWORDS = ("전체", "모든", "리팩토링", "마이그레이션")
 REQUIRED_TASK_FIELDS = (
     "id",
@@ -99,6 +100,27 @@ def validate_plan(plan: Mapping[str, Any]) -> dict[str, Any]:
                     human_gate=human_gate,
                 )
             )
+
+        status = task.get("status")
+        if status is not None and status not in VALID_STATUSES:
+            errors.append(
+                _issue(
+                    "invalid_status",
+                    task_id,
+                    f"{task_id}: invalid status {status!r}",
+                    status=status,
+                )
+            )
+        if status == "committed" and task.get("done") is not True:
+            errors.append(_issue("invalid_status_done", task_id, f"{task_id}: status committed requires done true"))
+        if status == "retired" and task.get("done") is not True:
+            errors.append(_issue("invalid_status_done", task_id, f"{task_id}: status retired requires done true"))
+        if status in {"pending", "started", "verified"} and task.get("done") is True:
+            errors.append(_issue("invalid_status_done", task_id, f"{task_id}: status {status} requires done false"))
+
+        lifecycle = task.get("lifecycle")
+        if lifecycle is not None and not isinstance(lifecycle, dict):
+            errors.append(_issue("invalid_lifecycle", task_id, f"{task_id}: lifecycle must be an object"))
 
         output = normalize_output(task.get("output"))
         if not output:
