@@ -12,9 +12,13 @@
 
 - 큰 작업을 dependency-aware `workplan.yaml`로 나눈 뒤, 검증과 커밋 단위로
   자동 실행하는 오케스트레이션 워크플로우입니다.
-- `0.2.2` 기준 Claude Code와 Codex CLI에 번들 MCP 서버를 함께 제공해,
-  계획 생성, 검증, task split, 실행 배치, lifecycle 상태 전이를 MCP tool로
-  관리할 수 있습니다.
+- `0.3.0` 기준 두 가지 워크플로우를 제공합니다. Full Autorun은 번들 MCP
+  서버로 계획 생성, 검증, task split, 실행 배치, lifecycle 상태 전이,
+  active-task readiness filtering, proposal-worker timeout classification,
+  advisory task-graph budgeting을 관리합니다.
+- `autorun:lite`는 작은 작업을 위한 별도 MCP-less workflow입니다. 작은
+  작업에서도 durable `workplan.yaml`, visible progress, 검증, 명시적 path
+  staging, task별 commit 규칙을 유지합니다.
 - OpenAI/Codex tool schema 변환과 호환되도록 MCP tool input schema는
   object-root 형태로 노출합니다.
 - MCP tool은 별도 숨은 plan state가 아니라 project-root `workplan.yaml`을
@@ -28,6 +32,8 @@
 
 - `autorun`: PLAN 모드에서 작업 그래프를 만들고, RUN 모드에서 실행 가능한
   작업을 project-root `workplan.yaml` state 기반으로 위임, 검증, 커밋.
+- `lite`: 작은 작업을 MCP 없이 project-root `workplan.yaml` state 기반으로
+  계획, 실행, 검증, 커밋.
 
 ### `skill-forge`
 
@@ -81,6 +87,21 @@
 
 - `my-ai-kit-feedback`: 기대 동작, 실제 동작, 사용 runtime, 사용자가 제공한
   근거를 바탕으로 privacy-conscious GitHub issue draft를 작성.
+
+### `edu-sim`
+
+- 에듀테크 정책, 기능, 사업 전략, 실험안을 한국 교사 30명 고정 페르소나에
+  전수 시뮬레이션하고, 의외 반응과 블라인드스팟 중심의 보고서를 생성합니다.
+- 현재 공개 버전은 `0.1.0`입니다.
+- 대표성 추정이나 다수 의견 요약이 아니라, 놓치기 쉬운 우려와 기회를 찾는
+  사용자 리서치 보조 워크플로우입니다.
+- 각 실행은 `runs/{ISO8601_timestamp}_{slug}/` 아래에 입력, 개별 응답 JSON,
+  에러 로그, 최종 `report.md`를 보존합니다.
+
+#### 스킬 목록
+
+- `edu-sim`: 30개 한국 교사 페르소나 응답을 수집하고
+  `report.md`로 종합.
 
 ### `prism`
 
@@ -146,7 +167,8 @@ codex
 설치합니다.
 
 Autorun MCP tools는 플러그인 설치 후 새 세션에서 노출됩니다. Codex에서는
-`/mcp`로 `autorun` 서버와 tools 상태를 확인할 수 있습니다.
+`/mcp`로 `autorun` 서버와 tools 상태를 확인할 수 있습니다. 작은 작업은
+`autorun:lite` workflow로 MCP 없이 진행할 수 있습니다.
 
 ## 저장소 구성
 

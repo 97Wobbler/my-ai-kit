@@ -30,6 +30,37 @@ meta:
   #   - "..."
   #   - "..."
 
+# Optional planning coverage. 큰/high-risk 변경에서만 채우고, 아니면 생략 가능.
+# invariants:
+#   - id: I01
+#     name: "TODO: 지켜야 할 불변식"
+#     risk: high
+#     surfaces: [S01]
+#     verification:
+#       - "TODO: 검증 기준"
+#
+# surfaces:
+#   - id: S01
+#     type: file
+#     name: "TODO: 적용 표면"
+#     locations:
+#       - path/to/file
+#
+# criteria_map:
+#   - id: C01
+#     requirement: "TODO: 요구사항"
+#     invariants: [I01]
+#     surfaces: [S01]
+#     tasks: [T01]
+#     verification:
+#       - "TODO: 검증 방법"
+#
+# not_assessed:
+#   - id: NA01
+#     area: "TODO: 아직 평가하지 못한 영역"
+#     risk: medium
+#     blocks_ready: false
+
 
 tasks:
 
@@ -39,10 +70,11 @@ tasks:
     name: 예시 태스크 — 무언가를 생성
     blocked_by: []
     human_gate: null
-    done: false
-    status: pending
-    category: feat
-    spec: |
+	    done: false
+	    status: pending
+	    category: feat
+	    estimated_size: S
+	    spec: |
       subagent에 그대로 전달할 상세 명세.
       - 무엇을 어디에 만드는가
       - 어떤 시그니처/타입/포맷
@@ -61,10 +93,11 @@ tasks:
     name: 예시 태스크 — T01에 의존
     blocked_by: [T01]
     human_gate: null
-    done: false
-    status: pending
-    category: feat
-    spec: |
+	    done: false
+	    status: pending
+	    category: feat
+	    estimated_size: S
+	    spec: |
       T01의 산출물을 사용하여 다음 단계 수행.
     output: path/to/another/output
     verify_checks:
@@ -81,10 +114,11 @@ tasks:
     name: 예시 태스크 — 선행 산출물 승인 대기
     blocked_by: [T02]
     human_gate: approve
-    done: false
-    status: pending
-    category: review
-    spec: |
+	    done: false
+	    status: pending
+	    category: review
+	    estimated_size: S
+	    spec: |
       T02의 산출물을 인간이 검토하고 승인한다.
       승인 전에는 후속 구현/적용 태스크를 진행하지 않는다.
     notes: "승인 판단 산출물은 T02처럼 human_gate: null인 선행 task에서 생성한다."

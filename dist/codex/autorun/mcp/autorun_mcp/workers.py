@@ -27,9 +27,10 @@ RUNNING = "running"
 SUCCEEDED = "succeeded"
 FAILED = "failed"
 CANCELLED = "cancelled"
+TIMED_OUT_CANCELLED = "timed_out_cancelled"
 DEFAULT_RUNTIME = "codex"
 SUPPORTED_RUNTIMES = {DEFAULT_RUNTIME}
-TERMINAL_STATUSES = {SUCCEEDED, FAILED, CANCELLED}
+TERMINAL_STATUSES = {SUCCEEDED, FAILED, CANCELLED, TIMED_OUT_CANCELLED}
 DEFAULT_ARTIFACT_SUMMARY_BYTES = 16_384
 MAX_ARTIFACT_SUMMARY_BYTES = 65_536
 
@@ -529,7 +530,7 @@ def _terminate_pid(pid: int) -> None:
 def _refresh_worker_state(state_root: Path, worker: dict[str, Any]) -> dict[str, Any]:
     status = worker.get("status")
     returncode = worker.get("returncode")
-    if status == CANCELLED:
+    if status in {CANCELLED, TIMED_OUT_CANCELLED}:
         return worker
     if isinstance(returncode, int):
         next_status = SUCCEEDED if returncode == 0 else FAILED
@@ -556,6 +557,15 @@ def _refresh_worker_state(state_root: Path, worker: dict[str, Any]) -> dict[str,
     if process is not None:
         polled = process.poll()
         if polled is None:
+            if _timeout_expired(worker):
+                _terminate_process(process)
+                worker["returncode"] = process.returncode
+                worker["status"] = TIMED_OUT_CANCELLED
+                worker["updated_at"] = _now()
+                worker["timed_out_at"] = worker["updated_at"]
+                _PROCESSES.pop(worker_id, None)
+                save_worker_state(state_root, worker)
+                return worker
             if worker.get("status") != RUNNING:
                 worker["status"] = RUNNING
                 worker["updated_at"] = _now()
@@ -569,6 +579,13 @@ def _refresh_worker_state(state_root: Path, worker: dict[str, Any]) -> dict[str,
         return worker
 
     if _pid_running(pid):
+        if _timeout_expired(worker):
+            _terminate_pid(pid)
+            worker["status"] = TIMED_OUT_CANCELLED
+            worker["updated_at"] = _now()
+            worker["timed_out_at"] = worker["updated_at"]
+            save_worker_state(state_root, worker)
+            return worker
         if worker.get("status") != RUNNING:
             worker["status"] = RUNNING
             worker["updated_at"] = _now()
@@ -579,6 +596,23 @@ def _refresh_worker_state(state_root: Path, worker: dict[str, Any]) -> dict[str,
     worker["updated_at"] = _now()
     save_worker_state(state_root, worker)
     return worker
+
+
+def _timeout_expired(worker: Mapping[str, Any]) -> bool:
+    timeout_seconds = worker.get("timeout_seconds")
+    if isinstance(timeout_seconds, bool) or not isinstance(timeout_seconds, int) or timeout_seconds <= 0:
+        return False
+    started_at = worker.get("started_at")
+    if not isinstance(started_at, str) or not started_at:
+        return False
+    try:
+        started = datetime.fromisoformat(started_at.replace("Z", "+00:00"))
+    except ValueError:
+        return False
+    if started.tzinfo is None:
+        started = started.replace(tzinfo=timezone.utc)
+    elapsed = (datetime.now(timezone.utc) - started.astimezone(timezone.utc)).total_seconds()
+    return elapsed >= timeout_seconds
 
 
 def _pid_running(pid: int) -> bool:

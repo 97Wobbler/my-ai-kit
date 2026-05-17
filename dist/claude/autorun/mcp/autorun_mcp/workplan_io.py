@@ -7,7 +7,7 @@ from datetime import date
 from datetime import datetime, timezone
 from typing import Any, Mapping
 
-from .schema import normalize_human_gate, validate_plan
+from .schema import OPTIONAL_PLAN_SECTIONS, normalize_human_gate, validate_plan
 from .state import atomic_write_text, resolve_workplan_path
 
 PENDING = "pending"
@@ -34,6 +34,9 @@ TASK_FIELD_ORDER = (
     "category",
     "estimated_size",
     "output",
+    "invariant_refs",
+    "surface_refs",
+    "criteria_refs",
     "spec",
     "verify_checks",
     "lifecycle",
@@ -65,17 +68,24 @@ def load_workplan(arguments: Mapping[str, Any]) -> dict[str, Any]:
         "meta": _json_safe(dict(meta)),
         "tasks": [_normalize_task(task) for task in tasks],
     }
+    for section in OPTIONAL_PLAN_SECTIONS:
+        value = loaded.get(section, [])
+        plan[section] = _json_safe(value) if isinstance(value, list) else value
     return plan
 
 
 def save_workplan(arguments: Mapping[str, Any], plan: Mapping[str, Any]) -> str:
     path = resolve_workplan_path(arguments)
-    normalized = {
-        "meta": plan.get("meta") if isinstance(plan.get("meta"), dict) else {},
-        "tasks": [_normalize_task(task) for task in plan.get("tasks", []) if isinstance(task, dict)]
+    normalized: dict[str, Any] = {"meta": plan.get("meta") if isinstance(plan.get("meta"), dict) else {}}
+    for section in OPTIONAL_PLAN_SECTIONS:
+        value = plan.get(section)
+        if isinstance(value, list) and value:
+            normalized[section] = _json_safe(value)
+    normalized["tasks"] = (
+        [_normalize_task(task) for task in plan.get("tasks", []) if isinstance(task, dict)]
         if isinstance(plan.get("tasks"), list)
-        else [],
-    }
+        else []
+    )
     payload = emit_workplan_yaml(normalized)
     atomic_write_text(path, payload)
     return str(path)
@@ -114,8 +124,12 @@ def export_workplan(arguments: Mapping[str, Any]) -> dict[str, Any]:
 def emit_workplan_yaml(plan: Mapping[str, Any]) -> str:
     workplan = {
         "meta": plan.get("meta") if isinstance(plan.get("meta"), dict) else {},
-        "tasks": plan.get("tasks") if isinstance(plan.get("tasks"), list) else [],
     }
+    for section in OPTIONAL_PLAN_SECTIONS:
+        value = plan.get(section)
+        if isinstance(value, list) and value:
+            workplan[section] = value
+    workplan["tasks"] = plan.get("tasks") if isinstance(plan.get("tasks"), list) else []
     return _emit_mapping(workplan, 0) + "\n"
 
 

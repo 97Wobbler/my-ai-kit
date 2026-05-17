@@ -1,6 +1,6 @@
 {
   "name": "my-ai-kit",
-  "version": "0.1.2",
+  "version": "0.1.5",
   "interface": {
     "displayName": "My AI Kit"
   },
@@ -94,6 +94,18 @@
       "source": {
         "source": "local",
         "path": "./dist/codex/my-ai-kit-feedback"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "edu-sim",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/edu-sim"
       },
       "policy": {
         "installation": "AVAILABLE",

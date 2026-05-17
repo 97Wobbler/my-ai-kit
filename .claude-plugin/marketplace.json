@@ -1,6 +1,6 @@
 {
   "name": "my-ai-kit",
-  "version": "0.1.2",
+  "version": "0.1.5",
   "owner": {
     "name": "97Wobbler"
   },
@@ -39,6 +39,10 @@
     {
       "name": "my-ai-kit-feedback",
       "source": "./dist/claude/my-ai-kit-feedback"
+    },
+    {
+      "name": "edu-sim",
+      "source": "./dist/claude/edu-sim"
     }
   ]
 }

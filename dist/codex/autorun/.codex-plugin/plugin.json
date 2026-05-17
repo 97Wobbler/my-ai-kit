@@ -1,7 +1,7 @@
 {
   "name": "autorun",
-  "version": "0.2.2",
-  "description": "Plan and execute dependency-aware coding workplans.",
+  "version": "0.3.0",
+  "description": "Plan and execute dependency-aware coding workplans with full and lite workflows.",
   "author": {
     "name": "97Wobbler",
     "url": "https://github.com/97Wobbler"
@@ -20,8 +20,8 @@
   "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Autorun",
-    "shortDescription": "Run dependency-aware coding workplans",
-    "longDescription": "Autorun turns a broad coding request into a project-root workplan.yaml, then executes runnable tasks through a controlled orchestration loop with verification and one commit per completed task.",
+    "shortDescription": "Run full or lite coding workplans",
+    "longDescription": "Autorun turns coding requests into project-root workplan.yaml state. Use full Autorun for MCP-assisted dependency-aware orchestration, or autorun:lite for small clear tasks that need durable progress, verification, and one commit per completed task.",
     "developerName": "97Wobbler",
     "category": "Productivity",
     "capabilities": [
@@ -30,7 +30,8 @@
     ],
     "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
     "defaultPrompt": [
-      "Create an autorun workplan",
+      "Create a full autorun workplan",
+      "Create an autorun:lite workplan",
       "Run the existing workplan"
     ],
     "brandColor": "#7C3AED"

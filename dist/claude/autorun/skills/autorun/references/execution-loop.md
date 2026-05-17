@@ -9,10 +9,10 @@ RUN 모드 진입 시점마다 (첫 실행 + 세션 재개 모두):
 **0. (세션 재개 한정) workplan.yaml 발견 시 사용자 확인.** PLAN 직후 같은 세션에서 RUN으로 넘어온 게 아니라 새 세션에서 workplan.yaml을 발견했다면, 자동 진입 금지. "이전 workplan을 발견했습니다 — 재개 / 폐기 / 무시 중 어떻게 할까요?" 명시 확인 후 "재개" 응답이 있어야 아래 절차로 들어간다.
 
 1. 프로젝트 `CLAUDE.md` 읽기 (있으면). 프로젝트 고유 용어/원칙 파악.
-2. MCP가 있으면 `autorun_plan_status`로 루트 `workplan.yaml` 상태를 읽고, 없으면 workplan.yaml 전체를 직접 읽는다. 각 태스크의 `done`, `status`, `blocked_by`, `human_gate` 상태를 스캔.
+2. MCP가 있으면 `autorun_plan_status`와 필요 시 `autorun_plan_refine`으로 루트 `workplan.yaml` 상태와 readiness를 읽고, 없으면 workplan.yaml 전체를 직접 읽는다. 각 태스크의 `done`, `status`, `blocked_by`, `human_gate` 상태를 스캔.
 3. `git log --oneline -20` 확인. `chore(autorun): start workplan` 커밋이 라이프사이클 시작점, 그 이후 `<type>: <T번호>` 커밋들이 진행분. 마지막 완료된 태스크와 커밋 시점 확인.
 4. workplan에 wip 주석이 있으면 재개 지점 파악.
-5. **TaskCreate 호출 (필수, 생략 금지)**: 미완료 태스크 전부를 Claude Code 네이티브 task list에 등록. 각 항목 텍스트는 `<T번호> <태스크명>` 형식, 초기 status는 `pending`. 세션 재개 시 이미 TaskList가 있으면 workplan과 대조해서 정합성만 맞춘다. 이 단계를 건너뛰면 루프 도는 동안 메인 세션이 진행 상태를 잃는다 — 예외 없음.
+5. **TaskCreate 호출 (필수, 생략 금지)**: MCP가 있으면 `autorun_progress_summary`의 `display_plan`을 우선 사용하고, 없으면 미완료 태스크 전부를 Claude Code 네이티브 task list에 등록. 각 항목 텍스트는 `<T번호> <태스크명>` 형식, 초기 status는 `pending`. 세션 재개 시 이미 TaskList가 있으면 workplan과 대조해서 정합성만 맞춘다. 이 단계를 건너뛰면 루프 도는 동안 메인 세션이 진행 상태를 잃는다 — 예외 없음.
 
 ## Step 1: DRAIN — background 잔여 수확
 
@@ -43,6 +43,8 @@ RUN 모드 진입 시점마다 (첫 실행 + 세션 재개 모두):
 `workplan.yaml`을 남긴다.
 
 ## Step 3: SCAN — 자동 실행 가능 태스크 탐색
+
+MCP가 있으면 먼저 `autorun_plan_refine`의 `ready_to_run`을 확인한다. `false`이면 `next_action`에 따라 split, metadata, assessment, human gate blocker를 해결하기 전에는 새 자동 worker를 spawn하지 않는다.
 
 조건:
 - `done: false`

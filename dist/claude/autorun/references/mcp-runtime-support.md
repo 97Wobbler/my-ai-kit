@@ -2,7 +2,7 @@
 
 Status: accepted for implementation planning.
 
-Official documentation checked: 2026-05-12.
+Official documentation checked: 2026-05-13.
 
 ## Scope
 
@@ -18,6 +18,7 @@ Claude Code official docs checked:
 
 - `https://code.claude.com/docs/en/plugins`
 - `https://code.claude.com/docs/en/plugins-reference`
+- `https://code.claude.com/docs/en/plugin-marketplaces`
 - `https://code.claude.com/docs/en/headless`
 
 Claude Code documentation explicitly supports plugin-provided MCP servers via
@@ -93,6 +94,12 @@ Autorun runtime contract. The current worker runner uses `codex exec --json`
 because the Codex official docs provide a documented non-interactive execution
 mode, explicit sandbox/approval flags, and a JSONL event stream that can be
 captured by the runner.
+
+Proposal-only planning helpers use the same Codex-first worker transport but
+remain control-plane inputs, not execution authority. Decomposition, split, and
+review workers write structured JSON artifacts outside the repository. The
+main session or MCP repair tools must validate and explicitly accept any
+proposal before `workplan.yaml` changes.
 
 Claude worker execution is deferred even though Claude headless mode is
 officially documented. A safe Claude runner still needs separate implementation

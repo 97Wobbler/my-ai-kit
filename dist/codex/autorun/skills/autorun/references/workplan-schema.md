@@ -26,9 +26,10 @@ tasks:
     blocked_by: []
     human_gate: null
     done: false
-    status: pending
-    spec: |
-      ...
+	    status: pending
+	    estimated_size: S
+	    spec: |
+	      ...
     output: [path1, path2]
     verify_checks:
       - ...
@@ -38,6 +39,12 @@ tasks:
       committed_at: null
       worker_id: null
       commit: null
+
+# Optional planning coverage sections. Old workplans without these remain valid.
+invariants: []
+surfaces: []
+criteria_map: []
+not_assessed: []
 ```
 
 ## meta 섹션
@@ -68,6 +75,7 @@ workplan 전체 맥락. 길게 쓰지 말고 한 문단씩.
 | `human_gate` | null \| string | `null`/`approve`/`execute` 중 하나. |
 | `done` | bool | 초기는 전부 `false`. 완료 시 메인이 `true`로 수정. |
 | `status` | string | `pending`/`started`/`verified`/`committed`/`retired`. 새 workplan은 `pending`으로 시작. |
+| `estimated_size` | string | S/M/L. S는 commit-sized task, M은 split하지 않는 이유가 명확한 경계값, L은 RUN 전 split 대상. |
 | `spec` | string (multiline) | subagent에 그대로 전달할 상세 명세. |
 
 ### 선택 필드
@@ -79,8 +87,28 @@ workplan 전체 맥락. 길게 쓰지 말고 한 문단씩.
 | `category` | string | feat/fix/refactor/docs/test/data 등. 참고용. |
 | `track` | string | 대규모 워크플랜에서 작업축 그룹핑 (A.1, B.2 등). |
 | `notes` | string | 디자인 결정, 주의사항, 배경 설명. |
-| `estimated_size` | string | S/M/L — 태스크 크기 감각. |
 | `lifecycle` | object | MCP/메인 세션이 쓰는 시작/검증/커밋 시각, worker id, 커밋 메타데이터. |
+| `invariant_refs` | list[string] | 이 task가 다루는 invariant id 배열. 선택. |
+| `surface_refs` | list[string] | 이 task가 다루는 surface id 배열. 선택. |
+| `criteria_refs` | list[string] | 이 task가 만족시키는 criteria_map id 배열. 선택. |
+
+## optional planning coverage 섹션
+
+큰 스펙 또는 high-risk 변경에서는 top-level optional section을 추가할 수 있다. 없으면 빈 배열로 취급한다.
+
+| 섹션 | 설명 |
+|---|---|
+| `invariants` | 요청에서 반드시 지켜야 하는 불변식. 각 항목은 `id`, `name`, `reason`, `risk`, `surfaces`, `verification`, `status`를 가질 수 있다. |
+| `surfaces` | route/file/component/job/contract/data 같은 적용 표면. 각 항목은 `id`, `type`, `name`, `locations`, `notes`를 가질 수 있다. |
+| `criteria_map` | 요구사항이 어떤 invariant, surface, task, verification에 연결되는지 나타낸다. |
+| `not_assessed` | 아직 평가하지 못한 중요 영역. `risk: high` 또는 `blocks_ready: true`는 RUN readiness를 막을 수 있다. |
+
+참조 규칙:
+- `task.invariant_refs`는 `invariants[].id`를 참조한다.
+- `task.surface_refs`는 `surfaces[].id`를 참조한다.
+- `task.criteria_refs`는 `criteria_map[].id`를 참조한다.
+- `criteria_map[].tasks`는 `tasks[].id`를 참조한다.
+- ref가 있는 task는 해당 coverage를 어떻게 확인할지 `verify_checks`에 적는다.
 
 ## 필드 상세
 

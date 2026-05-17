@@ -55,9 +55,36 @@
 as-is → to-be 사이의 차이를 태스크로 쪼갠다.
 
 **태스크 입도 기준:**
-- **하한**: 너무 잘게 쪼개면 subagent 오버헤드가 본체 작업을 초과. 한 subagent 위임 = 최소 "파일 1~2개 편집" 정도.
-- **상한**: 너무 크면 검증 불가, 실패 시 롤백 곤란. 한 태스크 = 15~30분 subagent 작업 이내가 이상적.
+- **커밋 단위**: 한 태스크는 worker가 구현하고 메인이 독립 검증한 뒤 하나의 의미 있는 커밋으로 남길 수 있는 최소 단위다.
+- **시간 예산**: 사람 기준 시간이 아니라 agent 기준으로 본다. 일반 구현 태스크는 1~5분 worker 작업을 목표로 하고, 5~10분을 넘길 것 같으면 먼저 split한다.
+- **한 가지 목적**: 하나의 태스크는 하나의 주된 behavior/docs/test/dependency 변화만 담는다. "A도 하고 B도 하고 C도"는 split 대상이다.
+- **좁은 write scope**: 파일 1~3개 정도가 기본 예산이다. 디렉터리/glob output, 여러 implementation surface, 공통 기반 작업과 대규모 rollout 결합, 핵심 런타임 파일+계약/문서+여러 test 파일 조합은 대부분 split 대상이다.
 - **원자성**: 하나의 태스크는 자기완결적 산출물을 내야 한다. 중간 상태로 남으면 다음 태스크가 시작 못 함.
+- **검증 가능성**: 메인이 짧은 L2/L3 체크로 결과를 판정할 수 있어야 한다. 검증 기준이 여러 독립 정책을 동시에 확인해야 하면 split한다.
+
+사용자가 제공한 work item, 번호 목록, bullet, ticket, 요청 과업은 final executable task가 아니라 후보 scope다. 각 후보 scope는 반드시 commit-sized task 기준으로 재평가하고, 크거나 여러 목적을 담고 있으면 더 작은 task로 분해한다.
+
+**반드시 split하는 신호:**
+- `estimated_size: L`
+- `estimated_size: M`이면서 broad spec, output 3개 초과, 또는 required behavior가 5개 초과
+- required behavior bullet이 5개 초과
+- implementation surface가 3개 이상 (예: 여러 API route group, UI surface, worker/job, data model, storage layer, external integration, generated contract)
+- 공통 helper/foundation 생성과 여러 surface rollout이 같은 task에 있음
+- behavior 변경과 contract/schema/docs 갱신이 여러 surface에 걸쳐 있음
+- output이 디렉터리나 glob으로만 표현되어 실제 write set을 숨김
+
+`autorun_plan_refine`이 `ready_to_run: false`를 반환하면 RUN에 들어가지 않는다. `next_action`이 `split_tasks`, `add_metadata`, `assess_surfaces`, `resolve_human_gate` 중 하나면 해당 blocker를 먼저 해결한다. `output` 항목을 디렉터리로 뭉치거나 파일을 빼서 warning을 없애는 것은 허용되지 않는다. 실제로 `autorun_task_split` 또는 `autorun_refine_apply`를 호출하거나 workplan을 직접 수정한 뒤 다시 validate/refine한다.
+
+### planning coverage 모델
+
+큰 스펙 또는 high-risk 변경은 태스크 그래프만으로 부족하다. 가능한 경우 아래 optional section을 채운다:
+
+- `invariants`: 지켜야 할 핵심 불변식. 예: authorization, tenant isolation, data integrity, compatibility.
+- `surfaces`: invariant가 적용되는 route/file/component/job/contract/data 영역.
+- `criteria_map`: requirement가 어떤 invariant, surface, task, verification에 연결되는지.
+- `not_assessed`: 아직 평가하지 못한 critical surface. `risk: high`이거나 `blocks_ready: true`면 MCP가 RUN readiness를 막을 수 있다.
+
+각 task에는 필요한 경우 `invariant_refs`, `surface_refs`, `criteria_refs`를 넣고, 이 ref가 있으면 `verify_checks`로 확인 방법을 명시한다.
 
 **태스크 유형 분류 (선택):**
 - 구현(feat): 새 코드 작성
@@ -120,6 +147,8 @@ as-is → to-be 사이의 차이를 태스크로 쪼갠다.
 - `spec`: subagent에 그대로 전달할 상세 명세 (멀티라인)
 - `output`: 기대 산출물 경로(들)
 - `verify_checks`: 내용 검증 기준 (선택, 텍스트 산출물에만)
+- `estimated_size`: S/M/L. 새 workplan에서는 반드시 채운다. S는 바로 실행 가능한 commit-sized task, M은 split하지 않는 이유가 spec에 명확해야 하는 경계값, L은 RUN 전 split 대상이다.
+- `invariant_refs` / `surface_refs` / `criteria_refs`: optional planning coverage 참조
 - `lifecycle`: started/verified/committed 시각, worker id, commit 메타데이터 기본값
 
 이 단계에서는 파일을 디스크에 쓰되 **커밋하지 않는다.** 사용자 승인 후에 커밋한다 (Step 8).
@@ -158,4 +187,4 @@ git commit -m "chore(autorun): start workplan — <한 줄 요약>"
 
 ## 작은 스펙 단순화
 
-5~6개 이하 태스크로 끝나는 작은 작업이면 as-is 분석과 to-be 정의를 한 문단으로 축약해도 된다. 중요한 건 **태스크 분해와 의존성 명시**다. 형식주의에 매이지 말 것.
+태스크 수가 적다고 작은 작업이라고 판단하지 않는다. 작은 작업인지 여부는 각 태스크가 commit-sized인지, write scope가 좁은지, 1~5분 agent 작업으로 독립 검증 가능한지로 판단한다. 정말 작은 스펙이면 as-is 분석과 to-be 정의를 한 문단으로 축약해도 되지만, **태스크 입도 검토와 의존성 명시**는 생략하지 않는다.

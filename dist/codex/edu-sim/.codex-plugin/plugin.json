@@ -1,0 +1,41 @@
+{
+  "name": "edu-sim",
+  "version": "0.1.0",
+  "description": "Run a 30-teacher Korean edutech persona simulation and synthesize blind spots.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "claude-code",
+    "skill",
+    "edutech",
+    "persona",
+    "research",
+    "korean"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Edu Sim",
+    "shortDescription": "Run Korean teacher persona simulations",
+    "longDescription": "Edu Sim runs all 30 fixed Korean teacher personas against a policy, product, business, or experiment proposal, then synthesizes surprises, blind spots, and decision implications into a Markdown report.",
+    "developerName": "97Wobbler",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write",
+      "Shell",
+      "Interactive"
+    ],
+    "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
+    "defaultPrompt": [
+      "Use edu-sim to simulate teacher reactions to this proposal",
+      "Use edu-sim to find blind spots in this edutech strategy"
+    ],
+    "brandColor": "#0F766E"
+  }
+}

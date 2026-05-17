@@ -8,23 +8,30 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
-from autorun_mcp import planner, workers, workplan_io
+from autorun_mcp import decompose, planner, workers, workplan_io
 from autorun_mcp.protocol import JsonRpcError, JsonRpcProtocol, TOOL_ERROR
 from autorun_mcp.state import legacy_plan_state_exists
 
 SERVER_NAME = "autorun"
-SERVER_VERSION = "0.2.2"
+SERVER_VERSION = "0.3.0"
 PROTOCOL_VERSION = "2024-11-05"
 TOOL_AUTORUN_STATUS = "autorun_status"
 TOOL_AUTORUN_PLAN_CREATE = "autorun_plan_create"
 TOOL_AUTORUN_PLAN_VALIDATE = "autorun_plan_validate"
 TOOL_AUTORUN_PLAN_REFINE = "autorun_plan_refine"
+TOOL_AUTORUN_REFINE_APPLY = "autorun_refine_apply"
+TOOL_AUTORUN_REFINE_UNTIL_READY = "autorun_refine_until_ready"
+TOOL_AUTORUN_PLAN_DECOMPOSE = "autorun_plan_decompose"
+TOOL_AUTORUN_PLAN_DECOMPOSE_COLLECT = "autorun_plan_decompose_collect"
+TOOL_AUTORUN_TASK_SPLIT_WITH_WORKER = "autorun_task_split_with_worker"
+TOOL_AUTORUN_DECOMPOSITION_REVIEW = "autorun_decomposition_review"
 TOOL_AUTORUN_TASK_SPLIT = "autorun_task_split"
 TOOL_AUTORUN_NEXT_BATCH = "autorun_next_batch"
 TOOL_AUTORUN_TASK_MARK_STARTED = "autorun_task_mark_started"
 TOOL_AUTORUN_TASK_MARK_VERIFIED = "autorun_task_mark_verified"
 TOOL_AUTORUN_TASK_MARK_COMMITTED = "autorun_task_mark_committed"
 TOOL_AUTORUN_PLAN_STATUS = "autorun_plan_status"
+TOOL_AUTORUN_PROGRESS_SUMMARY = "autorun_progress_summary"
 TOOL_AUTORUN_IMPORT_WORKPLAN = "autorun_import_workplan"
 TOOL_AUTORUN_EXPORT_WORKPLAN = "autorun_export_workplan"
 TOOL_AUTORUN_WORKER_START = "autorun_worker_start"
@@ -74,6 +81,10 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                     "state_dir": _string("Deprecated compatibility input; plan state is stored in workplan.yaml."),
                     "plan_id": _string("Deprecated compatibility id. Does not select a state file."),
                     "meta": {"type": "object"},
+                    "invariants": {"type": "array", "items": {"type": "object"}},
+                    "surfaces": {"type": "array", "items": {"type": "object"}},
+                    "criteria_map": {"type": "array", "items": {"type": "object"}},
+                    "not_assessed": {"type": "array", "items": {"type": "object"}},
                     "tasks": {"type": "array", "items": {"type": "object"}},
                     "run_policy": {"type": "object"},
                 },
@@ -86,6 +97,98 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
             _plan_tool(
                 TOOL_AUTORUN_PLAN_REFINE,
                 "Return the deterministic next planning action for a stored plan.",
+            ),
+            _tool(
+                TOOL_AUTORUN_REFINE_APPLY,
+                "Apply one explicit deterministic repair proposal to workplan.yaml.",
+                {
+                    **_plan_properties(),
+                    "proposal": {"type": "object"},
+                    "op": _string("Repair operation when proposal is omitted."),
+                    "task_id": _string("Task id for task-scoped repairs."),
+                    "not_assessed_id": _string("not_assessed id for assessment repairs."),
+                    "field": _string("Reference field for update_references repairs."),
+                    "section": _string("Section for section-scoped repairs."),
+                    "item_id": _string("Item id for section-scoped repairs."),
+                    "fields": {"type": "object"},
+                    "updates": {"type": "object"},
+                    "item": {"type": "object"},
+                    "refs": {"type": "array", "items": {"type": "string"}},
+                    "check": _string("Verification check to add."),
+                    "replacement_tasks": {"type": "array", "items": {"type": "object"}},
+                },
+            ),
+            _tool(
+                TOOL_AUTORUN_REFINE_UNTIL_READY,
+                "Run deterministic-only refinement until ready or human/model input is needed.",
+                {
+                    **_plan_properties(),
+                    "max_iterations": {
+                        "type": "integer",
+                        "description": "Maximum deterministic repair iterations. Defaults to 3.",
+                    },
+                },
+            ),
+            _tool(
+                TOOL_AUTORUN_PLAN_DECOMPOSE,
+                "Start a proposal-only Codex planning worker for a broad request.",
+                {
+                    "repo_root": _string("Repository root path for the active user project."),
+                    "artifact_dir": _string("Optional worker artifact root. Defaults to user state outside the repo."),
+                    "proposal_id": _string("Optional file-safe proposal id."),
+                    "worker_id": _string("Optional file-safe worker id."),
+                    "request": _string("Raw broad request to decompose."),
+                    "runtime": _string("Optional worker runtime. Defaults to codex."),
+                    "timeout_seconds": {"type": "integer"},
+                    "command": _string_list("Optional command override list for tests. Supports {result_path}."),
+                    "command_override": _string_list("Optional command override list for tests. Supports {result_path}."),
+                },
+                ["repo_root", "request"],
+            ),
+            _tool(
+                TOOL_AUTORUN_PLAN_DECOMPOSE_COLLECT,
+                "Collect and validate a proposal-only decomposition, split, or review worker result.",
+                {
+                    "repo_root": _string("Repository root path for the active user project."),
+                    "artifact_dir": _string("Optional worker artifact root. Defaults to user state outside the repo."),
+                    "proposal_id": _string("Optional proposal id when worker_id is omitted."),
+                    "proposal_type": _string("Optional proposal type when worker_id is omitted."),
+                    "worker_id": _string("Worker id to collect."),
+                    "max_summary_bytes": {"type": "integer"},
+                },
+                ["repo_root"],
+            ),
+            _tool(
+                TOOL_AUTORUN_TASK_SPLIT_WITH_WORKER,
+                "Start a proposal-only worker to split one oversized task.",
+                {
+                    **_plan_properties(),
+                    "artifact_dir": _string("Optional worker artifact root. Defaults to user state outside the repo."),
+                    "task_id": _string("Task id to split."),
+                    "proposal_id": _string("Optional file-safe proposal id."),
+                    "worker_id": _string("Optional file-safe worker id."),
+                    "runtime": _string("Optional worker runtime. Defaults to codex."),
+                    "timeout_seconds": {"type": "integer"},
+                    "command": _string_list("Optional command override list for tests. Supports {result_path}."),
+                    "command_override": _string_list("Optional command override list for tests. Supports {result_path}."),
+                },
+                ["repo_root", "task_id"],
+            ),
+            _tool(
+                TOOL_AUTORUN_DECOMPOSITION_REVIEW,
+                "Start a proposal-only worker to critique a plan or decomposition proposal.",
+                {
+                    **_plan_properties(),
+                    "artifact_dir": _string("Optional worker artifact root. Defaults to user state outside the repo."),
+                    "review_id": _string("Optional file-safe review id."),
+                    "worker_id": _string("Optional file-safe worker id."),
+                    "proposal": {"type": "object"},
+                    "runtime": _string("Optional worker runtime. Defaults to codex."),
+                    "timeout_seconds": {"type": "integer"},
+                    "command": _string_list("Optional command override list for tests. Supports {result_path}."),
+                    "command_override": _string_list("Optional command override list for tests. Supports {result_path}."),
+                },
+                ["repo_root"],
             ),
             _tool(
                 TOOL_AUTORUN_TASK_SPLIT,
@@ -116,6 +219,10 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
             _plan_tool(
                 TOOL_AUTORUN_PLAN_STATUS,
                 "Return progress, runnable tasks, blocked tasks, human gates, and active tasks.",
+            ),
+            _plan_tool(
+                TOOL_AUTORUN_PROGRESS_SUMMARY,
+                "Return a stable display/progress projection for runtime visible tracking.",
             ),
             _tool(
                 TOOL_AUTORUN_IMPORT_WORKPLAN,
@@ -151,7 +258,7 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                     "runtime": _string("Optional worker runtime. Defaults to codex."),
                     "timeout_seconds": {
                         "type": "integer",
-                        "description": "Optional positive timeout for callers to track.",
+                        "description": "Optional positive timeout enforced by worker status/collect refresh.",
                     },
                     "command": _string_list("Optional command override list for tests."),
                     "command_override": _string_list("Optional command override list for tests."),
@@ -211,6 +318,18 @@ def _call_tool(name: Any, arguments: Mapping[str, Any]) -> dict[str, Any]:
         return planner.plan_validate(arguments)
     if name == TOOL_AUTORUN_PLAN_REFINE:
         return planner.plan_refine(arguments)
+    if name == TOOL_AUTORUN_REFINE_APPLY:
+        return planner.refine_apply(arguments)
+    if name == TOOL_AUTORUN_REFINE_UNTIL_READY:
+        return planner.refine_until_ready(arguments)
+    if name == TOOL_AUTORUN_PLAN_DECOMPOSE:
+        return decompose.plan_decompose(arguments)
+    if name == TOOL_AUTORUN_PLAN_DECOMPOSE_COLLECT:
+        return decompose.plan_decompose_collect(arguments)
+    if name == TOOL_AUTORUN_TASK_SPLIT_WITH_WORKER:
+        return decompose.task_split_with_worker(arguments)
+    if name == TOOL_AUTORUN_DECOMPOSITION_REVIEW:
+        return decompose.decomposition_review(arguments)
     if name == TOOL_AUTORUN_TASK_SPLIT:
         return planner.task_split(arguments)
     if name == TOOL_AUTORUN_NEXT_BATCH:
@@ -223,6 +342,8 @@ def _call_tool(name: Any, arguments: Mapping[str, Any]) -> dict[str, Any]:
         return planner.task_mark_committed(arguments)
     if name == TOOL_AUTORUN_PLAN_STATUS:
         return planner.plan_status(arguments)
+    if name == TOOL_AUTORUN_PROGRESS_SUMMARY:
+        return planner.progress_summary(arguments)
     if name == TOOL_AUTORUN_IMPORT_WORKPLAN:
         return workplan_io.import_workplan(arguments)
     if name == TOOL_AUTORUN_EXPORT_WORKPLAN:

@@ -1,7 +1,7 @@
 {
   "name": "autorun",
-  "version": "0.2.2",
-  "description": "Plan and execute dependency-aware coding workplans.",
+  "version": "0.3.0",
+  "description": "Plan and execute dependency-aware coding workplans with full and lite workflows.",
   "author": {
     "name": "97Wobbler",
     "url": "https://github.com/97Wobbler"
