@@ -1,6 +1,6 @@
 {
   "name": "scribe",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Transcribe local audio with Scribe STT jobs and reconcile canonical transcripts.",
   "author": {
     "name": "97Wobbler",

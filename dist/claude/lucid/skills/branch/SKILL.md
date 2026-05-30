@@ -143,6 +143,11 @@ If the user gives a partial or mixed answer and a blocking ambiguity remains,
 ask 1-3 follow-up questions. If only non-blocking ambiguity remains, pass it to
 `brief` as non-blocking open questions.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 Plugin skill invocation is namespaced. Users may call this skill as `/lucid:branch light`, `/lucid:branch deep`, or `/lucid:branch interview`.

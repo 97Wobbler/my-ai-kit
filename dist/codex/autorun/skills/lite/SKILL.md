@@ -128,6 +128,11 @@ git commit -m "chore(autorun-lite): complete workplan - <summary>"
 
 Before reporting completion, run the checks listed in the completed task's `verify_checks`. When the change affects shared behavior, also run the smallest relevant project-level test command. If a command cannot be run, record the blocker in the final summary and leave `workplan.yaml` available for resume when needed.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 Codex invocation may appear as `$autorun:lite` for the plugin skill, or `$lite` when installed directly. Use Codex update_plan for RUN task tracking. Use spawn_agent only when the user has authorized delegation or when parallel delegation is explicitly part of the lite run. Read AGENTS.md first when present, and also read CLAUDE.md when the repository still uses it for useful project rules.

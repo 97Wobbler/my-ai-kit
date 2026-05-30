@@ -125,6 +125,11 @@ notes:
 - **Agent/skill creation** — use Claude Code's native `/agents` flow.
   Prism supplies the catalog, not agent configs.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 In Claude Code, plugin skills are invoked with the plugin namespace, for example `/prism:fetch`.

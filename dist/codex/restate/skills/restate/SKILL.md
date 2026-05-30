@@ -99,6 +99,11 @@ Understand "Add better error handling" refers to "the authentication module"
 - **Request is already crystal clear** -> Still perform restatement, but note: "This request is already very clear"
 - **Request is too vague to analyze** -> Ask: "This request is too brief. Could you provide more details?"
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 Do not use request_user_input for this skill; produce the restatement directly in the conversation.

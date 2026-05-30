@@ -112,6 +112,11 @@ Use this structure:
 - If there are no open questions of a type, write `None` for that row rather
   than deleting the section.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 Users may call this skill as `$brief` or by saying `use lucid:brief`.

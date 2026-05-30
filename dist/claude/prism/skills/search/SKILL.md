@@ -193,6 +193,11 @@ heuristic, not exact).
   If the user's question is vague, ask one clarifying question (domain?
   class? free text?) and then answer.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 In Claude Code, plugin skills are invoked with the plugin namespace, for example `/prism:search`.

@@ -1,6 +1,6 @@
 {
   "name": "my-ai-kit",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "interface": {
     "displayName": "My AI Kit"
   },
@@ -82,18 +82,6 @@
       "source": {
         "source": "local",
         "path": "./dist/codex/lucid"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "Productivity"
-    },
-    {
-      "name": "my-ai-kit-feedback",
-      "source": {
-        "source": "local",
-        "path": "./dist/codex/my-ai-kit-feedback"
       },
       "policy": {
         "installation": "AVAILABLE",

@@ -86,6 +86,11 @@ python3 <skill-forge-package-root>/scripts/compile_skill.py <spec> --target all 
 - `references/spec-format.md`
 - `references/runtime-capabilities.md`
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 Use apply_patch for manual corrections to specs, templates, or generated files. Structured user input is Plan Mode only; in Default mode, ask concise direct questions and wait.

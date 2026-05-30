@@ -1,6 +1,6 @@
 {
   "name": "restate",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Restate and verify user intent before execution.",
   "author": {
     "name": "97Wobbler",

@@ -129,6 +129,11 @@ Use `assets/subagent-prompt-template.md` as the worker prompt template.
 - `assets/workplan-template.yaml`: Starting template for a new workplan.
 - `assets/subagent-prompt-template.md`: Worker delegation prompt template.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 Codex plugin MCP exposure can differ by environment. Prefer Autorun MCP tools when they are available, but if MCP registration, startup, tool exposure, or tool execution fails, edit the same root workplan.yaml directly. Use Codex update_plan for RUN task tracking. Use spawn_agent and wait_agent for required implementation delegation. Read AGENTS.md first when present, and also read CLAUDE.md when the repository still uses it for useful project rules.

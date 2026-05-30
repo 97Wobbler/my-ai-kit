@@ -129,6 +129,11 @@ Use `assets/subagent-prompt-template.md` as the worker prompt template.
 - `assets/workplan-template.yaml`: Starting template for a new workplan.
 - `assets/subagent-prompt-template.md`: Worker delegation prompt template.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 Prefer the plugin-provided MCP server for Autorun plan creation, validation, batching, and lifecycle updates against the root workplan.yaml. Use Claude Code native progress tracking for RUN tasks. Claude Code Agent-style subagents are the required implementation mechanism. Read CLAUDE.md first when present. If MCP registration, startup, tool exposure, or tool execution fails, edit the same root workplan.yaml directly.

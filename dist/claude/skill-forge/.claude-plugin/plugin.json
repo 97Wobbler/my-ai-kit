@@ -1,6 +1,6 @@
 {
   "name": "skill-forge",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Create runtime-neutral skill specs and compile them into Claude Code and Codex CLI skills.",
   "author": {
     "name": "97Wobbler",

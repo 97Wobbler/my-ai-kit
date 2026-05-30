@@ -78,6 +78,11 @@ current.
 - Read `references/spec-format.md` for the exact frontmatter shape.
 - Read `references/runtime-capabilities.md` when choosing capability values.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 Ask clarification questions sparingly. In Plan Mode, structured user input is available; in Default mode, ask concise direct questions and wait.

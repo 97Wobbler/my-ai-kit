@@ -113,6 +113,11 @@ defined in `CLASSES.md` at the plugin root. Both `references/prism/about.md`
 and `references/prism/make.md` assume that taxonomy; the router itself does not
 need to restate it.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 In Codex, plugin skills are invoked through the installed skill name, for example `$prism`, `use prism:prism`, or a natural-language request that matches this skill.

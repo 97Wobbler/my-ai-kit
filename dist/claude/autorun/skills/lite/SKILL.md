@@ -128,6 +128,11 @@ git commit -m "chore(autorun-lite): complete workplan - <summary>"
 
 Before reporting completion, run the checks listed in the completed task's `verify_checks`. When the change affects shared behavior, also run the smallest relevant project-level test command. If a command cannot be run, record the blocker in the final summary and leave `workplan.yaml` available for resume when needed.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 Claude Code invocation is `/autorun:lite`. Use Claude Code native progress tracking for RUN tasks. Read CLAUDE.md first when present.

@@ -249,6 +249,11 @@ The skill is complete when one of these is true:
   to bounded collection only;
 - help mode has explained the collection capabilities and setup boundary.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 Namespaced plugin skill invocation may vary by runtime and installation. Use the installed Slackbox skill when selected by the runtime, or respond to natural-language Slackbox requests.

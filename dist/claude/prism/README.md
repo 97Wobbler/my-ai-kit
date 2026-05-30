@@ -5,7 +5,7 @@ domain-expert analysis agents that actually reason like experts — not by
 pretending to be one, but by loading the structured analytical
 instruments experts actually use.
 
-v0.5.8 ships a library of **742 instrument files** across 5 classes and 62
+v0.5.9 ships a library of **742 instrument files** across 5 classes and 62
 domains, all indexed by a single `catalog.yml` triage file.
 
 ## The problem with persona prompts

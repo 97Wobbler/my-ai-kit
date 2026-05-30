@@ -326,6 +326,11 @@ Before reporting completion:
 - when `requires_user_response=true`, stop before completion and end with a capped clarification packet or explicit next-action choice in chat;
 - report transcript path, quality status, review state, and next action in the final response.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 Claude Code users may invoke this skill as `/scribe:transcribe`.

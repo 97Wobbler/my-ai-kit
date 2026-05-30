@@ -324,6 +324,11 @@ Before reporting completion:
 - report whether the transcript is `draft`, `user-reviewed`, or `final`;
 - list the next required user action if high-impact ambiguity remains.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 Codex users may invoke this skill as `$canon`, `$scribe:canon`, or by saying "use scribe:canon".

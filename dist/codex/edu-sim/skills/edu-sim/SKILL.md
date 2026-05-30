@@ -156,6 +156,11 @@ python3 -m pip install PyYAML
 - Treat `report.md` as the primary output.
 - Keep `responses/P*.json`, `errors.log`, `auth_status.log`, and `input.md` in the run directory for reproducibility.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 In Codex, plugin skills are invoked through the installed skill name, for example `$edu-sim` or "use edu-sim".

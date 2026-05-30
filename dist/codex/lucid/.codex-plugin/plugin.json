@@ -1,6 +1,6 @@
 {
   "name": "lucid",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Clarify ambiguous requests into selectable branches and executable briefs.",
   "author": {
     "name": "97Wobbler",

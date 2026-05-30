@@ -610,6 +610,11 @@ Generated when exit conditions are met or MAX_ROUNDS is exhausted.
   participant→instrument mapping, or `Instrumentation: persona-only` with
   the explicit opt-out reason.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 In Codex, plugin skills are invoked through the installed skill name, for example `$debate`, `use prism:debate`, or a natural-language request that matches this skill.

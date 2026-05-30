@@ -113,6 +113,11 @@ Resume mode reads `progress.yaml`, `roadmap.yaml`, and `matrix.yaml`, then brief
 
 Session mode teaches through dialogue, not lecture. Start with why the concept exists, connect to the learner's Known Knowns and Unknown Knowns, verify understanding through graduated basic/applied/advanced problems, then wrap up by sweeping all four quadrants for confirmed transitions. Write notes and update YAML only after the learner confirms the proposed changes.
 
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
 ## Runtime Overrides
 
 In Claude Code, plugin skills are invoked with the plugin namespace, for example `/studycoach:studycoach`.
