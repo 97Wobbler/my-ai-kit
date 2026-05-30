@@ -5,7 +5,7 @@ domain-expert analysis agents that actually reason like experts — not by
 pretending to be one, but by loading the structured analytical
 instruments experts actually use.
 
-v0.5.6 ships a library of **742 instrument files** across 5 classes and 62
+v0.5.8 ships a library of **742 instrument files** across 5 classes and 62
 domains, all indexed by a single `catalog.yml` triage file.
 
 ## The problem with persona prompts
@@ -38,8 +38,8 @@ persona prompts.
 In v0.1, Prism called every instrument a "lens" — which was imprecise.
 Real instruments come in different shapes, and flattening them all into
 one template loses information. v0.2 introduced an explicit 5-class
-taxonomy; v0.3 scales it out to 657 files. See `CLASSES.md` for the full
-reference.
+taxonomy; v0.3 scaled it out to 657 files, and the current bundle has grown
+to 742 files. See `CLASSES.md` for the full reference.
 
 | Class | What it is | Examples |
 |---|---|---|
@@ -91,42 +91,33 @@ which items to load and what `usage` tag each has (`always`,
 
 ## Installation and usage
 
-Prism is a Claude Code plugin. It also includes an initial Codex Plugin
-manifest for parallel Codex support. It ships four skills
-(`search`, a proactive recommender that should be consulted
-whenever you are about to build an agent or skill; `fetch`, which
-prepares selected instruments in a form ready to hand off to a
-sub-agent; and `/prism`, the user-facing router for explaining Prism
-and creating new instruments via an interview; and `debate`, an
-instrumented multi-perspective orchestration skill) and the `library/` +
-`catalog.yml` pair that the catalog skills consume.
+Prism is distributed through the `97Wobbler/my-ai-kit` Claude Code and Codex
+CLI marketplace. It ships four skills (`search`, a proactive recommender that
+should be consulted whenever you are about to build an agent or skill;
+`fetch`, which prepares selected instruments in a form ready to hand off to a
+sub-agent; `prism`, the user-facing router for explaining Prism and creating
+new instruments via an interview; and `debate`, an instrumented
+multi-perspective orchestration skill) and the `library/` + `catalog.yml` pair
+that the catalog skills consume.
 
 ### Step 1. Install the plugin
 
 ```bash
-# Register the marketplace entry
-claude plugin marketplace add 97Wobbler/prism
+# Register the my-ai-kit marketplace
+claude plugin marketplace add 97Wobbler/my-ai-kit
 
-# Install the plugin
+# Install Prism from that marketplace
 claude plugin install prism
 ```
 
-Or clone and reference locally if you want to hack on the library or
-the skill:
-
-```bash
-git clone https://github.com/97Wobbler/prism.git
-# Then follow your plugin loader's instructions for local plugins.
-```
-
-After install, the `search`, `fetch`, `prism`, and `debate` skills should
-appear in Claude Code's skill list and the 742 files under `library/`
-are reachable via `catalog.yml`.
+After install, Claude Code exposes the skills as `/prism:search`,
+`/prism:fetch`, `/prism:prism`, and `/prism:debate`. The 742 files under
+`library/` are reachable via `catalog.yml`.
 
 For Codex, register the repository as a marketplace:
 
 ```bash
-codex plugin marketplace add 97Wobbler/prism@v0.5.6
+codex plugin marketplace add 97Wobbler/my-ai-kit
 ```
 
 Then install and enable the plugin through the Codex plugin directory:
@@ -141,18 +132,19 @@ Choose the Prism marketplace, open the Prism plugin, select
 registers the marketplace source; it does not by itself install the
 plugin bundle.
 
+In Codex, invoke the installed skills as `$search`, `$fetch`, `$prism`, and
+`$debate`, or use the namespaced form `use prism:<skill>`.
+
 For local testing, use the repository path instead:
 
 ```bash
-codex plugin marketplace add /path/to/prism
+claude plugin marketplace add /path/to/my-ai-kit
+codex plugin marketplace add /path/to/my-ai-kit
 ```
 
-The repository exposes `.agents/plugins/marketplace.json` and
-`.codex-plugin/plugin.json` at the repository root, so Codex installs the
-same `skills/`, `library/`, and `catalog.yml` that Claude Code uses. This
-is an initial compatibility layer: some skill prose still references
-Claude Code concepts such as `.claude` storage or native `/agents` flows
-and should be adapted in follow-up patches.
+The marketplace exposes generated Prism packages under `dist/claude/prism`
+and `dist/codex/prism`, so both runtimes install the same skill set,
+`library/`, and `catalog.yml`.
 
 ### Step 2. Explore the catalog and compose an agent
 
@@ -169,23 +161,35 @@ optionally following a recipe in `docs/cookbook/` (see below).
 
 A typical two-step workflow looks like this:
 
-```
-1. /prism search security lens   — browse security-related lenses
-2. /prism fetch stride owasp-top10 — prepare selected instruments for a sub-agent
+```text
+Claude Code:
+1. /prism:search security lens        — browse security-related lenses
+2. /prism:fetch stride owasp-top10    — prepare selected instruments
+
+Codex:
+1. use prism:search security lens     — browse security-related lenses
+2. use prism:fetch stride owasp-top10 — prepare selected instruments
 ```
 
-If the catalog is missing an instrument you need, invoke `/prism
-<framework name>`: the prism skill runs an interview, classifies the
+If the catalog is missing an instrument you need, invoke the `prism` skill with
+the framework name: the prism skill runs an interview, classifies the
 source into one of the 5 classes, LLM-generates the body, and saves it
 to the global (`~/.claude/prism/library/`) or project
 (`./.claude/prism/library/`) layer. The bundled `library/` layer is
 read-only.
 
-```bash
-/prism                 # overview — what Prism is and how to use it
-/prism CVSS            # specific framework → direct creation
-/prism 칸반 방식        # Korean input works; ambiguous → short interview
-/prism help            # quick reference
+```text
+Claude Code:
+/prism:prism                 # overview — what Prism is and how to use it
+/prism:prism CVSS            # specific framework -> direct creation
+/prism:prism 칸반 방식        # Korean input works; ambiguous -> short interview
+/prism:prism help            # quick reference
+
+Codex:
+$prism                       # overview
+$prism CVSS                  # specific framework -> direct creation
+use prism:prism 칸반 방식     # Korean input works; ambiguous -> short interview
+$prism help                  # quick reference
 ```
 
 ### Step 3. Run the agent on a real artifact
@@ -342,7 +346,7 @@ Prism instruments live in three layers, looked up with precedence
 **project > global > bundle**:
 
 - **Bundle** — `library/` inside the plugin checkout. Read-only; the
-  657 builtin instruments shipped with Prism. Never write here by hand.
+  742 bundled instruments shipped with Prism. Never write here by hand.
 - **Global** — `~/.claude/prism/library/`. Your personal instruments,
   available in every project on this machine.
 - **Project** — `./.claude/prism/library/`. Instruments scoped to the

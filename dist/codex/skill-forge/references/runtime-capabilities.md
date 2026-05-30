@@ -48,7 +48,8 @@ procedures.
 - If `user_questions: required` targets Codex, the Codex override must mention
   Plan Mode and Default mode behavior.
 - Generated runtime files should be checked with `compile_skill.py --check`
-  when the spec declares `outputs`.
+  when the spec declares `outputs`; pass `--project-root` unless the command is
+  already running from the intended project root.
 - If a generated file needs manual correction, copy the correction back into
   the source spec, capability mapping, runtime override, or template before
   treating the output as current.

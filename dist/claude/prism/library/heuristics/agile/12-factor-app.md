@@ -28,7 +28,7 @@ Design applications by treating the codebase, configuration, dependencies, and s
 
 ## When It Misleads
 
-- In systems where state affinity is genuinely unavoidable (certain graph algorithms, stateful protocols, game servers with client connections). 12-Factor assumes statelessness is always achievable; sometimes it is not.
+- In systems where state affinity is genuinely unavoidable (certain graph algorithms, session-bound protocols, game servers with client connections). 12-Factor assumes statelessness is always achievable; sometimes it is not.
 - For legacy or domain-specific applications where the cost of retrofitting 12-Factor discipline exceeds the operational gain (internal tools, single-instance batch processors, embedded systems).
 - When "stateless by the framework" obscures the real state problem. A stateless HTTP layer that writes to a database is still carrying state; 12-Factor does not solve the database scaling problem, only moves it.
 - In organizations where the deployment target is fixed and singular (on-premise, appliance, single data center). The principle's value is the optionality it preserves; if optionality is not valuable, the cost of discipline is wasted.

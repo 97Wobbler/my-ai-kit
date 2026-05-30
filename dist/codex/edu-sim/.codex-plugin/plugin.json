@@ -1,6 +1,6 @@
 {
   "name": "edu-sim",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Run a 30-teacher Korean edutech persona simulation and synthesize blind spots.",
   "author": {
     "name": "97Wobbler",

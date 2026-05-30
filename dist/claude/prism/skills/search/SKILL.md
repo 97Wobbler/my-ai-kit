@@ -1,6 +1,6 @@
 ---
 name: "search"
-description: "Proactive Prism catalog recommender for curated analytical instruments. Use before designing agents, skills, reviews, threat models, curricula, research plans, strategy docs, decision frameworks, or structured analysis workflows. Read-only catalog lookup; never creates, edits, or generates instruments. For creation, route to `/prism`; for loading selected instruments into subagent prompts, route to `/prism fetch`."
+description: "Proactive Prism catalog recommender for curated analytical instruments. Use before designing agents, skills, reviews, threat models, curricula, research plans, strategy docs, decision frameworks, or structured analysis workflows. Read-only catalog lookup; never creates, edits, or generates instruments. For creation, route to the `prism` skill; for loading selected instruments into subagent prompts, route to the `fetch` skill."
 ---
 
 # Search
@@ -27,7 +27,7 @@ all three storage layers Prism supports. You never write files. You never
 generate new instruments. You never draft agent configs.
 
 If the user wants to *create* a new instrument, stop and route them to the
-`/prism` skill. If the user wants to assemble instruments into an
+`prism` skill. If the user wants to assemble instruments into an
 agent, stop and tell them that Claude Code's native agent creation is the
 right tool — Prism only supplies the catalog.
 
@@ -47,7 +47,7 @@ new file or composing an agent, this is not the right skill.
 
 ## When NOT to invoke this skill
 
-- **Creating a new instrument** — that is the `/prism` skill's job. Route
+- **Creating a new instrument** — that is the `prism` skill's job. Route
   the user there. Do not draft file content yourself, even a stub.
 - **Building an agent config** — Prism is a catalog plugin, not an agent
   generator. Claude Code's native agent creation mechanism is the tool for
@@ -55,14 +55,14 @@ new file or composing an agent, this is not the right skill.
   examples once they exist, but do not write `.yml` configs.
 - **Modifying catalog entries** — one-liner edits, rewriting descriptions,
   reclassifying items: all out of scope. This skill reads only.
-- **서브에이전트에 instrument를 로드하려는 경우** — `/prism fetch` 스킬로 라우팅.
+- **서브에이전트에 instrument를 로드하려는 경우** — `fetch` 스킬로 라우팅.
 
 ## The 3-layer lookup algorithm
 
 Prism stores instruments in three layers with increasing locality:
 
 1. **Bundle layer (read-only)** — shipped with the plugin. Always read.
-   - Catalog file: `catalog.yml` at the plugin root (the ~711 bundled
+   - Catalog file: `catalog.yml` at the plugin root (the 742 bundled
      items).
    - Library files: `library/lenses/<domain>/<name>.md`,
      `library/frames/<domain>/<name>.md`, etc.
@@ -158,7 +158,8 @@ notes:
 ```
 
 Close the response with a single-line suggestion: "To create a new
-instrument, invoke `/prism`. To load instruments for a subagent, invoke `/prism fetch`."
+instrument, invoke the `prism` skill. To load instruments for a subagent,
+invoke the `fetch` skill."
 
 ## Worked examples
 

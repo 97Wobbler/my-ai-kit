@@ -36,7 +36,9 @@ differences stay explicit in runtime overrides.
    - environment-specific mechanics belong in `runtime_overrides`.
 3. Translate runtime-specific tool needs into abstract capabilities.
 4. Add `outputs` paths when generated files should be written or checked for
-   drift.
+   drift. Relative `outputs` must be project-root paths because
+   `skill-forge-compile` resolves them against `--project-root` or the current
+   working directory.
 5. Keep runtime-specific tool names out of the neutral workflow.
 6. Validate the draft against `references/spec-format.md`.
 

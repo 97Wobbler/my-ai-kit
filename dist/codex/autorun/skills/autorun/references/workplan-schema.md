@@ -26,11 +26,11 @@ tasks:
     blocked_by: []
     human_gate: null
     done: false
-	    status: pending
-	    estimated_size: S
-	    spec: |
-	      ...
+    status: pending
+    estimated_size: S
     output: [path1, path2]
+    spec: |
+      ...
     verify_checks:
       - ...
     lifecycle:
@@ -76,13 +76,13 @@ workplan 전체 맥락. 길게 쓰지 말고 한 문단씩.
 | `done` | bool | 초기는 전부 `false`. 완료 시 메인이 `true`로 수정. |
 | `status` | string | `pending`/`started`/`verified`/`committed`/`retired`. 새 workplan은 `pending`으로 시작. |
 | `estimated_size` | string | S/M/L. S는 commit-sized task, M은 split하지 않는 이유가 명확한 경계값, L은 RUN 전 split 대상. |
+| `output` | string \| list[string] | 기대 산출물 경로. 검증과 충돌 감지에 쓰임. MCP validation은 최소 1개 경로를 요구한다. |
 | `spec` | string (multiline) | subagent에 그대로 전달할 상세 명세. |
 
 ### 선택 필드
 
 | 필드 | 타입 | 설명 |
 |---|---|---|
-| `output` | string \| list[string] | 기대 산출물 경로. 검증과 충돌 감지에 쓰임. |
 | `verify_checks` | list[string] | L3 내용 검증 기준. 텍스트 산출물에만. |
 | `category` | string | feat/fix/refactor/docs/test/data 등. 참고용. |
 | `track` | string | 대규모 워크플랜에서 작업축 그룹핑 (A.1, B.2 등). |
@@ -188,7 +188,8 @@ spec: "refreshToken 함수 추가해서 토큰 갱신 구현"
 
 ### `output`
 
-기대 산출물 경로. 파일이거나 디렉토리거나 모두 가능.
+기대 산출물 경로. 파일이거나 디렉토리거나 모두 가능. 각 task에는 최소
+하나의 `output`이 있어야 한다.
 
 ```yaml
 output: src/auth/session.ts

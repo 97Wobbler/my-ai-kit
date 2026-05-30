@@ -41,6 +41,11 @@ outputs:
   codex: plugins/example/skills/codex/example/SKILL.md
 ```
 
+Relative `outputs` are project-root paths. The compiler resolves them against
+`--project-root`; when that option is omitted, it uses the current working
+directory. Relative outputs are never resolved against the installed Skill
+Forge package directory.
+
 ## Body
 
 The Markdown body is the neutral workflow and should be treated as the common
@@ -70,10 +75,12 @@ Compilation is scaffold plus guardrail:
 
 - `name` and `description` become generated skill frontmatter.
 - `capabilities` become generated runtime notes.
-- the Markdown body is copied unchanged into the `Workflow` section.
+- the Markdown body is inserted unchanged after `Runtime Notes`; include a
+  `## Workflow` heading in the body when the generated skill should have that
+  section.
 - `runtime_overrides.<target>` is copied unchanged into `Runtime Overrides`.
 - `outputs.<target>` tells the compiler where to write or check each runtime
-  file.
+  file. Relative values resolve under the project root described above.
 
 The compiler intentionally does not:
 
@@ -95,28 +102,47 @@ Use runtime overrides for environment differences that require judgment.
 
 The MVP validator accepts missing capabilities and fills conservative defaults.
 
+## Script Paths
+
+In an installed public package, first resolve the Skill Forge package root: the
+directory that contains `scripts/`, `templates/`, `references/`, and `skills/`.
+Run package-local scripts from that root or by absolute path. The examples
+below use `<skill-forge-package-root>/scripts/...` so they work outside this
+private source checkout.
+
+Maintainer-only source checkout examples may use
+`plugins/skill-forge/scripts/...` from a private source checkout's repository
+root.
+
 ## Commands
 
 Validate a spec:
 
 ```bash
-python3 plugins/skill-forge/scripts/validate_skill_spec.py <spec>
+python3 <skill-forge-package-root>/scripts/validate_skill_spec.py <spec>
 ```
 
 Compile one target to an explicit path:
 
 ```bash
-python3 plugins/skill-forge/scripts/compile_skill.py <spec> --target codex --out <path>/SKILL.md
+python3 <skill-forge-package-root>/scripts/compile_skill.py <spec> --target codex --out <path>/SKILL.md --project-root <project-root>
 ```
 
 Compile every declared target using `outputs`:
 
 ```bash
-python3 plugins/skill-forge/scripts/compile_skill.py <spec> --target all
+python3 <skill-forge-package-root>/scripts/compile_skill.py <spec> --target all --project-root <project-root>
 ```
 
 Check generated files for drift without writing:
 
 ```bash
-python3 plugins/skill-forge/scripts/compile_skill.py <spec> --target all --check
+python3 <skill-forge-package-root>/scripts/compile_skill.py <spec> --target all --check --project-root <project-root>
+```
+
+When maintaining this source checkout from the repository root, the equivalent
+maintainer-only command is:
+
+```bash
+python3 plugins/skill-forge/scripts/compile_skill.py plugins/<plugin>/specs/<skill>.skill.md --target all --project-root .
 ```

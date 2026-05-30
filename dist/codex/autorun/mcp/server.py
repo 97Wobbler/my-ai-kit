@@ -13,7 +13,7 @@ from autorun_mcp.protocol import JsonRpcError, JsonRpcProtocol, TOOL_ERROR
 from autorun_mcp.state import legacy_plan_state_exists
 
 SERVER_NAME = "autorun"
-SERVER_VERSION = "0.3.0"
+SERVER_VERSION = "0.3.1"
 PROTOCOL_VERSION = "2024-11-05"
 TOOL_AUTORUN_STATUS = "autorun_status"
 TOOL_AUTORUN_PLAN_CREATE = "autorun_plan_create"

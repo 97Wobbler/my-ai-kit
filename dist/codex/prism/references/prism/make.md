@@ -25,8 +25,8 @@ that case go straight to generation.
 - "I want to write up <framework name> as a Prism <class>"
 - "새 렌즈/프레임/모델 만들어줘"
 
-The user's entry point is `/prism {framework name}`; the router dispatches
-here once a framework name is present.
+The user's entry point is the `prism` skill with a framework name; the router
+dispatches here once a framework name is present.
 
 ## When NOT to use this workflow
 

@@ -99,7 +99,10 @@ The matrix evolves continuously. Common transitions:
 - UK -> KK: learner becomes conscious of a skill they already had.
 - KK -> KU: a claimed KK turns out to be shallow or wrong under pressure.
 
-Preserve history. Do not delete items. Mark the source item with `transitioned_to`, `transitioned_date`, and evidence. The new state lives as a fresh entry in the destination quadrant with `transitioned_from`.
+Preserve history. Do not delete items. Mark the source item with
+`transitioned_to`, `transitioned_date`, and `transition_evidence`. The new
+state lives as a fresh entry in the destination quadrant with
+`transitioned_from` and its supporting `evidence`.
 
 ## Phase Completion
 

@@ -20,8 +20,18 @@ each class, just ask — the root `CLASSES.md` has the full reference.
 
 ## Quick start
 
-- **Create a new instrument** → `/prism CVSS` or `/prism Kanban`
-- **Browse the catalog** → `/prism search`
-- **Load instruments for a subagent** → `/prism fetch`
-- **Multi-agent debate / review / ideation** → `/prism debate`
-- **Full usage reference** → `/prism help`
+Claude Code:
+
+- **Create a new instrument** -> `/prism:prism CVSS` or `/prism:prism Kanban`
+- **Browse the catalog** -> `/prism:search`
+- **Load instruments for a subagent** -> `/prism:fetch`
+- **Multi-agent debate / review / ideation** -> `/prism:debate`
+- **Full usage reference** -> `/prism:prism help`
+
+Codex:
+
+- **Create a new instrument** -> `$prism CVSS` or `use prism:prism Kanban`
+- **Browse the catalog** -> `$search` or `use prism:search`
+- **Load instruments for a subagent** -> `$fetch` or `use prism:fetch`
+- **Multi-agent debate / review / ideation** -> `$debate` or `use prism:debate`
+- **Full usage reference** -> `$prism help` or `use prism:prism help`

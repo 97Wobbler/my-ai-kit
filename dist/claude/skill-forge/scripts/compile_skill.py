@@ -11,7 +11,6 @@ from pathlib import Path
 from skill_spec import load_spec, title_from_name, validate_spec
 
 
-ROOT = Path(__file__).resolve().parents[3]
 PLUGIN_ROOT = Path(__file__).resolve().parents[1]
 
 
@@ -71,14 +70,24 @@ def yaml_string(value: str) -> str:
     return json.dumps(value, ensure_ascii=False)
 
 
-def rel(path: Path) -> str:
+def resolve_project_root(project_root: Path | None = None) -> Path:
+    return (project_root if project_root is not None else Path.cwd()).resolve()
+
+
+def resolve_output_path(path: Path, project_root: Path) -> Path:
+    return path if path.is_absolute() else project_root / path
+
+
+def rel(path: Path, project_root: Path | None = None) -> str:
+    root = resolve_project_root(project_root)
     try:
-        return path.resolve().relative_to(ROOT).as_posix()
+        return path.resolve().relative_to(root).as_posix()
     except ValueError:
         return path.as_posix()
 
 
-def compile_spec(spec_path: Path, target: str) -> str:
+def compile_spec(spec_path: Path, target: str, project_root: Path | None = None) -> str:
+    root = resolve_project_root(project_root)
     spec = load_spec(spec_path)
     errors = validate_spec(spec)
     if errors:
@@ -92,16 +101,22 @@ def compile_spec(spec_path: Path, target: str) -> str:
         name=yaml_string(spec.name),
         description=yaml_string(spec.description),
         title=title_from_name(spec.name),
-        source_path=rel(spec_path),
+        source_path=rel(spec_path, root),
         runtime_notes=runtime_notes(target, spec.capabilities),
         body=spec.body.strip(),
         runtime_overrides=override,
     ).rstrip() + "\n"
 
 
-def output_path_for(spec_path: Path, target: str, out: Path | None) -> Path:
+def output_path_for(
+    spec_path: Path,
+    target: str,
+    out: Path | None,
+    project_root: Path | None = None,
+) -> Path:
+    root = resolve_project_root(project_root)
     if out is not None:
-        return out
+        return resolve_output_path(out, root)
 
     spec = load_spec(spec_path)
     output = spec.outputs.get(target)
@@ -110,7 +125,7 @@ def output_path_for(spec_path: Path, target: str, out: Path | None) -> Path:
             f"No output path for target {target}; pass --out or set outputs.{target} in the spec"
         )
     path = Path(output)
-    return path if path.is_absolute() else ROOT / path
+    return resolve_output_path(path, root)
 
 
 def target_list(spec_path: Path, target: str) -> list[str]:
@@ -120,30 +135,37 @@ def target_list(spec_path: Path, target: str) -> list[str]:
     return [target]
 
 
-def write_or_check(spec_path: Path, target: str, out: Path | None, check: bool) -> int:
+def write_or_check(
+    spec_path: Path,
+    target: str,
+    out: Path | None,
+    check: bool,
+    project_root: Path | None = None,
+) -> int:
+    root = resolve_project_root(project_root)
     failures = 0
     for item in target_list(spec_path, target):
         try:
-            destination = output_path_for(spec_path, item, out)
-            output = compile_spec(spec_path, item)
+            destination = output_path_for(spec_path, item, out, project_root=root)
+            output = compile_spec(spec_path, item, project_root=root)
         except Exception as exc:
             print(f"ERROR: {exc}", file=sys.stderr)
             return 1
 
         if check:
             if not destination.exists():
-                print(f"MISSING: {rel(destination)}", file=sys.stderr)
+                print(f"MISSING: {rel(destination, root)}", file=sys.stderr)
                 failures += 1
                 continue
             current = destination.read_text(encoding="utf-8")
             if current != output:
-                print(f"OUTDATED: {rel(destination)}", file=sys.stderr)
+                print(f"OUTDATED: {rel(destination, root)}", file=sys.stderr)
                 failures += 1
             continue
 
         destination.parent.mkdir(parents=True, exist_ok=True)
         destination.write_text(output, encoding="utf-8")
-        print(f"wrote {rel(destination)}")
+        print(f"wrote {rel(destination, root)}")
 
     if check and failures == 0:
         print("OK: compiled skill outputs are in sync")
@@ -155,13 +177,27 @@ def main() -> int:
     parser.add_argument("spec", type=Path)
     parser.add_argument("--target", choices=("claude", "codex", "all"), required=True)
     parser.add_argument("--out", type=Path, help="output path for a single target")
+    parser.add_argument(
+        "--project-root",
+        type=Path,
+        help=(
+            "project root used to resolve relative outputs and display source "
+            "paths; defaults to the current working directory"
+        ),
+    )
     parser.add_argument("--check", action="store_true", help="verify generated output without writing")
     args = parser.parse_args()
 
     if args.target == "all" and args.out is not None:
         print("ERROR: --out cannot be used with --target all", file=sys.stderr)
         return 1
-    return write_or_check(args.spec, args.target, args.out, args.check)
+    return write_or_check(
+        args.spec,
+        args.target,
+        args.out,
+        args.check,
+        project_root=args.project_root,
+    )
 
 
 if __name__ == "__main__":

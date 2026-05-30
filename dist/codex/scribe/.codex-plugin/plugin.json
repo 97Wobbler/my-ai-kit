@@ -1,0 +1,41 @@
+{
+  "name": "scribe",
+  "version": "0.1.3",
+  "description": "Transcribe local audio with Scribe STT jobs and reconcile canonical transcripts.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "claude-code",
+    "skill",
+    "transcript",
+    "stt",
+    "canonical"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Scribe",
+    "shortDescription": "Transcribe local audio and reconcile canonical transcripts",
+    "longDescription": "Scribe provides scribe:transcribe for file-path-in local audio transcription, local STT setup/status/transcription MCP tools, background STT jobs with incremental variant outputs, and scribe:canon for comparing multiple STT transcript files from one recording, asking evidence-first clarification with provenance, producing a canonical transcript, and isolating high-impact ambiguities for user review.",
+    "developerName": "97Wobbler",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
+    "defaultPrompt": [
+      "Use scribe:transcribe on ./meeting.m4a",
+      "Transcribe this local audio file with Scribe",
+      "Use scribe:canon on these transcript files"
+    ],
+    "brandColor": "#475569"
+  }
+}

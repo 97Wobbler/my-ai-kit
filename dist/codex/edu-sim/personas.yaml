@@ -1,6 +1,7 @@
 # Edutech Teacher Persona Pool
 # 30 fixed personas for the Edutech Teacher Persona Simulator.
-# Schema and usage: see PRD.md §5 and §7.
+# Schema and usage are enforced by scripts/lib/persona_tool.py and described
+# in README.md.
 #
 # Persona ID 정책:
 # - P01 ~ P30. 재사용 금지. 폐기된 ID는 결번 처리.

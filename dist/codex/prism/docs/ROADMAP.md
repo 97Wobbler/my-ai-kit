@@ -69,7 +69,31 @@ memorable user-facing entry point.
   (create), and `/prism help` (quick reference) all flow through the same
   router, so users only have to remember one command.
 
-## v0.5.6 (Current)
+## v0.5.8 (Current)
+
+Runtime documentation alignment for the `my-ai-kit` marketplace package.
+
+- **Install docs point at `97Wobbler/my-ai-kit`.** The shipped README now
+  matches the actual public marketplace repository instead of the retired
+  standalone `97Wobbler/prism` install path.
+- **Runtime invocation examples are separated.** Claude Code examples use
+  namespaced plugin skills such as `/prism:search`, `/prism:fetch`,
+  `/prism:prism`, and `/prism:debate`; Codex examples use `$search`,
+  `$fetch`, `$prism`, `$debate`, or `use prism:<skill>`.
+- **Catalog-size claims normalized.** Shipped docs and generated skills now
+  describe the current bundled catalog: 742 instruments across 5 classes and
+  62 domains.
+- **Phase 3 maintenance guide updated.** Catalog refresh instructions now
+  point at `scripts/sync_catalog.py`, which is the current catalog generation
+  source of truth.
+
+## v0.5.7
+
+Manifest baseline before the v0.5.8 documentation cleanup. Claude and Codex
+source manifests were already aligned at `0.5.7` and pointed at the
+`97Wobbler/my-ai-kit` repository.
+
+## v0.5.6
 
 Debate defaults to instrumented execution.
 

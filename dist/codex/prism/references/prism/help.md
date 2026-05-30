@@ -1,29 +1,46 @@
 <!-- Rendering rule: Do not narrate routing or file-loading decisions to the user — render the content below directly, without meta commentary about which intent was classified or which file was opened. -->
 
-# /prism — quick reference
+# Prism quick reference
 
-## Usage
+## Claude Code
 
-- `/prism` — show what Prism is and how to use it (loads `about.md`).
-- `/prism {framework name}` — create a new instrument via a short
-  interview. Example: `/prism CVSS`, `/prism 칸반 방식`, `/prism PASTA
+- `/prism:prism` — show what Prism is and how to use it (loads `about.md`).
+- `/prism:prism {framework name}` — create a new instrument via a short
+  interview. Example: `/prism:prism CVSS`, `/prism:prism 칸반 방식`, `/prism:prism PASTA
   threat modeling`. If the request is specific, generation starts
   immediately; if it's ambiguous, expect up to 3 clarifying questions.
-- `/prism help` — this page.
+- `/prism:prism help` — this page.
+- `/prism:search security lens` — browse matching catalog entries.
+- `/prism:fetch stride owasp-top10` — prepare selected instruments for a
+  subagent prompt.
+- `/prism:debate --review path/to/doc.md` — run instrumented multi-agent review.
+
+## Codex
+
+- `$prism` or `use prism:prism` — show what Prism is and how to use it.
+- `$prism CVSS` or `use prism:prism CVSS` — create a new instrument via a
+  short interview.
+- `$prism help` or `use prism:prism help` — this page.
+- `$search security lens` or `use prism:search security lens` — browse
+  matching catalog entries.
+- `$fetch stride owasp-top10` or `use prism:fetch stride owasp-top10` —
+  prepare selected instruments for a subagent prompt.
+- `$debate --review path/to/doc.md` or `use prism:debate --review
+  path/to/doc.md` — run instrumented multi-agent review.
 
 ## For catalog browsing
 
-Use `/prism search` for queries like "what lenses exist for security?"
+Use the `search` skill for queries like "what lenses exist for security?"
 or "show me frames for product strategy".
 
 ## For loading instruments into subagents
 
-Use `/prism fetch <instrument-names>` to get a ready-made instruction
-block for subagent prompts. Example: `/prism fetch stride owasp-top10`.
+Use the `fetch` skill with one or more instrument names to get a ready-made
+instruction block for subagent prompts.
 
 ## For multi-agent debate
 
-Use `/prism debate` to have multiple agent personas analyze a document,
+Use the `debate` skill to have multiple agent personas analyze a document,
 brainstorm ideas, or converge on a solution through structured rounds.
 
 Three modes:

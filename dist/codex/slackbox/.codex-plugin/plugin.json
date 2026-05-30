@@ -1,0 +1,39 @@
+{
+  "name": "slackbox",
+  "version": "0.1.1",
+  "description": "Collect Slack channel, user, search, mention, and thread context through a local MCP workflow.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "claude-code",
+    "slack",
+    "mcp",
+    "collection"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Slackbox",
+    "shortDescription": "Collect Slack context for local workflows",
+    "longDescription": "Slackbox provides a local MCP server and routing skill for collecting Slack channel, user, search, mention, and thread context into local files. The MVP focuses on collection and retrieval, not analysis or reporting.",
+    "developerName": "97Wobbler",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Interactive",
+      "Write"
+    ],
+    "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
+    "defaultPrompt": [
+      "Use slackbox to collect Slack context",
+      "Fetch Slack channel messages for local review"
+    ],
+    "brandColor": "#4A154B"
+  }
+}

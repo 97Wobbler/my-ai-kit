@@ -2,7 +2,7 @@
 
 Status: accepted for implementation planning.
 
-Official documentation checked: 2026-05-13.
+Official documentation checked: 2026-05-30.
 
 ## Scope
 
@@ -116,14 +116,17 @@ Source layout:
   - `plugins/autorun/.mcp.claude.json`
   - `plugins/autorun/.mcp.codex.json`
 - During dist build, keep the runtime-specific packaging shape:
-  - Claude keeps inline manifest `mcpServers` and also bundles MCP code under
-    `skills/autorun/mcp/` for `${CLAUDE_PLUGIN_ROOT}` resolution.
+  - Claude keeps inline manifest `mcpServers` pointing at plugin-root
+    `mcp/server.py`, which exists in both source and dist packages. The dist
+    builder also bundles MCP code under `skills/autorun/mcp/` for package
+    compatibility with the skill-local layout.
   - Codex rewrites manifest `mcpServers` to `./.mcp.json` and copies the
     selected MCP config to package root `.mcp.json`.
 
 Claude config:
 
-- Use `${CLAUDE_PLUGIN_ROOT}` for bundled executable and reference paths.
+- Use `${CLAUDE_PLUGIN_ROOT}/mcp/server.py` for the bundled MCP executable so
+  the source manifest and dist manifest point at an existing path.
 - Use `${CLAUDE_PLUGIN_DATA}` for plugin-owned persistent runtime data.
 - Bundle through plugin root `.mcp.json` or manifest `mcpServers`, matching the
   official Claude Code plugin contract.

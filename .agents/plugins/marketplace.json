@@ -1,22 +1,10 @@
 {
   "name": "my-ai-kit",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "interface": {
     "displayName": "My AI Kit"
   },
   "plugins": [
-    {
-      "name": "stateful",
-      "source": {
-        "source": "local",
-        "path": "./dist/codex/stateful"
-      },
-      "policy": {
-        "installation": "AVAILABLE",
-        "authentication": "ON_INSTALL"
-      },
-      "category": "Productivity"
-    },
     {
       "name": "restate",
       "source": {
@@ -46,6 +34,18 @@
       "source": {
         "source": "local",
         "path": "./dist/codex/skill-forge"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "scribe",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/scribe"
       },
       "policy": {
         "installation": "AVAILABLE",
@@ -106,6 +106,18 @@
       "source": {
         "source": "local",
         "path": "./dist/codex/edu-sim"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "slackbox",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/slackbox"
       },
       "policy": {
         "installation": "AVAILABLE",

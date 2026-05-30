@@ -21,6 +21,9 @@ known_knowns:
     evidence: <what they said in diagnostic>
     added: <YYYY-MM-DD>
     transitioned_from: null
+    transitioned_to: null
+    transitioned_date: null
+    transition_evidence: null
 
 known_unknowns:
   - id: ku-001
@@ -29,8 +32,10 @@ known_unknowns:
     priority: high
     evidence: <what they said>
     added: <YYYY-MM-DD>
+    transitioned_from: null
     transitioned_to: null
     transitioned_date: null
+    transition_evidence: null
 
 unknown_knowns:
   - id: uk-001
@@ -41,6 +46,10 @@ unknown_knowns:
     added: <YYYY-MM-DD>
     realized: false
     realized_date: null
+    transitioned_from: null
+    transitioned_to: null
+    transitioned_date: null
+    transition_evidence: null
 
 unknown_unknowns:
   - id: uu-001
@@ -48,6 +57,9 @@ unknown_unknowns:
     description: <what they do not know they do not know>
     why_it_matters: <consequences of not knowing>
     estimated_impact: high
+    evidence: <what exposed this gap>
     added: <YYYY-MM-DD>
+    transitioned_from: null
     transitioned_to: null
     transitioned_date: null
+    transition_evidence: null

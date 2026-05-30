@@ -1,0 +1,41 @@
+{
+  "name": "slackbox",
+  "version": "0.1.1",
+  "description": "Collect Slack channel, user, search, mention, and thread context through a local MCP workflow.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "skills": "./skills/",
+  "userConfig": {
+    "slack_token": {
+      "type": "string",
+      "title": "Slack user token",
+      "description": "Slack user token used by Slackbox to read workspace data.",
+      "sensitive": true
+    }
+  },
+  "mcpServers": {
+    "slackbox": {
+      "command": "python3",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/mcp/server.py"
+      ],
+      "env": {
+        "SLACK_USER_TOKEN": "${user_config.slack_token}",
+        "SLACK_FETCH_DATA_DIR": "${CLAUDE_PLUGIN_DATA}/data",
+        "PYTHONPATH": "${CLAUDE_PLUGIN_ROOT}/mcp"
+      }
+    }
+  },
+  "keywords": [
+    "claude-code",
+    "codex",
+    "slack",
+    "mcp",
+    "collection"
+  ]
+}

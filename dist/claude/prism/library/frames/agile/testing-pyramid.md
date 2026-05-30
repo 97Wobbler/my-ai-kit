@@ -108,7 +108,7 @@ For any given test, classify it by answering these questions in order:
 
 4. **Brittle integration and E2E tests due to fakes/mocks confusion.**
    - **Tell**: Integration tests pass in isolation but fail in CI due to test data inconsistency or timing.
-   - **Root cause**: Using mocks (behavior doubles) for integration tests instead of fakes (stateful doubles). Mocks are fine for unit tests; fakes (test database, in-memory service) are better for integration.
+   - **Root cause**: Using mocks (behavior doubles) for integration tests instead of fakes (state-backed doubles). Mocks are fine for unit tests; fakes (test database, in-memory service) are better for integration.
    - **Fix**: Use real test doubles (test databases, test API servers) for integration tests, not mock objects.
 
 5. **Using E2E tests to compensate for missing unit coverage.**

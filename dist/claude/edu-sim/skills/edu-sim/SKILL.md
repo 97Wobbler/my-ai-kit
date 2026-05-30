@@ -58,11 +58,15 @@ Use the plugin root as the base directory. Build `slug` from the first 30 charac
 <run_dir>/input.md
 ```
 
-If creating the directory manually is inconvenient, use:
+If the simulation target already exists in a file and you want to reuse the
+implementation's slug logic, use:
 
 ```bash
-python3 scripts/lib/persona_tool.py slug <run_dir>/input.md
+python3 scripts/lib/persona_tool.py slug <input_file>
 ```
+
+This helper only reads the existing input file and prints a slug. It does not
+create the run directory or write `input.md`.
 
 ## Workflow
 

@@ -1,6 +1,6 @@
 ---
 name: "prism"
-description: "User-facing entry point for the Prism plugin. Use this skill to EXPLAIN what Prism is and to CREATE new instruments (lens / frame / model / stance / heuristic) from a named framework. Triggers on \"/prism\", \"/prism help\", \"/prism <framework>\", \"prism이 뭐야?\", \"prism 소개해줘\", \"prism 써보고싶어\", \"새 lens 만들어줘\", \"새 렌즈/프레임 만들어줘 <X>\", \"make a lens\", \"create a new prism instrument\", \"add <framework> as a frame\". NOT for browsing or looking up what already exists in the catalog — route those requests to the `search` skill instead. NOT for loading instruments into subagents — route those to the `fetch` skill."
+description: "User-facing entry point for the Prism plugin. Use this skill to EXPLAIN what Prism is and to CREATE new instruments (lens / frame / model / stance / heuristic) from a named framework. Triggers on Prism overview/help requests, \"prism이 뭐야?\", \"prism 소개해줘\", \"prism 써보고싶어\", \"새 lens 만들어줘\", \"새 렌즈/프레임 만들어줘 <X>\", \"make a lens\", \"create a new prism instrument\", \"add <framework> as a frame\". NOT for browsing or looking up what already exists in the catalog — route those requests to the `search` skill instead. NOT for loading instruments into subagents — route those to the `fetch` skill."
 ---
 
 # Prism
@@ -34,7 +34,7 @@ Classify the incoming request into exactly one of the three intents
 below. When ambiguous, default to **about** (first-contact friendliness).
 
 1. **About / explain** — the user wants to know what Prism is.
-   - Triggers: `/prism` with no arguments, "what is prism?", "prism이
+   - Triggers: Prism with no arguments, "what is prism?", "prism이
      뭐야?", "prism 소개해줘", "what does this plugin do?", "prism 써보고싶어",
      or any first-contact phrasing without a named framework.
    - Action: load `references/prism/about.md` in full and follow
@@ -42,7 +42,7 @@ below. When ambiguous, default to **about** (first-contact friendliness).
 
 2. **Create / make** — the user names a specific framework or
    methodology they want turned into a Prism instrument.
-   - Triggers: "/prism <framework name>", "create a lens for X", "add a
+   - Triggers: Prism with a framework name, "create a lens for X", "add a
      frame for Y", "새 렌즈 만들어줘 Z", "I want to add PASTA threat
      modeling", "make an instrument for <name>". The tell: there is a
      concrete framework in the request.
@@ -52,7 +52,7 @@ below. When ambiguous, default to **about** (first-contact friendliness).
      `CLASSES.md`.
 
 3. **Help / quick reference** — the user wants short usage docs.
-   - Triggers: "/prism help", "/prism usage", "how do I use prism",
+   - Triggers: Prism help or usage requests, "how do I use prism",
      "prism 사용법".
    - Action: load `references/prism/help.md` in full and render
      it to the user.
@@ -62,7 +62,7 @@ below. When ambiguous, default to **about** (first-contact friendliness).
 If the user is asking **what instruments already exist** (a lookup or
 browse request), stop here and route them to the `search` skill.
 Do not try to answer catalog queries from this router. Signals that this
-is a `search` job, not a `/prism` job:
+is a `search` job, not a Prism router job:
 
 - "what lenses exist for security?"
 - "show me the catalog", "what's in the prism catalog?"
@@ -115,5 +115,5 @@ need to restate it.
 
 ## Runtime Overrides
 
-In Claude Code, plugin skills are invoked with the plugin namespace, for example `/prism:prism`; existing user shorthand such as `/prism` may also appear in Prism documentation.
+In Claude Code, plugin skills are invoked with the plugin namespace, for example `/prism:prism`.
 Use Claude Code's native user-question flow when the save layer or instrument details are blocking.

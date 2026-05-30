@@ -1,6 +1,6 @@
 {
   "name": "my-ai-kit",
-  "version": "0.1.5",
+  "version": "0.1.7",
   "owner": {
     "name": "97Wobbler"
   },
@@ -8,10 +8,6 @@
     "description": "Personal Claude Code and Codex plugin marketplace."
   },
   "plugins": [
-    {
-      "name": "stateful",
-      "source": "./dist/claude/stateful"
-    },
     {
       "name": "restate",
       "source": "./dist/claude/restate"
@@ -23,6 +19,10 @@
     {
       "name": "skill-forge",
       "source": "./dist/claude/skill-forge"
+    },
+    {
+      "name": "scribe",
+      "source": "./dist/claude/scribe"
     },
     {
       "name": "studycoach",
@@ -43,6 +43,10 @@
     {
       "name": "edu-sim",
       "source": "./dist/claude/edu-sim"
+    },
+    {
+      "name": "slackbox",
+      "source": "./dist/claude/slackbox"
     }
   ]
 }

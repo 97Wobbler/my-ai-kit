@@ -14,7 +14,7 @@ Phase 3는 `data/pending_items.jsonl`에 있는 639개 pending 항목에 대해 
 
 ### 기본 실행 (권장)
 ```bash
-cd /path/to/prism
+cd /path/to/my-ai-kit/plugins/prism
 python3 scripts/prism_batch.py \
   --workers 5 \
   --batch-size 10 \
@@ -100,9 +100,11 @@ Haiku 4.5 기준 (2026-04 시세):
    PY
    ```
 
-3. **catalog.yml 업데이트** (수동 또는 별도 스크립트 필요):
-   생성된 md 파일들을 catalog.yml의 엔트리로 등록. 현재 이 작업을 위한
-   스크립트는 없음 — 필요 시 별도 태스크로 작성.
+3. **catalog.yml 업데이트**:
+   생성된 md 파일들을 catalog.yml의 엔트리로 등록. 현재 경로는
+   `python3 scripts/sync_catalog.py`이며, 기본값은 bundle layer
+   (`library/` + `catalog.yml`) 갱신이다. 먼저 `--dry-run` 또는 `--stats`로
+   결과를 확인한 뒤 쓰기 실행한다.
 
 4. **결과 커밋** (권장: 클래스별로 분리):
    ```bash

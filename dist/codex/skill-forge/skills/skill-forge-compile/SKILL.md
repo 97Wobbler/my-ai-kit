@@ -31,34 +31,45 @@ rewrite natural-language workflow steps into target-specific procedures.
 
 1. Locate the spec file and read `references/spec-format.md` if the format is
    unclear.
-2. Run validation:
+2. Resolve two roots before running commands:
+   - the Skill Forge package root, which contains `scripts/`, `templates/`,
+     `references/`, and `skills/`;
+   - the project root, where relative `outputs` paths should be written or
+     checked.
+   In an installed public package, use package-local script paths such as
+   `<skill-forge-package-root>/scripts/compile_skill.py`. Maintainer-only
+   source checkouts may use `plugins/skill-forge/scripts/...` from the
+   repository root.
+3. Run validation:
 
 ```bash
-python3 plugins/skill-forge/scripts/validate_skill_spec.py <spec>
+python3 <skill-forge-package-root>/scripts/validate_skill_spec.py <spec>
 ```
 
-3. Compile requested targets. If the spec declares `outputs`, prefer the
+4. Compile requested targets. If the spec declares `outputs`, prefer the
    output paths from the spec:
 
 ```bash
-python3 plugins/skill-forge/scripts/compile_skill.py <spec> --target all
+python3 <skill-forge-package-root>/scripts/compile_skill.py <spec> --target all --project-root <project-root>
 ```
 
    For one-off output paths, pass `--out` with a single target:
 
 ```bash
-python3 plugins/skill-forge/scripts/compile_skill.py <spec> --target claude --out <claude-skill-path>/SKILL.md
-python3 plugins/skill-forge/scripts/compile_skill.py <spec> --target codex --out <codex-skill-path>/SKILL.md
+python3 <skill-forge-package-root>/scripts/compile_skill.py <spec> --target claude --out <claude-skill-path>/SKILL.md --project-root <project-root>
+python3 <skill-forge-package-root>/scripts/compile_skill.py <spec> --target codex --out <codex-skill-path>/SKILL.md --project-root <project-root>
 ```
 
-4. Inspect generated output for target-specific correctness.
-5. When `outputs` are declared, verify drift before reporting completion:
+   If the command is already running from the project root, omitting
+   `--project-root` uses the current working directory.
+5. Inspect generated output for target-specific correctness.
+6. When `outputs` are declared, verify drift before reporting completion:
 
 ```bash
-python3 plugins/skill-forge/scripts/compile_skill.py <spec> --target all --check
+python3 <skill-forge-package-root>/scripts/compile_skill.py <spec> --target all --check --project-root <project-root>
 ```
 
-6. Run repository-level checks requested by the user or by the repository
+7. Run repository-level checks requested by the user or by the repository
    instructions.
 
 ## Runtime Rules

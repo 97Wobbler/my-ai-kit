@@ -12,7 +12,7 @@
 
 - 큰 작업을 dependency-aware `workplan.yaml`로 나눈 뒤, 검증과 커밋 단위로
   자동 실행하는 오케스트레이션 워크플로우입니다.
-- `0.3.0` 기준 두 가지 워크플로우를 제공합니다. Full Autorun은 번들 MCP
+- `0.3.1` 기준 두 가지 워크플로우를 제공합니다. Full Autorun은 번들 MCP
   서버로 계획 생성, 검증, task split, 실행 배치, lifecycle 상태 전이,
   active-task readiness filtering, proposal-worker timeout classification,
   advisory task-graph budgeting을 관리합니다.
@@ -21,12 +21,6 @@
   staging, task별 commit 규칙을 유지합니다.
 - OpenAI/Codex tool schema 변환과 호환되도록 MCP tool input schema는
   object-root 형태로 노출합니다.
-- MCP tool은 별도 숨은 plan state가 아니라 project-root `workplan.yaml`을
-  직접 읽고 쓰며, 이 파일이 durable source of truth입니다.
-- 막연한 "알아서 해줘"를 추적 가능한 작업 그래프로 바꾸고, 각 단계가 검증과
-  커밋으로 남도록 합니다.
-- MCP가 등록되지 않았거나 실행 환경에서 사용할 수 없으면 같은
-  project-root `workplan.yaml`을 직접 편집하는 방식으로 계속 동작합니다.
 
 #### 스킬 목록
 
@@ -41,11 +35,51 @@
   관리하기 위한 작성/컴파일 도구입니다.
 - 같은 workflow를 두 런타임에 따로 손으로 맞추는 대신, 하나의 원형을
   관리하고 런타임 차이만 명시적으로 분리합니다.
+- 현재 공개 버전은 `0.1.5`입니다.
 
 #### 스킬 목록
 
 - `skill-forge-spec`: cross-runtime skill의 원형 spec을 작성.
 - `skill-forge-compile`: spec을 Claude Code와 Codex CLI용 `SKILL.md`로 컴파일.
+
+### `scribe`
+
+- 로컬 STT로 음성 파일을 전사하고, 같은 음성에서 나온 여러 STT 전사본을
+  비교해 canonical transcript를 작성하는 기록 정리 워크플로우입니다.
+- Scribe 0.1.3 기준, 로컬 STT MCP MVP는 사용자 머신에 설치된
+  `faster-whisper`, `ffmpeg`, 모델 파일을 사용합니다. STT 모델은
+  플러그인에 포함되지 않습니다.
+- `scribe_stt_status`는 로컬 STT 의존성 상태와 간단한 설치 안내를
+  확인합니다.
+- `scribe_setup_stt`는 명시적으로 요청했을 때 MCP 서버 Python 환경에
+  누락된 Python package 의존성을 설치할 수 있습니다. `ffmpeg` 같은 OS
+  package는 시스템 package manager로 설치하도록 안내합니다.
+- `scribe_transcribe_file`은 하나의 preset으로 음성 파일을 전사하고,
+  `scribe_transcribe_variants`는 같은 음성 파일에서 1~4개의 deterministic
+  variant를 만듭니다. 긴 음성처럼 synchronous 호출이 불안정할 수 있는
+  입력은 guard가 background job API 사용을 권장합니다.
+- `scribe_transcribe_job_start`, `scribe_transcribe_job_status`,
+  `scribe_transcribe_job_collect`, `scribe_transcribe_job_cancel`은 완료된
+  variant를 점진적으로 저장하는 background STT job 흐름을 제공합니다.
+- 전사 결과는 `job.json`, `manifest.json`, `variants/<variant_id>.md`,
+  `variants/<variant_id>.json` 구조로 저장되며, `canon`은 이 manifest,
+  job directory, 또는 생성된 variant markdown을 입력으로 받을 수 있습니다.
+- `scribe:transcribe`는 음성 파일 path를 받아 안전한 기본값으로 MCP tools를
+  오케스트레이션하고, 긴 음성에 대한 기대치를 정리한 뒤 전사 결과와 다음
+  권장 작업을 반환하는 skill-first 전사 표면입니다.
+- 회의 목적, 인터뷰 주제, 제품명, 참여자, 약어 같은 upfront context가 함께
+  제공되면 해석 단서로 사용합니다. 다만 먼저 transcript variant를 비교해
+  evidence-first로 모호함을 도출하고, canonical output을 만들기 전에 전사
+  근거에서 나온 material question을 provenance와 contamination risk가 표시된
+  grouped/staged review로 묻습니다. 이전 Scribe context를 자동으로 기억하거나
+  불러오는 기능은 구현된 기능으로 설명하지 않습니다.
+
+#### 스킬 목록
+
+- `transcribe`: 음성 파일 path를 받아 로컬 STT 전사 작업을 오케스트레이션하고
+  전사 결과와 다음 권장 작업을 정리.
+- `canon`: 여러 STT 전사본을 canonical 전사, ambiguity review,
+  reconciliation ledger로 정리.
 
 ### `restate`
 
@@ -63,8 +97,6 @@
 - 모호한 요청을 실행 전에 선택 가능한 해석과 결정 옵션으로 나눕니다.
 - 선택이 끝난 뒤에는 목표, 범위, 결정, 요구사항, 성공 기준, 미결사항을 담은
   실행 브리프로 고정합니다.
-- `restate`가 하나의 이해안을 확인하는 도구라면, `lucid`는 여러 해석이
-  가능한 요청에서 선택지를 만들고 합의된 방향을 문서화하는 도구입니다.
 
 #### 스킬 목록
 
@@ -80,8 +112,6 @@
   `.claude`, 로컬 로그, transcript를 자동으로 수집하지 않습니다.
 - 최소 3단계 동의 흐름을 사용합니다: 분석 범위와 근거 출처 확인, 근거 요약과
   redaction 승인, GitHub issue 발행 전 최종 승인.
-- 기본은 요약 중심이며, 민감정보와 개인/회사/경로 정보는 issue draft에
-  포함하기 전에 redaction합니다.
 
 #### 스킬 목록
 
@@ -92,11 +122,9 @@
 
 - 에듀테크 정책, 기능, 사업 전략, 실험안을 한국 교사 30명 고정 페르소나에
   전수 시뮬레이션하고, 의외 반응과 블라인드스팟 중심의 보고서를 생성합니다.
-- 현재 공개 버전은 `0.1.0`입니다.
+- 현재 공개 버전은 `0.1.1`입니다.
 - 대표성 추정이나 다수 의견 요약이 아니라, 놓치기 쉬운 우려와 기회를 찾는
   사용자 리서치 보조 워크플로우입니다.
-- 각 실행은 `runs/{ISO8601_timestamp}_{slug}/` 아래에 입력, 개별 응답 JSON,
-  에러 로그, 최종 `report.md`를 보존합니다.
 
 #### 스킬 목록
 
@@ -109,6 +137,7 @@
   구조적인 검토와 토론을 돕습니다.
 - 막연한 "전문가처럼 봐줘" 대신, 어떤 관점과 분석 도구로 볼지 명시해
   검토의 밀도와 재현성을 높입니다.
+- 현재 공개 버전은 `0.5.8`입니다.
 
 #### 스킬 목록
 
@@ -129,22 +158,22 @@
 - `studycoach`: 학습 목표를 진단하고 Known/Unknown 매트릭스, 로드맵, 세션
   기록을 관리.
 
-### `stateful`
+### `slackbox`
 
-- 레포지토리 안에 agent state를 남겨 다음 세션이 채팅 기억에 의존하지 않고
-  복구할 수 있게 합니다.
-- 긴 작업을 여러 세션에 걸쳐 이어갈 때, "어디까지 했는지"를 다시 설명하는
-  시간을 줄이고 workplan, 결정, handoff를 파일로 남깁니다.
+- Local Slackbox mode는 로컬 stdio MCP 서버로 Slack 채널, 사용자, 검색,
+  멘션, 스레드 context를 crawl/cache/retrieval하는 플러그인입니다.
+- 현재 MVP는 제한된 범위의 수집과 로컬 조회까지만 다룹니다. 결과 해석
+  workflow는 이번 release 범위에 포함하지 않습니다.
+- Official Slack Remote MCP는 별도의 OAuth-backed 경로입니다. `/mcp` 또는
+  `codex mcp login`으로 연결하는 Slack 공식 remote MCP이며, Slackbox의
+  로컬 crawl/cache/retrieval 동작과 동일하지 않습니다.
+- 예시는 합성 값만 사용합니다: `#project-updates`, `U123EXAMPLE`,
+  `"release checklist"`.
 
 #### 스킬 목록
 
-- `stateful`: Stateful 플러그인의 라우터.
-- `stateful-init`: 현재 레포지토리에 `.stateful/`, 복구 스크립트, 런타임별
-  진입 지침을 설치.
-- `stateful-doctor`: workplan과 generated state의 정합성을 검사.
-- `stateful-close`: 다음 세션을 위한 handoff를 기록.
-- `stateful-plan`: roadmap 내용을 실행 가능한 workplan 후보로 변환.
-- `stateful-archive`: 완료된 workplan 작업을 검토하고 durable summary를 제안.
+- `slackbox`: 자연어 Slack 수집 요청을 사용 가능한 Slackbox MCP tools로
+  라우팅.
 
 ## 설치
 
@@ -152,7 +181,6 @@ Claude Code:
 
 ```bash
 claude plugin marketplace add 97Wobbler/my-ai-kit
-claude plugin install stateful@my-ai-kit
 ```
 
 Codex CLI:
@@ -163,12 +191,21 @@ codex
 /plugins
 ```
 
-마켓플레이스를 추가한 뒤 Codex 플러그인 브라우저에서 필요한 플러그인을
-설치합니다.
+마켓플레이스를 추가한 뒤 필요한 플러그인을 설치합니다.
 
 Autorun MCP tools는 플러그인 설치 후 새 세션에서 노출됩니다. Codex에서는
 `/mcp`로 `autorun` 서버와 tools 상태를 확인할 수 있습니다. 작은 작업은
 `autorun:lite` workflow로 MCP 없이 진행할 수 있습니다.
+
+Slackbox는 설치 후 새 세션에서 로컬 MCP tools를 사용합니다. 요청한 수집
+범위에 맞는 `xoxp-` Slack User OAuth Token과 읽기 권한이 필요합니다.
+Claude Code에서는 plugin sensitive configuration으로 설정하고, Codex에서는
+환경 변수 또는 MCP config로 전달합니다. 실제 token을 chat, 예시, 문서에
+붙여넣지 마세요.
+
+Slack 공식 remote MCP를 쓰려면 Claude Code에서는 `/mcp` OAuth 흐름을,
+Codex에서는 `codex mcp login <server-name>`을 사용합니다. 이 경로는
+Slackbox local mode의 로컬 수집 cache를 만들거나 조회하지 않습니다.
 
 ## 저장소 구성
 

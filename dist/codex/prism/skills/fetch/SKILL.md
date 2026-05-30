@@ -1,6 +1,6 @@
 ---
 name: "fetch"
-description: "Prepare Prism instruments for delivery to subagents, agents, or skills. Resolves instrument names to absolute paths and returns an instruction block (path table + read directives + brief summary) ready to paste into a subagent prompt. Intended as the second step after `/prism search`. Triggers on \"/prism fetch stride owasp-top10\", \"load instruments\", \"fetch instruments for my subagent\", \"instrument load\", \"attach lenses to subagent\""
+description: "Prepare Prism instruments for delivery to subagents, agents, or skills. Resolves instrument names to absolute paths and returns an instruction block (path table + read directives + brief summary) ready to paste into a subagent prompt. Intended as the second step after the `search` skill. Triggers on \"load instruments\", \"fetch instruments for my subagent\", \"instrument load\", \"attach lenses to subagent\""
 ---
 
 # Fetch
@@ -25,14 +25,14 @@ subagent can consume directly.
 
 ## Role
 
-If `/prism search` is "discover what exists," `fetch` is **"get the
+If `search` is "discover what exists," `fetch` is **"get the
 selected ones ready."**
 
 - Prepares **paths and read directives** so the subagent can actually
   open and follow the instrument procedures.
 - Does not inline instrument content — returns **absolute paths + read
   instructions + brief summary** only.
-- Typical workflow: `/prism search` to find candidates → `fetch` to
+- Typical workflow: `search` to find candidates → `fetch` to
   equip selected instruments.
 
 ## Input
@@ -120,8 +120,8 @@ notes:
 
 ## NOT this skill
 
-- **Catalog browsing/search** — use `/prism search`.
-- **Instrument creation** — use `/prism <framework>`.
+- **Catalog browsing/search** — use `search`.
+- **Instrument creation** — use `prism`.
 - **Agent/skill creation** — use Claude Code's native `/agents` flow.
   Prism supplies the catalog, not agent configs.
 

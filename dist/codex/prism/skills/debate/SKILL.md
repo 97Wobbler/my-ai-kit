@@ -69,7 +69,7 @@ passes `--persona-only` or says they want persona-only / no instruments.
 - **Participating agents**: composed from one or more of these sources:
   - Agent files in `.claude/agents/` (project or user root), if the user names them
   - Automatically composed instrument-grounded participants inferred from the target
-  - Prism instruments (all classes: `lens`, `frame`, `model`, `stance`, `heuristic`) loaded via `/prism fetch`
+  - Prism instruments (all classes: `lens`, `frame`, `model`, `stance`, `heuristic`) loaded via the `fetch` skill
 - **If no agents are specified**, infer 3-5 useful participants from the
   target and instrument set. Ask the user only when the target is too
   vague to choose meaningful participants.
@@ -87,7 +87,7 @@ Default flow:
      participant the same generic instrument unless the target genuinely
      needs a shared frame.
 2. **Fetch concrete paths and summaries.**
-   - Use `/prism fetch` semantics to resolve selected instruments to
+   - Use `fetch` semantics to resolve selected instruments to
      absolute paths and concise summaries.
    - If a path cannot be resolved, replace that instrument before
      spawning the subagent.
@@ -590,9 +590,9 @@ Generated when exit conditions are met or MAX_ROUNDS is exhausted.
 
 ## NOT this skill
 
-- **Catalog browsing** — route to `/prism search`
-- **Instrument creation** — route to `/prism`
-- **Standalone instrument loading** — route to `/prism fetch`. Debate uses search/fetch internally when preparing instrumented participants
+- **Catalog browsing** — route to `search`
+- **Instrument creation** — route to `prism`
+- **Standalone instrument loading** — route to `fetch`. Debate uses search/fetch internally when preparing instrumented participants
 - **Single-analyst sequential multi-tool analysis** — use Prism's standard 7-step workflow directly. Debate is for **multi-perspective parallel analysis + consensus/divergence** only
 
 ---
