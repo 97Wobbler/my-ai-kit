@@ -1,0 +1,19 @@
+version: 1
+profile: greenfield
+documents:
+  agents: AGENTS.md
+  claude: {{CLAUDE_PATH}}
+  vision: docs/vision.md
+  ontology: docs/ontology.md
+  architecture: docs/architecture.md
+  workflows: docs/workflows.md
+  decisions: docs/decisions.md
+  plan: docs/plan.md
+  todo: docs/todo.md
+  ideas: docs/ideas.md
+  workbench: docs/workbench
+options:
+  claude_wrapper: {{CLAUDE_WRAPPER}}
+  hooks: none
+  brownfield_writes: false
+

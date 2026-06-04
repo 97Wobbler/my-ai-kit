@@ -1,0 +1,2 @@
+"""Waypoint MCP inspector package."""
+

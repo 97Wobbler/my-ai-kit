@@ -1,0 +1,41 @@
+{
+  "name": "waypoint",
+  "version": "0.1.0",
+  "description": "Install and inspect lightweight docs-first repository waypoints.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "claude-code",
+    "skill",
+    "documentation",
+    "repository",
+    "harness"
+  ],
+  "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
+  "interface": {
+    "displayName": "Waypoint",
+    "shortDescription": "Install and inspect docs-first repo recovery harnesses",
+    "longDescription": "Waypoint creates a lightweight AGENTS.md plus visible docs harness for greenfield repositories, audits brownfield repositories without writing, and runs deterministic doctor checks for document routing, marker blocks, configured document homes, and broken local Markdown links.",
+    "developerName": "97Wobbler",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write",
+      "Interactive"
+    ],
+    "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
+    "defaultPrompt": [
+      "Initialize a Waypoint docs harness here",
+      "Run Waypoint doctor on this repo",
+      "Audit this repository with Waypoint"
+    ],
+    "brandColor": "#2563EB"
+  }
+}

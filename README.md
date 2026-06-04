@@ -168,6 +168,25 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
 - `slackbox`: 자연어 Slack 수집 요청을 사용 가능한 Slackbox MCP tools로
   라우팅.
 
+### `waypoint`
+
+- docs-first repository recovery harness를 만드는 플러그인입니다.
+- `AGENTS.md`와 visible `docs/` 문서들을 중심으로, 다음 세션이 어디에서
+  다시 시작해야 하는지 알 수 있는 waypoint를 남깁니다.
+- 현재 MVP는 greenfield 생성과 brownfield audit-only 검사를 지원합니다.
+  brownfield repository의 기존 규칙이나 문서를 덮어쓰지 않습니다.
+- `.waypoint/config.yaml`은 문서 home을 찾기 위한 locator일 뿐이며, primary
+  state는 visible docs에 둡니다.
+- 현재 공개 버전은 `0.1.0`입니다.
+
+#### 스킬 목록
+
+- `waypoint`: Waypoint workflow 라우터와 설명.
+- `init`: greenfield docs harness 생성 또는 brownfield audit-only
+  discovery.
+- `doctor`: routing, configured document homes, marker blocks, local
+  Markdown links를 read-only로 검사.
+
 ## 설치
 
 Claude Code:

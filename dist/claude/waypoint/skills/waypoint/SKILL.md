@@ -1,0 +1,74 @@
+---
+name: "waypoint"
+description: "Router and explainer for the Waypoint docs-first repository harness. Use when the user asks what Waypoint is, wants a repo recovery waypoint, wants to initialize or audit a docs harness, or mentions waypoint init or doctor."
+---
+
+# Waypoint
+
+This skill was compiled from a Skill Forge runtime-neutral spec for the
+Claude Code runtime.
+
+Source spec: private Skill Forge source (not included in distribution): `waypoint.skill.md`
+
+Do not edit this generated file directly. Update the source spec, then
+recompile and review the generated output.
+
+## Runtime Notes
+
+- Ask clarification questions only when they materially change the result.
+
+## Purpose
+
+Waypoint is a docs-first repository recovery harness. Its job is to make a
+repository easy for a later agent or human session to resume from visible files:
+
+- `AGENTS.md` as the always-loaded router;
+- optional thin runtime wrappers such as `CLAUDE.md`;
+- focused `docs/*.md` files for purpose, terms, architecture, workflows,
+  decisions, plans, todos, ideas, and workbench notes;
+- `.waypoint/config.yaml` only as a locator, not as the source of truth.
+
+Waypoint must not recreate the retired `stateful` model. It does not introduce a
+custom workplan engine, hidden primary state, mandatory hooks, or generated task
+graphs.
+
+## Route Requests
+
+Classify the user's request and route to the smallest shipped workflow:
+
+| Request | Route |
+|---|---|
+| "What is Waypoint?", "explain waypoint", "should I use it?" | Explain the docs-first harness and shipped MVP. |
+| "initialize", "install docs harness", "create AGENTS/docs" | Use `init`. |
+| "audit this repo", "brownfield", "what docs exist?" | Use `init` in brownfield audit-only mode or `doctor` if validation is requested. |
+| "doctor", "validate", "check routing", "broken docs links" | Use `doctor`. |
+| "close session", "brief next session" | Say these are planned but out of the MVP; offer to run `doctor` or produce a manual summary without claiming Waypoint has shipped close/brief skills. |
+
+## Explanation Points
+
+When explaining Waypoint, keep it concrete:
+
+- It creates a visible documentation harness for greenfield repositories.
+- It audits brownfield repositories before suggesting writes.
+- It keeps human-readable state in visible docs, not hidden tool-owned state.
+- Its MCP tools are read-only inspectors; the skill owns judgment and user
+  interaction.
+- Hooks, closeout automation, and recovery briefs are future work.
+
+## Safety Boundaries
+
+- Do not overwrite existing repository instructions.
+- Do not weaken existing safety, privacy, release, ownership, or test rules.
+- Treat brownfield repositories as audit-only in the MVP unless a future shipped
+  skill explicitly adds write/adopt behavior.
+- Ask before making durable naming, taxonomy, public documentation, security,
+  privacy, release, or irreversible migration decisions.
+
+## Feedback
+
+If this plugin behaves unexpectedly, open an issue at `97Wobbler/my-ai-kit`
+with the plugin name, runtime, expected behavior, and observed behavior.
+
+## Runtime Overrides
+
+Claude Code plugin skills are namespaced. Users may call `/waypoint:waypoint`, `/waypoint:init`, or `/waypoint:doctor`.

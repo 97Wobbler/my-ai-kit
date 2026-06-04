@@ -1,6 +1,6 @@
 {
   "name": "my-ai-kit",
-  "version": "0.1.8",
+  "version": "0.1.9",
   "owner": {
     "name": "97Wobbler"
   },
@@ -43,6 +43,10 @@
     {
       "name": "slackbox",
       "source": "./dist/claude/slackbox"
+    },
+    {
+      "name": "waypoint",
+      "source": "./dist/claude/waypoint"
     }
   ]
 }
