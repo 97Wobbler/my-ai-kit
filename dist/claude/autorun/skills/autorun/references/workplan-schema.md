@@ -38,6 +38,7 @@ tasks:
       verified_at: null
       committed_at: null
       worker_id: null
+      execution_plane: null
       commit: null
 
 # Optional planning coverage sections. Old workplans without these remain valid.
@@ -87,7 +88,7 @@ workplan 전체 맥락. 길게 쓰지 말고 한 문단씩.
 | `category` | string | feat/fix/refactor/docs/test/data 등. 참고용. |
 | `track` | string | 대규모 워크플랜에서 작업축 그룹핑 (A.1, B.2 등). |
 | `notes` | string | 디자인 결정, 주의사항, 배경 설명. |
-| `lifecycle` | object | MCP/메인 세션이 쓰는 시작/검증/커밋 시각, worker id, 커밋 메타데이터. |
+| `lifecycle` | object | MCP/메인 세션이 쓰는 시작/검증/커밋 시각, worker id, execution plane, 커밋 메타데이터. |
 | `invariant_refs` | list[string] | 이 task가 다루는 invariant id 배열. 선택. |
 | `surface_refs` | list[string] | 이 task가 다루는 surface id 배열. 선택. |
 | `criteria_refs` | list[string] | 이 task가 만족시키는 criteria_map id 배열. 선택. |
@@ -158,8 +159,13 @@ lifecycle:
   verified_at: null
   committed_at: null
   worker_id: null
+  execution_plane: null
   commit: null
 ```
+
+`lifecycle.execution_plane`은 관측용 메타데이터다. 값은 보통
+`native_subagent`, `mcp_worker`, `mixed`, `manual`, `unknown` 중 하나이며,
+MCP가 없을 때도 메인 세션이 가능한 범위에서 직접 기록한다.
 
 ### `spec`
 
@@ -247,6 +253,7 @@ tasks:
       verified_at: null
       committed_at: null
       worker_id: null
+      execution_plane: null
       commit: null
 
   - id: T02
@@ -273,6 +280,7 @@ tasks:
       verified_at: null
       committed_at: null
       worker_id: null
+      execution_plane: null
       commit: null
 
   - id: T03
@@ -296,6 +304,7 @@ tasks:
       verified_at: null
       committed_at: null
       worker_id: null
+      execution_plane: null
       commit: null
 
   - id: T04

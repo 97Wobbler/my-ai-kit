@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import signal
 import subprocess
 import tempfile
@@ -33,6 +34,9 @@ SUPPORTED_RUNTIMES = {DEFAULT_RUNTIME}
 TERMINAL_STATUSES = {SUCCEEDED, FAILED, CANCELLED, TIMED_OUT_CANCELLED}
 DEFAULT_ARTIFACT_SUMMARY_BYTES = 16_384
 MAX_ARTIFACT_SUMMARY_BYTES = 65_536
+DEFAULT_COMPACT_SUMMARY_BYTES = 2_048
+MAX_COMPACT_SUMMARY_BYTES = 8_192
+VALID_MODEL_REASONING_EFFORTS = {"minimal", "low", "medium", "high", "xhigh"}
 
 _PROCESSES: dict[str, subprocess.Popen[bytes]] = {}
 
@@ -173,6 +177,7 @@ def build_worker_state(
     workplan_path: str,
     command: Any,
     timeout_seconds: int | None,
+    model_policy: Mapping[str, Any] | None = None,
     *,
     status: str = PENDING,
     pid: int | None = None,
@@ -194,6 +199,7 @@ def build_worker_state(
         "workplan_path": workplan_path,
         "status": status,
         "command": command,
+        "model_policy": dict(model_policy or {}),
         "pid": pid,
         "started_at": started_at,
         "updated_at": updated_at,
@@ -217,6 +223,7 @@ def worker_start(arguments: Mapping[str, Any]) -> dict[str, Any]:
     prompt = _required_prompt(arguments)
     runtime = _runtime(arguments)
     timeout_seconds = _timeout_seconds(arguments)
+    model_policy = _model_policy(arguments, command_override=_command_override(arguments) is not None)
     command = _command(arguments, runtime, repo_root, prompt)
 
     paths = worker_artifact_paths(state_root, worker_id)
@@ -233,6 +240,7 @@ def worker_start(arguments: Mapping[str, Any]) -> dict[str, Any]:
         str(workplan_path),
         command,
         timeout_seconds,
+        model_policy,
         status=PENDING,
         pid=None,
         returncode=None,
@@ -283,16 +291,25 @@ def worker_collect(arguments: Mapping[str, Any]) -> dict[str, Any]:
     worker = load_worker_state(state_root, worker_id)
     refreshed = _refresh_worker_state(state_root, worker)
     paths = worker_artifact_paths(state_root, worker_id)
-    summaries = _artifact_summaries(paths, _artifact_summary_limit(arguments))
+    include_artifacts = _include_artifacts(arguments)
+    compact = _compact_artifact_summary(paths, _compact_summary_limit(arguments))
 
     result = _worker_result(refreshed)
     result["state"] = dict(refreshed)
     result["artifact_paths"] = _string_artifact_paths(paths)
-    result["artifact_summaries"] = summaries
-    result["stdout_summary"] = summaries["stdout"]
-    result["stderr_summary"] = summaries["stderr"]
-    result["final_summary"] = summaries["final"]
-    result["result_summary"] = summaries["result"]
+    result["compact_summary"] = compact
+    result["artifact_summaries_compact"] = compact["artifacts"]
+    result["stdout_summary"] = compact["artifacts"]["stdout"]
+    result["stderr_summary"] = compact["artifacts"]["stderr"]
+    result["final_summary"] = compact["artifacts"]["final"]
+    result["result_summary"] = compact["artifacts"]["result"]
+    if include_artifacts:
+        summaries = _artifact_summaries(paths, _artifact_summary_limit(arguments))
+        result["artifact_summaries"] = summaries
+        result["stdout_summary"] = summaries["stdout"]
+        result["stderr_summary"] = summaries["stderr"]
+        result["final_summary"] = summaries["final"]
+        result["result_summary"] = summaries["result"]
     return result
 
 
@@ -436,7 +453,15 @@ def _command(arguments: Mapping[str, Any], runtime: str, repo_root: Path, prompt
     if override is not None:
         return override
     if runtime == DEFAULT_RUNTIME:
-        return ["codex", "exec", "--json", "-C", str(repo_root), "-"]
+        command = ["codex", "exec", "--json", "-C", str(repo_root)]
+        model = _optional_non_empty_str(arguments, "model")
+        effort = _optional_model_reasoning_effort(arguments)
+        if model:
+            command.extend(["--model", model])
+        if effort:
+            command.extend(["-c", f'model_reasoning_effort="{effort}"'])
+        command.append("-")
+        return command
     raise ValueError(f"unsupported worker runtime: {runtime}")
 
 
@@ -466,6 +491,58 @@ def _artifact_summary_limit(arguments: Mapping[str, Any]) -> int:
     return min(value, MAX_ARTIFACT_SUMMARY_BYTES)
 
 
+def _compact_summary_limit(arguments: Mapping[str, Any]) -> int:
+    value = arguments.get("compact_summary_bytes")
+    if value is None:
+        return DEFAULT_COMPACT_SUMMARY_BYTES
+    if isinstance(value, bool) or not isinstance(value, int):
+        raise ValueError("compact_summary_bytes must be an integer when provided")
+    if value <= 0:
+        raise ValueError("compact_summary_bytes must be greater than zero when provided")
+    return min(value, MAX_COMPACT_SUMMARY_BYTES)
+
+
+def _include_artifacts(arguments: Mapping[str, Any]) -> bool:
+    value = arguments.get("include_artifacts", False)
+    if not isinstance(value, bool):
+        raise ValueError("include_artifacts must be a boolean when provided")
+    return value
+
+
+def _optional_non_empty_str(arguments: Mapping[str, Any], field: str) -> str | None:
+    value = arguments.get(field)
+    if value is None or value == "":
+        return None
+    if not isinstance(value, str):
+        raise ValueError(f"{field} must be a string when provided")
+    stripped = value.strip()
+    if not stripped:
+        return None
+    return stripped
+
+
+def _optional_model_reasoning_effort(arguments: Mapping[str, Any]) -> str | None:
+    effort = _optional_non_empty_str(arguments, "model_reasoning_effort")
+    if effort is None:
+        return None
+    normalized = effort.lower()
+    if normalized not in VALID_MODEL_REASONING_EFFORTS:
+        allowed = ", ".join(sorted(VALID_MODEL_REASONING_EFFORTS))
+        raise ValueError(f"model_reasoning_effort must be one of: {allowed}")
+    return normalized
+
+
+def _model_policy(arguments: Mapping[str, Any], *, command_override: bool) -> dict[str, Any]:
+    model = _optional_non_empty_str(arguments, "model")
+    effort = _optional_model_reasoning_effort(arguments)
+    return {
+        "model": model,
+        "model_reasoning_effort": effort,
+        "source": "explicit" if model or effort else "inherited",
+        "applied_to_command": bool((model or effort) and not command_override),
+    }
+
+
 def _string_artifact_paths(paths: Mapping[str, Path]) -> dict[str, str]:
     artifact_paths = {name: str(path) for name, path in paths.items()}
     artifact_paths["stdout_path"] = artifact_paths["events_path"]
@@ -479,6 +556,137 @@ def _artifact_summaries(paths: Mapping[str, Path], limit: int) -> dict[str, dict
         "final": _text_artifact_summary(paths["final_path"], limit),
         "result": _text_artifact_summary(paths["result_path"], limit),
     }
+
+
+def _compact_artifact_summary(paths: Mapping[str, Path], limit: int) -> dict[str, Any]:
+    stdout_tail = _text_tail(paths["events_path"], limit)
+    stderr_tail = _text_tail(paths["stderr_path"], min(limit, 1024))
+    final_tail = _text_tail(paths["final_path"], limit)
+    result_tail = _text_tail(paths["result_path"], limit)
+    final_text = final_tail["text"] or _extract_final_message(paths["events_path"], limit) or result_tail["text"] or stdout_tail["text"]
+    combined = "\n".join(part for part in [final_text, result_tail["text"], stdout_tail["text"]] if part)
+    return {
+        "mode": "compact",
+        "final_text": final_text,
+        "self_check": _extract_self_check(combined),
+        "changed_paths": _extract_changed_paths(combined),
+        "stderr_tail": stderr_tail["text"],
+        "artifacts": {
+            "stdout": _compact_text_artifact_summary(paths["events_path"], stdout_tail),
+            "stderr": _compact_text_artifact_summary(paths["stderr_path"], stderr_tail),
+            "final": _compact_text_artifact_summary(paths["final_path"], final_tail),
+            "result": _compact_text_artifact_summary(paths["result_path"], result_tail),
+        },
+    }
+
+
+def _compact_text_artifact_summary(path: Path, tail: Mapping[str, Any]) -> dict[str, Any]:
+    return {
+        "path": str(path),
+        "exists": tail["exists"],
+        "is_file": tail.get("is_file"),
+        "size_bytes": tail.get("size_bytes"),
+        "text": tail.get("text", ""),
+        "truncated": tail.get("truncated", False),
+        "compact": True,
+    }
+
+
+def _text_tail(path: Path, limit: int) -> dict[str, Any]:
+    summary: dict[str, Any] = {
+        "path": str(path),
+        "exists": path.exists(),
+        "text": "",
+        "truncated": False,
+    }
+    if not summary["exists"]:
+        return summary
+    if not path.is_file():
+        summary["is_file"] = False
+        return summary
+    size = path.stat().st_size
+    summary["is_file"] = True
+    summary["size_bytes"] = size
+    if size <= limit:
+        data = path.read_bytes()
+    else:
+        with path.open("rb") as handle:
+            handle.seek(-limit, os.SEEK_END)
+            data = handle.read(limit)
+        summary["truncated"] = True
+        summary["omitted_bytes"] = size - limit
+    summary["text"] = data.decode("utf-8", errors="replace")
+    return summary
+
+
+def _extract_final_message(events_path: Path, limit: int) -> str:
+    if not events_path.exists() or not events_path.is_file():
+        return ""
+    final = ""
+    try:
+        with events_path.open("r", encoding="utf-8", errors="replace") as handle:
+            for line in handle:
+                try:
+                    event = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                text = _agent_text_from_event(event)
+                if text:
+                    final = text
+    except OSError:
+        return ""
+    if len(final.encode("utf-8")) <= limit:
+        return final
+    data = final.encode("utf-8")[-limit:]
+    return data.decode("utf-8", errors="replace")
+
+
+def _agent_text_from_event(event: Mapping[str, Any]) -> str:
+    item = event.get("item") if isinstance(event.get("item"), dict) else {}
+    if item.get("type") == "agent_message" and isinstance(item.get("text"), str):
+        return item["text"]
+    if event.get("type") == "item.completed" and isinstance(item, dict):
+        if item.get("type") == "agent_message" and isinstance(item.get("text"), str):
+            return item["text"]
+    payload = event.get("payload") if isinstance(event.get("payload"), dict) else {}
+    if isinstance(payload.get("text"), str):
+        return payload["text"]
+    return ""
+
+
+def _extract_self_check(text: str) -> str | None:
+    match = re.search(r"(?im)^\s*self-check\s*:\s*(.+)$", text)
+    if not match:
+        return None
+    return match.group(0).strip()
+
+
+def _extract_changed_paths(text: str) -> list[str]:
+    lines = text.splitlines()
+    paths: list[str] = []
+    collecting = False
+    for line in lines:
+        stripped = line.strip()
+        if re.match(r"(?i)^changed paths\s*:", stripped):
+            collecting = True
+            continue
+        if not collecting:
+            continue
+        if not stripped:
+            if paths:
+                break
+            continue
+        match = re.match(r"^[-*]\s+(.+)$", stripped)
+        if not match:
+            if paths:
+                break
+            continue
+        candidate = match.group(1).strip().strip("`")
+        if candidate:
+            paths.append(candidate)
+        if len(paths) >= 20:
+            break
+    return paths
 
 
 def _text_artifact_summary(path: Path, limit: int) -> dict[str, Any]:

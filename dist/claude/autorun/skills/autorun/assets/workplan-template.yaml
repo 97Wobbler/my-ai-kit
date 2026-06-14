@@ -87,6 +87,7 @@ tasks:
       verified_at: null
       committed_at: null
       worker_id: null
+      execution_plane: null
       commit: null
 
   - id: T02
@@ -108,6 +109,7 @@ tasks:
       verified_at: null
       committed_at: null
       worker_id: null
+      execution_plane: null
       commit: null
 
   - id: T03
@@ -128,4 +130,5 @@ tasks:
       verified_at: null
       committed_at: null
       worker_id: null
+      execution_plane: null
       commit: null

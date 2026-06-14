@@ -31,8 +31,9 @@ The MVP supports:
 - brownfield audit-only discovery and validation;
 - read-only preflight classification before deciding what to do.
 
-The MVP does not support brownfield writes, document moves, hook installation,
-or future `audit`, `organize`, `close`, and `brief` skills.
+The init MVP does not support brownfield writes, document moves, hook
+installation, or future `organize`, `close`, and `brief` skills. Use the
+separate `audit` skill for dry-run documentation cleanup findings.
 
 ## Resolve Inputs
 

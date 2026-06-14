@@ -139,6 +139,8 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                     "worker_id": _string("Optional file-safe worker id."),
                     "request": _string("Raw broad request to decompose."),
                     "runtime": _string("Optional worker runtime. Defaults to codex."),
+                    "model": _string("Optional Codex model override for the worker process."),
+                    "model_reasoning_effort": _string("Optional Codex reasoning effort override: minimal, low, medium, high, or xhigh."),
                     "timeout_seconds": {"type": "integer"},
                     "command": _string_list("Optional command override list for tests. Supports {result_path}."),
                     "command_override": _string_list("Optional command override list for tests. Supports {result_path}."),
@@ -168,6 +170,8 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                     "proposal_id": _string("Optional file-safe proposal id."),
                     "worker_id": _string("Optional file-safe worker id."),
                     "runtime": _string("Optional worker runtime. Defaults to codex."),
+                    "model": _string("Optional Codex model override for the worker process."),
+                    "model_reasoning_effort": _string("Optional Codex reasoning effort override: minimal, low, medium, high, or xhigh."),
                     "timeout_seconds": {"type": "integer"},
                     "command": _string_list("Optional command override list for tests. Supports {result_path}."),
                     "command_override": _string_list("Optional command override list for tests. Supports {result_path}."),
@@ -184,6 +188,8 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                     "worker_id": _string("Optional file-safe worker id."),
                     "proposal": {"type": "object"},
                     "runtime": _string("Optional worker runtime. Defaults to codex."),
+                    "model": _string("Optional Codex model override for the worker process."),
+                    "model_reasoning_effort": _string("Optional Codex reasoning effort override: minimal, low, medium, high, or xhigh."),
                     "timeout_seconds": {"type": "integer"},
                     "command": _string_list("Optional command override list for tests. Supports {result_path}."),
                     "command_override": _string_list("Optional command override list for tests. Supports {result_path}."),
@@ -256,6 +262,8 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                     "worker_id": _string("Optional file-safe worker id. Defaults to <plan_id>-<task_id>."),
                     "prompt": _string("Worker prompt to pass to the runtime."),
                     "runtime": _string("Optional worker runtime. Defaults to codex."),
+                    "model": _string("Optional Codex model override for the worker process."),
+                    "model_reasoning_effort": _string("Optional Codex reasoning effort override: minimal, low, medium, high, or xhigh."),
                     "timeout_seconds": {
                         "type": "integer",
                         "description": "Optional positive timeout enforced by worker status/collect refresh.",
@@ -274,9 +282,17 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                 "Return worker status, artifact paths, and concise artifact summaries.",
                 {
                     **_worker_lookup_properties(),
+                    "include_artifacts": {
+                        "type": "boolean",
+                        "description": "Return full stdout/stderr/final/result summaries. Defaults to false for compact output.",
+                    },
+                    "compact_summary_bytes": {
+                        "type": "integer",
+                        "description": "Maximum bytes for compact final/tail text. Defaults to a small summary.",
+                    },
                     "max_summary_bytes": {
                         "type": "integer",
-                        "description": "Optional positive maximum bytes per artifact summary.",
+                        "description": "Optional positive maximum bytes per full artifact summary when include_artifacts=true.",
                     },
                 },
             ),
@@ -437,7 +453,11 @@ def format_tool_result(name: Any, result: Mapping[str, Any]) -> str:
         return f"{prefix} task_ids={', '.join(result['task_ids'])}"
     if "progress" in result:
         progress = result["progress"]
-        return f"{prefix} done={progress['done']}/{progress['total']} runnable={len(result.get('runnable', []))}"
+        summary = f"{prefix} done={progress['done']}/{progress['total']} runnable={len(result.get('runnable', []))}"
+        completion = result.get("completion")
+        if isinstance(completion, Mapping) and completion.get("completion_ready"):
+            summary += f" next_required_action={completion.get('next_required_action')}"
+        return summary
     if "workplan_path" in result:
         return f"{prefix} workplan_path={result['workplan_path']}"
     if "status" in result:
@@ -480,6 +500,7 @@ def _task_lifecycle_tool(name: str, description: str) -> dict[str, Any]:
             **_plan_properties(),
             "task_id": _string("Task id."),
             "worker_id": _string("Optional worker id to record on verified lifecycle updates."),
+            "execution_plane": _string("Optional execution plane to record: native_subagent, mcp_worker, mixed, manual, or unknown."),
             "commit": _string("Optional commit identifier to record on committed lifecycle updates."),
         },
         ["task_id"],

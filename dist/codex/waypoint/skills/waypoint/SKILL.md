@@ -1,6 +1,6 @@
 ---
 name: "waypoint"
-description: "Router and explainer for the Waypoint docs-first repository harness. Use when the user asks what Waypoint is, wants a repo recovery waypoint, wants to initialize or audit a docs harness, or mentions waypoint init or doctor."
+description: "Router and explainer for the Waypoint docs-first repository harness. Use when the user asks what Waypoint is, wants a repo recovery waypoint, wants to initialize, audit, organize, or validate a docs harness, or mentions waypoint init, audit, or doctor."
 ---
 
 # Waypoint
@@ -41,6 +41,7 @@ Classify the user's request and route to the smallest shipped workflow:
 | "What is Waypoint?", "explain waypoint", "should I use it?" | Explain the docs-first harness and shipped MVP. |
 | "initialize", "install docs harness", "create AGENTS/docs" | Use `init`. |
 | "audit this repo", "brownfield", "what docs exist?" | Use `init` in brownfield audit-only mode or `doctor` if validation is requested. |
+| "audit docs", "find bloat", "organize docs", "dry-run cleanup", "consolidate decisions" | Use `audit`; it is dry-run by default and applies edits only after explicit approval. |
 | "doctor", "validate", "check routing", "broken docs links" | Use `doctor`. |
 | "close session", "brief next session" | Say these are planned but out of the MVP; offer to run `doctor` or produce a manual summary without claiming Waypoint has shipped close/brief skills. |
 
@@ -50,6 +51,8 @@ When explaining Waypoint, keep it concrete:
 
 - It creates a visible documentation harness for greenfield repositories.
 - It audits brownfield repositories before suggesting writes.
+- It can run a dry-run documentation audit for bloat, routing drift, role
+  mixing, stale plans, and decision consolidation candidates.
 - It keeps human-readable state in visible docs, not hidden tool-owned state.
 - Its MCP tools are read-only inspectors; the skill owns judgment and user
   interaction.
@@ -61,6 +64,8 @@ When explaining Waypoint, keep it concrete:
 - Do not weaken existing safety, privacy, release, ownership, or test rules.
 - Treat brownfield repositories as audit-only in the MVP unless a future shipped
   skill explicitly adds write/adopt behavior.
+- Treat `audit` apply mode as approval-bound document editing, not automatic
+  normalization.
 - Ask before making durable naming, taxonomy, public documentation, security,
   privacy, release, or irreversible migration decisions.
 

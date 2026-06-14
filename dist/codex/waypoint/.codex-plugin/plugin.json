@@ -1,6 +1,6 @@
 {
   "name": "waypoint",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Install and inspect lightweight docs-first repository waypoints.",
   "author": {
     "name": "97Wobbler",
@@ -22,7 +22,7 @@
   "interface": {
     "displayName": "Waypoint",
     "shortDescription": "Install and inspect docs-first repo recovery harnesses",
-    "longDescription": "Waypoint creates a lightweight AGENTS.md plus visible docs harness for greenfield repositories, audits brownfield repositories without writing, and runs deterministic doctor checks for document routing, marker blocks, configured document homes, and broken local Markdown links.",
+    "longDescription": "Waypoint creates a lightweight AGENTS.md plus visible docs harness for greenfield repositories, audits brownfield repositories without writing, runs documentation bloat and decision-consolidation dry-runs, and runs deterministic doctor checks for document routing, marker blocks, configured document homes, and broken local Markdown links.",
     "developerName": "97Wobbler",
     "category": "Productivity",
     "capabilities": [
@@ -34,7 +34,8 @@
     "defaultPrompt": [
       "Initialize a Waypoint docs harness here",
       "Run Waypoint doctor on this repo",
-      "Audit this repository with Waypoint"
+      "Audit this repository with Waypoint",
+      "Find oversized docs and consolidation candidates"
     ],
     "brandColor": "#2563EB"
   }

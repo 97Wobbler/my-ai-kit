@@ -46,6 +46,41 @@ CORE_DOCUMENT_ROLES = {
     "ideas",
 }
 MARKDOWN_LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
+HEADING_RE = re.compile(r"^(#{1,6})\s+(.+?)\s*$")
+TODO_RE = re.compile(r"(^|\s)(TODO|FIXME)\b|\[[ xX]\]", re.IGNORECASE)
+DECISION_WORD_RE = re.compile(
+    r"\b(decision|decided|rationale|superseded|reverted|reversal|adr)\b",
+    re.IGNORECASE,
+)
+REVERSAL_WORD_RE = re.compile(
+    r"\b(revert(?:ed|s|ing)?|rollback|rolled back|supersede(?:d|s)?|"
+    r"replace(?:d|s)?|retire(?:d|s)?|remove(?:d|s)?|no longer|abandon(?:ed|s)?)\b",
+    re.IGNORECASE,
+)
+POLICY_WORD_RE = re.compile(r"\b(must|never|always|required|do not|forbidden)\b", re.IGNORECASE)
+
+ROLE_LINE_THRESHOLDS = {
+    "router": 250,
+    "runtime-wrapper": 80,
+    "vision": 300,
+    "ontology": 300,
+    "architecture": 450,
+    "workflows": 450,
+    "decisions": 450,
+    "plan": 450,
+    "ideas": 450,
+}
+ROLE_BYTE_THRESHOLDS = {
+    "router": 16_000,
+    "runtime-wrapper": 6_000,
+    "vision": 22_000,
+    "ontology": 22_000,
+    "architecture": 34_000,
+    "workflows": 34_000,
+    "decisions": 34_000,
+    "plan": 34_000,
+    "ideas": 34_000,
+}
 
 
 class WaypointInspectError(ValueError):
@@ -190,6 +225,172 @@ def doctor_repo(repo_root: str | Path | None = None) -> dict[str, Any]:
     }
 
 
+def audit_repo(repo_root: str | Path | None = None, max_files: int = 500) -> dict[str, Any]:
+    """Return read-only document governance inventory and heuristic findings."""
+
+    root = resolve_repo_root(repo_root)
+    discovery = discover_repo(root, max_files=max_files)
+    doctor = doctor_repo(root)
+    docs = [describe_audit_document(root, path) for path in iter_candidate_docs(root, max_files=max_files)]
+    findings: list[dict[str, Any]] = []
+
+    def add(
+        severity: str,
+        confidence: str,
+        code: str,
+        message: str,
+        path: str,
+        recommendation: str,
+    ) -> None:
+        findings.append(
+            {
+                "severity": severity,
+                "confidence": confidence,
+                "code": code,
+                "message": message,
+                "path": path,
+                "recommendation": recommendation,
+            }
+        )
+
+    for item in doctor["findings"]:
+        if item["level"] == "fail":
+            add(
+                "high",
+                "high",
+                f"doctor-{item['code']}",
+                item["message"],
+                item.get("path", "."),
+                "Run Waypoint doctor remediation before document organization.",
+            )
+        elif item["level"] == "warn" and item["code"] in {
+            "document-map-missing",
+            "routing-table-missing",
+            "claude-wrapper-drift",
+            "config-parse-error",
+            "document-home-missing",
+        }:
+            add(
+                "medium",
+                "high",
+                f"doctor-{item['code']}",
+                item["message"],
+                item.get("path", "."),
+                "Fix routing or configured homes before moving document content.",
+            )
+
+    for doc in docs:
+        role = doc["role"]
+        threshold_lines = ROLE_LINE_THRESHOLDS.get(role, 500)
+        threshold_bytes = ROLE_BYTE_THRESHOLDS.get(role, 40_000)
+        path = doc["path"]
+        is_governance_doc = is_governance_document_path(path)
+        if is_governance_doc and (
+            doc["line_count"] > threshold_lines or doc["byte_count"] > threshold_bytes
+        ):
+            add(
+                "medium" if role in CORE_DOCUMENT_ROLES | {"router", "runtime-wrapper"} else "low",
+                "medium",
+                "document-bloat-candidate",
+                (
+                    f"{path} is large for role {role}: "
+                    f"{doc['line_count']} lines, {doc['byte_count']} bytes."
+                ),
+                path,
+                "Inspect whether sections should be summarized, split, or archived.",
+            )
+        if role == "runtime-wrapper" and doc["line_count"] > 80:
+            add(
+                "medium",
+                "medium",
+                "wrapper-bloat-candidate",
+                f"{path} is longer than a thin runtime wrapper should usually be.",
+                path,
+                "Consider delegating durable project rules back to AGENTS.md.",
+            )
+        if role == "decisions" and doc["todo_count"] > 0:
+            add(
+                "medium",
+                "medium",
+                "decisions-contain-active-work",
+                f"{path} contains {doc['todo_count']} TODO or checkbox markers.",
+                path,
+                "Move active work to the live plan or todo document unless it is historical evidence.",
+            )
+        if role == "plan" and doc["decision_word_count"] > 3:
+            add(
+                "low",
+                "low",
+                "plan-may-contain-decisions",
+                f"{path} contains repeated decision vocabulary.",
+                path,
+                "Check whether durable choices should move to the decisions document.",
+            )
+        if role == "ideas" and doc["todo_count"] > 3:
+            add(
+                "low",
+                "medium",
+                "ideas-may-contain-active-work",
+                f"{path} contains multiple TODO or checkbox markers.",
+                path,
+                "Promote committed work to the live plan and keep exploratory ideas here.",
+            )
+        if is_governance_doc and role in {"report", "archive"} and doc["policy_word_count"] > 5:
+            add(
+                "low",
+                "low",
+                "historical-doc-may-act-live",
+                f"{path} contains repeated policy vocabulary.",
+                path,
+                "Confirm whether live routers explicitly promote this historical material.",
+            )
+
+    decisions_docs = [doc for doc in docs if doc["role"] == "decisions"]
+    for doc in decisions_docs:
+        if doc["reversal_word_count"] > 0:
+            add(
+                "low",
+                "medium",
+                "decision-consolidation-candidate",
+                f"{doc['path']} contains {doc['reversal_word_count']} reversal or supersession signals.",
+                doc["path"],
+                "Review whether reversed decisions should be preserved, consolidated, or archived.",
+            )
+
+    severity_counts = {"high": 0, "medium": 0, "low": 0}
+    for item in findings:
+        severity_counts[item["severity"]] += 1
+    finding_paths = {item["path"] for item in findings}
+    notable_docs = [
+        doc
+        for doc in docs
+        if doc["path"] in finding_paths
+        or doc["role"] in {"router", "runtime-wrapper"}
+        or doc["path"] in {"README.md", "docs/decisions.md", "docs/plan.md", "docs/workflows.md"}
+    ]
+
+    return {
+        "repo_root": str(root),
+        "status": "findings" if findings else "clean",
+        "summary": {
+            "document_count": len(docs),
+            "notable_document_count": len(notable_docs),
+            "finding_count": len(findings),
+            "severity_counts": severity_counts,
+            "doctor_status": doctor["status"],
+            "has_agents": discovery["summary"]["has_agents"],
+            "has_claude": discovery["summary"]["has_claude"],
+            "has_waypoint_config": discovery["summary"]["has_waypoint_config"],
+        },
+        "findings": findings,
+        "documents": notable_docs,
+        "doctor": {
+            "status": doctor["status"],
+            "counts": doctor["counts"],
+        },
+    }
+
+
 def iter_candidate_docs(root: Path, max_files: int) -> list[Path]:
     files: list[Path] = []
     for path in sorted(root.rglob("*")):
@@ -238,6 +439,49 @@ def describe_document(root: Path, path: Path) -> dict[str, Any]:
         "role": role,
         "confidence": confidence,
     }
+
+
+def describe_audit_document(root: Path, path: Path) -> dict[str, Any]:
+    text = read_text(path)
+    role, confidence = classify_document(root, path)
+    headings = extract_headings(text)
+    return {
+        "path": rel(root, path),
+        "role": role,
+        "confidence": confidence,
+        "line_count": len(text.splitlines()),
+        "byte_count": len(text.encode("utf-8")),
+        "heading_count": len(headings),
+        "top_headings": [heading["text"] for heading in headings if heading["level"] <= 2][:12],
+        "todo_count": len(TODO_RE.findall(text)),
+        "decision_word_count": len(DECISION_WORD_RE.findall(text)),
+        "reversal_word_count": len(REVERSAL_WORD_RE.findall(text)),
+        "policy_word_count": len(POLICY_WORD_RE.findall(text)),
+    }
+
+
+def extract_headings(text: str) -> list[dict[str, Any]]:
+    headings: list[dict[str, Any]] = []
+    for line_number, line in enumerate(text.splitlines(), start=1):
+        match = HEADING_RE.match(line)
+        if not match:
+            continue
+        headings.append(
+            {
+                "level": len(match.group(1)),
+                "text": match.group(2).strip(),
+                "line": line_number,
+            }
+        )
+    return headings
+
+
+def is_governance_document_path(path: str) -> bool:
+    return (
+        path in {"AGENTS.md", "CLAUDE.md", "README.md"}
+        or path.startswith("docs/")
+        or "/docs/" in path
+    )
 
 
 def classify_document(root: Path, path: Path) -> tuple[str, str]:
@@ -443,4 +687,3 @@ def read_text(path: Path) -> str:
 
 def rel(root: Path, path: Path) -> str:
     return path.relative_to(root).as_posix()
-

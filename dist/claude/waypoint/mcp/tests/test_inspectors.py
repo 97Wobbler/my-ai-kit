@@ -6,7 +6,7 @@ from pathlib import Path
 PLUGIN_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PLUGIN_ROOT / "mcp"))
 
-from waypoint_mcp.inspectors import discover_repo, doctor_repo  # noqa: E402
+from waypoint_mcp.inspectors import audit_repo, discover_repo, doctor_repo  # noqa: E402
 
 
 def write(path: Path, text: str) -> None:
@@ -86,3 +86,27 @@ def test_doctor_reports_broken_local_markdown_links(tmp_path: Path) -> None:
     assert result["status"] == "warn"
     assert any(item["code"] == "broken-markdown-link" for item in result["findings"])
 
+
+def test_audit_reports_document_bloat_candidate(tmp_path: Path) -> None:
+    create_minimal_waypoint_repo(tmp_path)
+    write(tmp_path / "docs/plan.md", "# Plan\n" + "\n".join(f"- item {i}" for i in range(500)))
+
+    result = audit_repo(tmp_path)
+
+    assert result["status"] == "findings"
+    assert any(item["code"] == "document-bloat-candidate" for item in result["findings"])
+
+
+def test_audit_reports_decision_consolidation_candidate(tmp_path: Path) -> None:
+    create_minimal_waypoint_repo(tmp_path)
+    write(
+        tmp_path / "docs/decisions.md",
+        "| Date | Decision | Rationale |\n"
+        "|---|---|---|\n"
+        "| 2026-01-01 | Adopt X. | Initial choice. |\n"
+        "| 2026-01-02 | Reverted X. | X is no longer active. |\n",
+    )
+
+    result = audit_repo(tmp_path)
+
+    assert any(item["code"] == "decision-consolidation-candidate" for item in result["findings"])

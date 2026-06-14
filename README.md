@@ -15,7 +15,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
 
 - 큰 작업을 dependency-aware `workplan.yaml`로 나눈 뒤, 검증과 커밋 단위로
   자동 실행하는 오케스트레이션 워크플로우입니다.
-- `0.3.2` 기준 두 가지 워크플로우를 제공합니다. Full Autorun은 번들 MCP
+- `0.3.3` 기준 두 가지 워크플로우를 제공합니다. Full Autorun은 번들 MCP
   서버로 계획 생성, 검증, task split, 실행 배치, lifecycle 상태 전이,
   active-task readiness filtering, proposal-worker timeout classification,
   advisory task-graph budgeting을 관리합니다.
@@ -173,17 +173,20 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
 - docs-first repository recovery harness를 만드는 플러그인입니다.
 - `AGENTS.md`와 visible `docs/` 문서들을 중심으로, 다음 세션이 어디에서
   다시 시작해야 하는지 알 수 있는 waypoint를 남깁니다.
-- 현재 MVP는 greenfield 생성과 brownfield audit-only 검사를 지원합니다.
-  brownfield repository의 기존 규칙이나 문서를 덮어쓰지 않습니다.
+- 현재 MVP는 greenfield 생성, brownfield `init` audit-only 검사,
+  documentation cleanup dry-run audit을 지원합니다. brownfield repository의
+  기존 규칙이나 문서를 덮어쓰지 않습니다.
 - `.waypoint/config.yaml`은 문서 home을 찾기 위한 locator일 뿐이며, primary
   state는 visible docs에 둡니다.
-- 현재 공개 버전은 `0.1.0`입니다.
+- 현재 공개 버전은 `0.1.1`입니다.
 
 #### 스킬 목록
 
 - `waypoint`: Waypoint workflow 라우터와 설명.
 - `init`: greenfield docs harness 생성 또는 brownfield audit-only
   discovery.
+- `audit`: 문서 비대화, SSOT drift, 역할 혼합, stale plan,
+  decision-consolidation 후보를 dry-run으로 점검.
 - `doctor`: routing, configured document homes, marker blocks, local
   Markdown links를 read-only로 검사.
 

@@ -12,7 +12,7 @@ import server  # noqa: E402
 def test_tools_list_exposes_read_only_inspectors() -> None:
     names = {tool["name"] for tool in server.tools_list({})["tools"]}
 
-    assert names == {"waypoint_discover", "waypoint_doctor"}
+    assert names == {"waypoint_audit", "waypoint_discover", "waypoint_doctor"}
 
 
 def test_tools_call_returns_structured_content(tmp_path: Path) -> None:
@@ -31,3 +31,19 @@ def test_tools_call_returns_structured_content(tmp_path: Path) -> None:
     assert "structuredContent" in result
     assert result["structuredContent"]["summary"]["has_agents"] is True
 
+
+def test_tools_call_returns_audit_structured_content(tmp_path: Path) -> None:
+    (tmp_path / "AGENTS.md").write_text(
+        "# Repository Instructions\n## Document Map\n## Read And Update Routing\n",
+        encoding="utf-8",
+    )
+
+    result = server.tools_call(
+        {
+            "name": "waypoint_audit",
+            "arguments": {"repo_root": str(tmp_path)},
+        }
+    )
+
+    assert "structuredContent" in result
+    assert result["structuredContent"]["summary"]["document_count"] >= 1

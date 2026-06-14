@@ -22,6 +22,7 @@ LIFECYCLE_FIELD_ORDER = (
     "verified_at",
     "committed_at",
     "worker_id",
+    "execution_plane",
     "commit",
 )
 TASK_FIELD_ORDER = (

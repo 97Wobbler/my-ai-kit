@@ -36,6 +36,7 @@ Convert a broad task into a dependency graph and execute it through a controlled
 10. **`workplan.yaml` lifecycle is fixed.** The file lives at the Git repository root. Commit it when RUN starts, update it per task, and remove it in a final completion commit only when every automatic task is done.
 11. **Ready human gates are handled before new automatic work.** If any unfinished human-gated task has all blockers done, surface it before spawning more implementation workers. When ready human gates and automatic tasks are both available, recommend handling or explicitly deferring the human gate first.
 12. **Planning readiness is a hard gate.** If MCP validation/refinement reports `ready_to_run: false`, do not enter RUN mode by relabeling, hiding, or coarsening metadata. Handle `next_action` values such as `split_tasks`, `add_metadata`, `assess_surfaces`, or `resolve_human_gate`, then re-run validation/refinement until `ready_to_run: true` or stop and report the blocker. Legacy MCP responses may still include `legacy_next_action` values such as `needs_split` or `needs_metadata`.
+13. **Keep tool payloads compact by default.** Prefer artifact paths, short summaries, and lifecycle metadata over replaying large worker stdout or prompts. Request full worker artifacts only when debugging or auditing a specific failure.
 
 Main-session exceptions are limited to reading files, planning, updating `workplan.yaml`, running verification commands, applying narrow integration fixes required to reconcile a returned worker patch, and creating commits. Those exceptions do not permit implementing an undelegated workplan task locally.
 
@@ -49,6 +50,10 @@ The main session still owns review, independent verification, integration decisi
 
 Codex `codex exec` is the first supported worker runtime for this experimental plane. Claude headless execution, including `claude -p` or Agent SDK based workers, is not wired by this change; do not claim Claude worker execution support unless a later implementation explicitly adds and verifies it.
 
+When the MCP worker plane is used, leave the runtime model and effort inherited from the current Codex configuration unless the user or local policy explicitly asks for a worker override. If explicit overrides are needed, pass `model` and/or `model_reasoning_effort` to the worker tool and record that policy in the worker state. Collect workers in compact mode by default; use full artifact collection only for failure analysis.
+
+Record the execution plane through lifecycle calls when possible: `native_subagent` for runtime-native subagents, `mcp_worker` for MCP-managed worker processes, `mixed` only when a single task intentionally spans both, and `unknown` when the plane cannot be reconstructed. Treat a mixed run as observable data for later improvement, not as an immediate failure.
+
 ## PLAN Mode
 
 Use this when the user gives a broad spec and asks the agent to break it down or run it automatically.
@@ -57,11 +62,12 @@ Use this when the user gives a broad spec and asks the agent to break it down or
 2. Gather the spec. Ask at most 1-3 blocking questions if scope, success criteria, or constraints are materially ambiguous.
 3. Analyze the as-is state with local search and file reads. For broad codebase questions, the autorun request authorizes bounded read-only subagents when they materially improve planning.
 4. Write a concrete to-be state.
-5. Split the gap into commit-sized tasks that are suitable for one worker each. Treat user-provided work items, numbered lists, bullets, tickets, or requested tasks as candidate scopes, not automatically as final executable tasks. One task should normally be a 1-5 minute agent change, one primary behavior, one focused write scope, and one independently meaningful commit. Add real dependencies in `blocked_by`; avoid artificial chains. For broad or high-risk specs, record relevant `invariants`, `surfaces`, `criteria_map`, and explicit `not_assessed` gaps so missing coverage is visible before RUN.
-6. If MCP tools are available, create project-root `workplan.yaml` with `autorun_plan_create`, validate it with `autorun_plan_validate`, and use `autorun_plan_refine` to drive a validation/refinement loop. Treat `schema_valid` and `ready_to_run` separately: schema-valid plans can still be blocked by split, metadata, human gate, or assessment issues. Follow `next_action`; use `autorun_task_split`, `autorun_refine_apply`, or direct YAML edits for explicit repairs, and re-run validation/refinement until `ready_to_run: true` or MCP fails. Do not resolve split warnings by reducing `output` detail, replacing files with broad directories/globs, or otherwise hiding write scope.
-7. If MCP is unavailable or the MCP validation/refinement loop fails, create project-root `workplan.yaml` from `assets/workplan-template.yaml`. Use `references/workplan-schema.md` for the schema.
-8. Summarize phases, task count, dependencies, gates, and whether the plan was MCP-assisted or manually edited. If any human-gated task is initially ready (`blocked_by: []`), call it out first and recommend resolving or explicitly deferring it before RUN starts automatic work. Ask before entering RUN mode unless the user's prompt already clearly said to start running.
-9. On RUN approval, commit only `workplan.yaml`:
+5. Split the gap into commit-sized tasks that are suitable for one worker each before calling validation tools. Treat user-provided work items, numbered lists, bullets, tickets, or requested tasks as candidate scopes, not automatically as final executable tasks. One task should normally be a 1-5 minute agent change, one primary behavior, one focused write scope, and one independently meaningful commit. If a candidate combines a foundation change with rollout across multiple modules, schema/API changes, and tests, split it before `autorun_plan_create`; do not rely on MCP rejection as the first signal. Add real dependencies in `blocked_by`; avoid artificial chains. For broad or high-risk specs, record relevant `invariants`, `surfaces`, `criteria_map`, and explicit `not_assessed` gaps so missing coverage is visible before RUN.
+6. For technical or architecture uncertainty, prefer an automatic analysis, spike, or review task before creating a human gate. Use `human_gate` for user preference, product authority, credentials/secrets, external side effects, legal/business approval, or irreversible actions that the model cannot legitimately decide.
+7. If MCP tools are available, create project-root `workplan.yaml` with `autorun_plan_create`, validate it with `autorun_plan_validate`, and use `autorun_plan_refine` to drive a validation/refinement loop. Treat `schema_valid` and `ready_to_run` separately: schema-valid plans can still be blocked by split, metadata, human gate, or assessment issues. Follow `next_action`; use `autorun_task_split`, `autorun_refine_apply`, or direct YAML edits for explicit repairs, and re-run validation/refinement until `ready_to_run: true` or MCP fails. Do not resolve split warnings by reducing `output` detail, replacing files with broad directories/globs, or otherwise hiding write scope.
+8. If MCP is unavailable or the MCP validation/refinement loop fails, create project-root `workplan.yaml` from `assets/workplan-template.yaml`. Use `references/workplan-schema.md` for the schema.
+9. Summarize phases, task count, dependencies, gates, and whether the plan was MCP-assisted or manually edited. If any human-gated task is initially ready (`blocked_by: []`), call it out first and recommend resolving or explicitly deferring it before RUN starts automatic work. Ask before entering RUN mode unless the user's prompt already clearly said to start running.
+10. On RUN approval, commit only `workplan.yaml`:
 
 ```bash
 git add workplan.yaml
@@ -89,14 +95,15 @@ Loop:
 2. **STATUS**: With MCP available, call `autorun_plan_status`; otherwise read current task state from `workplan.yaml`.
 3. **HUMAN-GATE PREFLIGHT**: Find tasks where `done: false`, every `blocked_by` task is done, and `human_gate` is `approve` or `execute`. If any exist, report them before starting new automatic work. If automatic tasks are also runnable, recommend that the user handle or explicitly defer the human gate first; do not spawn more workers until the user chooses.
 4. **SCAN/PLAN**: With MCP available, call `autorun_plan_refine` first when readiness is uncertain, then call `autorun_next_batch` for runnable non-human-gated tasks. If MCP reports `ready_to_run: false` or the batch call reports that plan refinement is required, stop RUN and refine the workplan before spawning workers. Otherwise, find automatic tasks where `done: false`, `status` is missing or `pending`, every `blocked_by` task is done, and `human_gate: null`, then batch independent tasks that do not touch the same files. Keep dependent chains foreground.
-5. **EXEC**: Mark tasks in progress with `autorun_task_mark_started` when MCP is available; otherwise update `status: started` in YAML. Delegate every runnable automatic implementation task. For dependency chains, delegate foreground and wait only when the result is needed for the next step. For independent tasks with disjoint write scopes, spawn workers in parallel. Tell each worker they are not alone in the codebase, not to revert others' edits, and to list changed paths. Do not implement the task locally if delegation is unavailable.
-6. **VERIFY**: Run L2/L3 checks from `references/verification.md`. Use a separate read-only subagent for large or risky changes when useful.
-7. **COMMIT**: With MCP available, mark the task verified with `autorun_task_mark_verified`, then mark it committed with `autorun_task_mark_committed` so `done: true` is in `workplan.yaml` before commit. Without MCP, make the equivalent YAML edits manually. Stage explicit task output paths plus `workplan.yaml`, commit, then mark the visible plan item completed.
-8. **LOOP**: Continue until no automatic task is runnable.
+5. **EXEC**: Mark tasks in progress with `autorun_task_mark_started` when MCP is available, including `execution_plane` when known; otherwise update `status: started` in YAML. Delegate every runnable automatic implementation task. For dependency chains, delegate foreground and wait only when the result is needed for the next step. For independent tasks with disjoint write scopes, spawn workers in parallel. Tell each worker they are not alone in the codebase, not to revert others' edits, and to list changed paths. Do not implement the task locally if delegation is unavailable.
+6. **COLLECT**: Collect native subagent results normally. When using MCP workers, call `autorun_worker_collect` without full artifacts by default and use the returned compact summary plus artifact paths for verification. Set `include_artifacts: true` only when debugging a failure or auditing detailed output.
+7. **VERIFY**: Run L2/L3 checks from `references/verification.md`. Use a separate read-only subagent for large or risky changes when useful.
+8. **COMMIT**: With MCP available, mark the task verified with `autorun_task_mark_verified`, including `worker_id` and `execution_plane` when known, then mark it committed with `autorun_task_mark_committed` so `done: true` is in `workplan.yaml` before commit. Without MCP, make the equivalent YAML edits manually. Stage explicit task output paths plus `workplan.yaml`, commit, then mark the visible plan item completed.
+9. **LOOP**: Continue until no automatic task is runnable.
 
 Completion:
 
-- If every task is done, remove the workplan and commit only that removal:
+- If MCP `autorun_plan_status` or `autorun_progress_summary` reports `completion_ready` with `next_required_action: teardown_workplan`, or if manual YAML inspection shows every active task is done, remove the workplan and commit only that removal:
 
 ```bash
 git rm workplan.yaml
@@ -116,6 +123,7 @@ Use `assets/subagent-prompt-template.md` as the worker prompt template.
 - Workers must not commit.
 - Workers must not revert unrelated changes.
 - Workers should report changed file paths and a `self-check: PASS` or `self-check: WARN - ...` line.
+- Worker final reports should be concise by default: outcome, changed paths, verification/self-check, and blockers only. Leave detailed logs in artifacts or command output paths.
 
 ## Reference Files
 

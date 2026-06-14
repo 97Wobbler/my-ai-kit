@@ -62,7 +62,7 @@ as-is → to-be 사이의 차이를 태스크로 쪼갠다.
 - **원자성**: 하나의 태스크는 자기완결적 산출물을 내야 한다. 중간 상태로 남으면 다음 태스크가 시작 못 함.
 - **검증 가능성**: 메인이 짧은 L2/L3 체크로 결과를 판정할 수 있어야 한다. 검증 기준이 여러 독립 정책을 동시에 확인해야 하면 split한다.
 
-사용자가 제공한 work item, 번호 목록, bullet, ticket, 요청 과업은 final executable task가 아니라 후보 scope다. 각 후보 scope는 반드시 commit-sized task 기준으로 재평가하고, 크거나 여러 목적을 담고 있으면 더 작은 task로 분해한다.
+사용자가 제공한 work item, 번호 목록, bullet, ticket, 요청 과업은 final executable task가 아니라 후보 scope다. 각 후보 scope는 반드시 commit-sized task 기준으로 재평가하고, 크거나 여러 목적을 담고 있으면 더 작은 task로 분해한다. MCP validation이 반려하기를 기다리기 전에, 아래 split 신호가 보이면 `autorun_plan_create` 호출 전부터 작은 task로 다시 나눈다.
 
 **반드시 split하는 신호:**
 - `estimated_size: L`
@@ -105,6 +105,12 @@ as-is → to-be 사이의 차이를 태스크로 쪼갠다.
 - 인간이 승인하려면 먼저 검토할 문서/리포트/선택지/diff 초안이 필요한가?
 - 그 승인 판단 산출물이 `human_gate: null`인 별도 자동 실행 task로 분리되어 있는가?
 - `human_gate: approve` task가 산출물 생성까지 막는 전체 중단 조건처럼 쓰이지 않았는가?
+
+기술/아키텍처 판단이 애매하다는 이유만으로 곧장 human gate를 만들지 않는다.
+사용자 취향, 제품 권한, 외부 계정/비밀, 법무/사업 승인, 비가역 실행처럼
+모델이 정당하게 결정할 수 없는 영역이면 gate를 둔다. 그 외 구현 선택지는
+먼저 자동 분석, spike, 또는 별도 review task를 만들어 근거와 추천안을 산출하게
+하고, 필요한 경우 그 산출물 뒤에 human gate를 둔다.
 
 권장 패턴:
 1. `T01` 제안서/분석 리포트/선택지 문서 생성 (`human_gate: null`)

@@ -247,18 +247,32 @@ def next_batch(arguments: Mapping[str, Any]) -> dict[str, Any]:
 
 
 def task_mark_started(arguments: Mapping[str, Any]) -> dict[str, Any]:
-    return _transition(arguments, PENDING, STARTED, timestamp_field="started_at", done=False)
+    execution_plane = _execution_plane_argument(arguments)
+    return _transition(
+        arguments,
+        PENDING,
+        STARTED,
+        timestamp_field="started_at",
+        done=False,
+        lifecycle_updates={"execution_plane": execution_plane} if execution_plane else None,
+    )
 
 
 def task_mark_verified(arguments: Mapping[str, Any]) -> dict[str, Any]:
     worker_id = arguments.get("worker_id")
+    execution_plane = _execution_plane_argument(arguments)
+    lifecycle_updates = {}
+    if isinstance(worker_id, str) and worker_id:
+        lifecycle_updates["worker_id"] = worker_id
+    if execution_plane:
+        lifecycle_updates["execution_plane"] = execution_plane
     return _transition(
         arguments,
         STARTED,
         VERIFIED,
         timestamp_field="verified_at",
         done=False,
-        lifecycle_updates={"worker_id": worker_id} if isinstance(worker_id, str) and worker_id else None,
+        lifecycle_updates=lifecycle_updates or None,
     )
 
 
@@ -286,6 +300,8 @@ def plan_status(arguments: Mapping[str, Any]) -> dict[str, Any]:
         "human_gates": projection["human_gates"],
         "active": projection["active"],
         "task_graph_budget": projection["task_graph_budget"],
+        "completion": projection["completion"],
+        "execution_plane": projection["execution_plane"],
     }
 
 
@@ -338,6 +354,8 @@ def _progress_projection(plan: Mapping[str, Any]) -> dict[str, Any]:
         "display_plan": display_plan,
         "phases": phases,
         "task_graph_budget": _task_graph_budget(tasks, runnable, human_gates, phases),
+        "completion": _completion_projection(plan, tasks),
+        "execution_plane": _execution_plane_projection(tasks),
     }
 
 
@@ -408,6 +426,57 @@ def _task_graph_budget(
         "human_gate_count": len(human_gates),
         "high_conflict_outputs": _high_conflict_outputs(unfinished),
         "budget_band": _budget_band(active_count),
+    }
+
+
+def _completion_projection(plan: Mapping[str, Any], tasks: list[dict[str, Any]]) -> dict[str, Any]:
+    unfinished = [task["id"] for task in tasks if not task.get("done")]
+    all_done = not unfinished
+    completion_ready = all_done and bool(tasks)
+    message = None
+    if completion_ready:
+        message = (
+            "All active Autorun tasks are done. Run completion teardown before the final summary: "
+            "git rm workplan.yaml && git commit -m \"chore(autorun): complete workplan - <summary>\"."
+        )
+    return {
+        "all_done": all_done,
+        "completion_ready": completion_ready,
+        "next_required_action": "teardown_workplan" if completion_ready else None,
+        "unfinished_task_ids": unfinished,
+        "teardown_command_hint": "git rm workplan.yaml" if completion_ready else None,
+        "message": message,
+        "workplan_path": plan.get("workplan_path"),
+    }
+
+
+def _execution_plane_projection(tasks: list[dict[str, Any]]) -> dict[str, Any]:
+    by_plane: dict[str, list[str]] = {}
+    unknown: list[str] = []
+    for task in tasks:
+        lifecycle = task.get("lifecycle") if isinstance(task.get("lifecycle"), dict) else {}
+        plane = lifecycle.get("execution_plane")
+        task_id = task["id"]
+        if isinstance(plane, str) and plane:
+            by_plane.setdefault(plane, []).append(task_id)
+        else:
+            unknown.append(task_id)
+
+    observed = {plane for plane in by_plane if plane != "unknown"}
+    if len(observed) > 1:
+        current = "mixed"
+    elif observed:
+        current = next(iter(observed))
+    elif unknown:
+        current = "unknown"
+    else:
+        current = "none"
+    return {
+        "current": current,
+        "mixed": current == "mixed",
+        "by_plane": by_plane,
+        "unknown_task_ids": unknown,
+        "note": "MCP can only report execution_plane values recorded through lifecycle tools; native subagent usage must be recorded by the main session.",
     }
 
 
@@ -954,6 +1023,19 @@ def _required_str(arguments: Mapping[str, Any], key: str) -> str:
     if not isinstance(value, str) or not value:
         raise ValueError(f"{key} must be a non-empty string")
     return value
+
+
+def _execution_plane_argument(arguments: Mapping[str, Any]) -> str | None:
+    value = arguments.get("execution_plane")
+    if value is None or value == "":
+        return None
+    if not isinstance(value, str):
+        raise ValueError("execution_plane must be a string when provided")
+    normalized = value.strip()
+    allowed = {"native_subagent", "mcp_worker", "mixed", "manual", "unknown"}
+    if normalized not in allowed:
+        raise ValueError("execution_plane must be native_subagent, mcp_worker, mixed, manual, or unknown")
+    return normalized
 
 
 def _plan_id(arguments: Mapping[str, Any]) -> str:

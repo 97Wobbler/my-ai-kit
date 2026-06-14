@@ -2,7 +2,7 @@
 
 Status: accepted for implementation planning.
 
-Official documentation checked: 2026-05-30.
+Official documentation checked: 2026-06-14.
 
 ## Scope
 
@@ -20,6 +20,9 @@ Claude Code official docs checked:
 - `https://code.claude.com/docs/en/plugins-reference`
 - `https://code.claude.com/docs/en/plugin-marketplaces`
 - `https://code.claude.com/docs/en/headless`
+- `https://code.claude.com/docs/en/skills`
+- `https://code.claude.com/docs/en/tools-reference`
+- `https://code.claude.com/docs/en/mcp`
 
 Claude Code documentation explicitly supports plugin-provided MCP servers via
 plugin root `.mcp.json` or inline manifest `mcpServers`. The plugin reference
@@ -35,10 +38,9 @@ Autorun does not wire a Claude worker runtime in the current implementation.
 
 OpenAI Codex official docs and repository examples checked:
 
-- `https://developers.openai.com/codex/noninteractive`
-- `https://developers.openai.com/codex/mcp`
-- `https://developers.openai.com/codex/subagents`
-- `https://developers.openai.com/codex/plugins/build`
+- Official Codex manual fetched on 2026-06-14 via the repository-local
+  `openai-docs` workflow, covering noninteractive `codex exec`, MCP,
+  subagents, plugin packaging, and model/config overrides.
 - `https://github.com/openai/plugins`
 
 OpenAI Codex documentation supports general MCP configuration through
@@ -52,6 +54,8 @@ OpenAI plugin examples repository uses companion files next to
 Codex non-interactive documentation says `codex exec` is intended for
 pipeline, CLI, and automation workflows, can run with explicit sandbox and
 approval settings, and can emit machine-readable JSON Lines with `--json`.
+It also documents `--model` for per-run model selection and `-c`/`--config`
+for one-off configuration overrides such as `model_reasoning_effort`.
 
 Codex MCP documentation says MCP servers can be configured in Codex
 `config.toml` and documents `startup_timeout_sec` and `tool_timeout_sec`.
@@ -161,6 +165,22 @@ Worker execution plane:
 - Start with Codex workers only. The runner can use documented `codex exec`
   automation behavior plus JSONL events, and current local implementation work
   can be verified against those semantics.
+- Worker model and reasoning effort overrides are optional, explicit inputs.
+  The default is inherited runtime configuration. When overrides are provided,
+  the Codex worker command applies `--model` and `-c
+  model_reasoning_effort=...` and records the policy in worker state.
+- Worker collection is compact by default. It returns artifact paths, final
+  text, self-check/changed-path hints when available, and short artifact tails.
+  Full stdout/stderr/final/result summaries are opt-in for debugging or audit.
+- Task lifecycle metadata can record `execution_plane` values such as
+  `native_subagent`, `mcp_worker`, `mixed`, `manual`, or `unknown`. This makes
+  native-subagent/MCP-worker mixing observable without deciding yet whether the
+  planes should be unified.
+- Plan progress/status may return a completion sentinel
+  (`completion_ready` and `next_required_action: teardown_workplan`) when all
+  active tasks are committed. The MCP server only reports the required final
+  action; the main session still performs `git rm workplan.yaml` and commits
+  the teardown.
 - Defer Claude workers. Claude headless mode is documented, but this change
   does not implement or verify a Claude worker runtime.
 - The main session remains the orchestrator, reviewer, verifier, state owner,

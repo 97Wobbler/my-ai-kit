@@ -9,7 +9,7 @@ RUN 모드 진입 시점마다 (첫 실행 + 세션 재개 모두):
 **0. (세션 재개 한정) workplan.yaml 발견 시 사용자 확인.** PLAN 직후 같은 세션에서 RUN으로 넘어온 게 아니라 새 세션에서 workplan.yaml을 발견했다면, 자동 진입 금지. "이전 workplan을 발견했습니다 — 재개 / 폐기 / 무시 중 어떻게 할까요?" 명시 확인 후 "재개" 응답이 있어야 아래 절차로 들어간다.
 
 1. 프로젝트 `AGENTS.md` 읽기 (있으면). `CLAUDE.md`도 있으면 보조 컨텍스트로 읽어 프로젝트 고유 용어/원칙 파악.
-2. MCP가 있으면 `autorun_plan_status`와 필요 시 `autorun_plan_refine`으로 루트 `workplan.yaml` 상태와 readiness를 읽고, 없으면 workplan.yaml 전체를 직접 읽는다. 각 태스크의 `done`, `status`, `blocked_by`, `human_gate` 상태를 스캔.
+2. MCP가 있으면 `autorun_plan_status`와 필요 시 `autorun_plan_refine`으로 루트 `workplan.yaml` 상태와 readiness를 읽고, 없으면 workplan.yaml 전체를 직접 읽는다. 각 태스크의 `done`, `status`, `blocked_by`, `human_gate` 상태를 스캔한다. MCP가 `completion`이나 `execution_plane` projection을 반환하면 이후 teardown과 관측 메타데이터에 사용한다.
 3. `git log --oneline -20` 확인. `chore(autorun): start workplan` 커밋이 라이프사이클 시작점, 그 이후 `<type>: <T번호>` 커밋들이 진행분. 마지막 완료된 태스크와 커밋 시점 확인.
 4. workplan에 wip 주석이 있으면 재개 지점 파악.
 5. **Codex `update_plan` 호출 (필수, 생략 금지)**: MCP가 있으면 `autorun_progress_summary`의 `display_plan`을 우선 사용하고, 없으면 미완료 태스크 전부를 Codex plan에 등록. 각 항목 텍스트는 `<T번호> <태스크명>` 형식, 초기 status는 `pending`. 세션 재개 시 이미 plan이 있으면 workplan과 대조해서 정합성만 맞춘다. 이 단계를 건너뛰면 루프 도는 동안 메인 세션이 진행 상태를 잃는다.
@@ -92,6 +92,12 @@ autorun RUN 모드 진입은 사용자가 workplan 실행과 subagent 위임을 
 적절한 subagent를 띄울 수 없으면 메인이 직접 구현하지 말고 즉시 정지해서
 사용자에게 보고한다.
 
+MCP가 있으면 위임 직전에 `autorun_task_mark_started`를 호출한다. Codex
+`spawn_agent`로 구현하면 `execution_plane: "native_subagent"`를 기록하고,
+MCP worker process를 명시적으로 사용하면 `execution_plane: "mcp_worker"`를
+기록한다. 둘을 한 태스크 안에서 의도적으로 섞을 때만 `"mixed"`를 사용한다.
+MCP 없이 직접 YAML을 수정할 때도 가능하면 `lifecycle.execution_plane`을 남긴다.
+
 프롬프트는 `assets/subagent-prompt-template.md` 기반.
 
 **필수 포함:**
@@ -108,9 +114,19 @@ autorun RUN 모드 진입은 사용자가 workplan 실행과 subagent 위임을 
 - 코드베이스 탐색/독립 검증 → `explorer`
 - 계획 수립 → 메인 세션에서 수행. 별도 subagent는 독립 분석이 필요할 때만 사용.
 
+**MCP worker plane 선택 시:**
+- 기본은 현재 Codex 설정의 model/effort 상속이다.
+- 사용자가 명시했거나 로컬 정책이 있을 때만 `model` 또는 `model_reasoning_effort` override를 worker tool에 넘긴다.
+- worker prompt/result 전체를 메인 대화에 반복하지 말고 artifact path와 compact summary를 우선 사용한다.
+
 ## Step 6: VERIFY — 독립 검증
 
 메인이 수행하는 3계층 검증. subagent self-check는 **신뢰하되 의존하지 않는다**.
+
+MCP worker를 사용했다면 검증 전에 `autorun_worker_collect`를 기본 compact 모드로
+호출한다. `compact_summary`, `artifact_paths`, worker state의 `model_policy`를
+확인하고, 실패 원인 분석이나 감사가 필요할 때만 `include_artifacts: true`로
+full summary를 다시 요청한다.
 
 ### L1: subagent self-check (subagent 내부)
 
@@ -160,7 +176,7 @@ spawn_agent({
 
 검증 통과한 태스크만 커밋.
 
-1. **workplan.yaml 수정**: MCP가 있으면 `autorun_task_mark_verified` 후 `autorun_task_mark_committed`를 호출한다. MCP가 없으면 해당 태스크의 `status`를 `committed`, `done`을 `true`, `lifecycle.committed_at`을 현재 시각으로 직접 수정한다.
+1. **workplan.yaml 수정**: MCP가 있으면 `autorun_task_mark_verified`에 `worker_id`와 `execution_plane`을 가능한 한 함께 기록한 뒤 `autorun_task_mark_committed`를 호출한다. MCP가 없으면 해당 태스크의 `status`를 `committed`, `done`을 `true`, `lifecycle.verified_at`, `lifecycle.committed_at`, `lifecycle.worker_id`, `lifecycle.execution_plane`을 가능한 범위에서 직접 수정한다.
 2. **관련 추적 문서 업데이트** (있다면): todo.md 체크, status.md 등.
 3. **git commit**: 태스크 1개 = 커밋 1개. 메시지 형식:
    ```
@@ -176,7 +192,9 @@ SCAN으로 복귀. 반복.
 
 ## Step 9: TEARDOWN — 모든 태스크 done 시 삭제 커밋
 
-SCAN 결과 미완료 태스크가 0이 되면(전부 done이 되면) workplan.yaml을 삭제하고 커밋한다.
+MCP가 `completion_ready: true`와 `next_required_action: teardown_workplan`을
+반환하거나, 직접 SCAN 결과 미완료 태스크가 0이면(전부 done이면)
+workplan.yaml을 삭제하고 커밋한다.
 
 ```bash
 git rm workplan.yaml
@@ -204,7 +222,7 @@ git commit -m "chore(autorun): complete workplan — <한 줄 요약>"
 
 | 상황 | workplan.yaml 처리 | 행동 |
 |---|---|---|
-| **모든 태스크 done (완전 종료)** | **삭제 커밋** (Step 8) | 정상 종료. 상태 요약 보고 |
+| **모든 태스크 done (완전 종료)** | **삭제 커밋** (Step 9) | 정상 종료. 상태 요약 보고 |
 | `human_gate: approve` 태스크만 남음 | 유지 | 선행 산출물을 기준으로 승인 대기 보고 |
 | `human_gate: execute` 태스크만 남음 | 유지 | 준비물 + 요청 사항 정리하여 보고 |
 | auto 실행 가능 태스크 0 (gate 대기 등 미완료 잔존) | 유지 | 정상 종료. 상태 요약 |

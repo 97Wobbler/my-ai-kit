@@ -8,12 +8,13 @@ import sys
 from pathlib import Path
 from typing import Any, Mapping
 
-from waypoint_mcp.inspectors import WaypointInspectError, discover_repo, doctor_repo
+from waypoint_mcp.inspectors import WaypointInspectError, audit_repo, discover_repo, doctor_repo
 from waypoint_mcp.protocol import JsonRpcError, JsonRpcProtocol, TOOL_ERROR
 
 SERVER_NAME = "waypoint"
-SERVER_VERSION = "0.1.0"
+SERVER_VERSION = "0.1.1"
 PROTOCOL_VERSION = "2024-11-05"
+TOOL_WAYPOINT_AUDIT = "waypoint_audit"
 TOOL_WAYPOINT_DISCOVER = "waypoint_discover"
 TOOL_WAYPOINT_DOCTOR = "waypoint_doctor"
 
@@ -38,6 +39,27 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                 "description": (
                     "Scan a repository for routers, docs, Waypoint config, and likely document roles. "
                     "This tool is read-only."
+                ),
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "repo_root": repo_root_schema,
+                        "max_files": {
+                            "type": "integer",
+                            "minimum": 20,
+                            "maximum": 5000,
+                            "description": "Maximum candidate docs to inspect. Defaults to 500.",
+                        },
+                    },
+                    "required": [],
+                    "additionalProperties": False,
+                },
+            },
+            {
+                "name": TOOL_WAYPOINT_AUDIT,
+                "description": (
+                    "Audit Waypoint-style documentation for bloat, SSOT drift, role mixing, "
+                    "stale work signals, and decision-consolidation candidates. This tool is read-only."
                 ),
                 "inputSchema": {
                     "type": "object",
@@ -103,6 +125,12 @@ def call_tool(name: Any, arguments: Mapping[str, Any]) -> dict[str, Any]:
         if not isinstance(max_files, int):
             raise JsonRpcError(TOOL_ERROR, "max_files must be an integer")
         return discover_repo(repo_root, max_files=max_files)
+    if name == TOOL_WAYPOINT_AUDIT:
+        repo_root = arguments.get("repo_root")
+        max_files = arguments.get("max_files", 500)
+        if not isinstance(max_files, int):
+            raise JsonRpcError(TOOL_ERROR, "max_files must be an integer")
+        return audit_repo(repo_root, max_files=max_files)
     if name == TOOL_WAYPOINT_DOCTOR:
         return doctor_repo(arguments.get("repo_root"))
     raise JsonRpcError(TOOL_ERROR, f"Unknown tool: {name}")
@@ -125,6 +153,16 @@ def format_tool_result(name: Any, result: Mapping[str, Any]) -> str:
             [
                 f"Waypoint doctor: status={result['status']}",
                 f"pass={counts['pass']} warn={counts['warn']} fail={counts['fail']}",
+            ]
+        )
+    if name == TOOL_WAYPOINT_AUDIT:
+        summary = result["summary"]
+        counts = summary["severity_counts"]
+        return "\n".join(
+            [
+                f"Waypoint audit: status={result['status']}",
+                f"documents={summary['document_count']} findings={summary['finding_count']}",
+                f"high={counts['high']} medium={counts['medium']} low={counts['low']}",
             ]
         )
     return json.dumps(result, ensure_ascii=False, indent=2)
@@ -155,4 +193,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-
