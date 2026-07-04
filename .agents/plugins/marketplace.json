@@ -114,6 +114,18 @@
       "category": "Productivity"
     },
     {
+      "name": "x-twitter-scraper",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/x-twitter-scraper"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
       "name": "waypoint",
       "source": {
         "source": "local",

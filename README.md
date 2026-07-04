@@ -168,6 +168,19 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
 - `slackbox`: 자연어 Slack 수집 요청을 사용 가능한 Slackbox MCP tools로
   라우팅.
 
+### `x-twitter-scraper`
+
+- Xquik을 사용해 X/Twitter 데이터 API, MCP, SDK, webhook, export,
+  monitoring workflow를 계획하는 skill 플러그인입니다.
+- 인증이 필요한 호출은 Xquik API key 설정이 필요하고, private read,
+  persistent work, write action은 confirmation gate를 둡니다.
+- 현재 공개 버전은 `1.0.0`입니다.
+
+#### 스킬 목록
+
+- `x-twitter-scraper`: Xquik docs와 OpenAPI를 확인해 narrow route,
+  MCP setup, SDK integration, webhook/export plan을 정리.
+
 ### `waypoint`
 
 - docs-first repository recovery harness를 만드는 플러그인입니다.

@@ -45,6 +45,10 @@
       "source": "./dist/claude/slackbox"
     },
     {
+      "name": "x-twitter-scraper",
+      "source": "./dist/claude/x-twitter-scraper"
+    },
+    {
       "name": "waypoint",
       "source": "./dist/claude/waypoint"
     }
