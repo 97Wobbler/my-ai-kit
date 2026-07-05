@@ -37,6 +37,10 @@ Audit finds:
 The default mode is always dry-run. Do not edit files unless the user explicitly
 asks to apply a specific audit plan or patch.
 
+`audit` is the fast single-pass review. For a post-milestone multi-perspective
+sweep that fans out read-only lens subagents and reverse-checks applied cleanup
+for over-deletion, route to the `deep-audit` skill instead.
+
 ## Inputs
 
 Use the current working directory as the target repository unless the user

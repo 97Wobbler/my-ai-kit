@@ -179,12 +179,13 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
 - docs-first repository recovery harness를 만드는 플러그인입니다.
 - `AGENTS.md`와 visible `docs/` 문서들을 중심으로, 다음 세션이 어디에서
   다시 시작해야 하는지 알 수 있는 waypoint를 남깁니다.
-- 현재 MVP는 greenfield 생성, brownfield `init` audit-only 검사,
-  documentation cleanup dry-run audit을 지원합니다. brownfield repository의
+- 현재 greenfield 생성, brownfield `init` audit-only 검사, documentation
+  cleanup dry-run audit, 그리고 read-only lens subagent들을 병렬로 띄우는
+  multi-perspective `deep-audit` sweep을 지원합니다. brownfield repository의
   기존 규칙이나 문서를 덮어쓰지 않습니다.
 - `.waypoint/config.yaml`은 문서 home을 찾기 위한 locator일 뿐이며, primary
   state는 visible docs에 둡니다.
-- 현재 공개 버전은 `0.1.2`입니다.
+- 현재 공개 버전은 `0.1.3`입니다.
 
 #### 스킬 목록
 
@@ -193,8 +194,15 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
   discovery.
 - `audit`: 문서 비대화, SSOT drift, 역할 혼합, stale plan,
   decision-consolidation 후보를 dry-run으로 점검.
+- `deep-audit`: 큰 작업 구간 이후의 문서 정합성 정리를 위한
+  multi-perspective sweep. read-only lens subagent들을 병렬로 띄워 문서 간
+  충돌, 역할 침범, stale 문서, 코드-문서 drift 등을 점검하고, 승인된 정리
+  계획만 적용한 뒤 over-deletion reverse check까지 수행. Waypoint harness가
+  없는 brownfield doc set에서도 동작.
 - `doctor`: routing, configured document homes, marker blocks, local
   Markdown links를 read-only로 검사.
+- `tracks`: todo보다 크고 roadmap보다 운영적인 active work를 위한 선택적
+  `docs/tracks.md` layer 관리.
 
 ## 설치
 
