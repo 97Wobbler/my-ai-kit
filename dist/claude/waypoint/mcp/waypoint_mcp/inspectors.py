@@ -43,6 +43,7 @@ CORE_DOCUMENT_ROLES = {
     "workflows",
     "decisions",
     "plan",
+    "tracks",
     "ideas",
 }
 MARKDOWN_LINK_RE = re.compile(r"(?<!!)\[[^\]]+\]\(([^)]+)\)")
@@ -68,6 +69,7 @@ ROLE_LINE_THRESHOLDS = {
     "workflows": 450,
     "decisions": 450,
     "plan": 450,
+    "tracks": 450,
     "ideas": 450,
 }
 ROLE_BYTE_THRESHOLDS = {
@@ -79,6 +81,7 @@ ROLE_BYTE_THRESHOLDS = {
     "workflows": 34_000,
     "decisions": 34_000,
     "plan": 34_000,
+    "tracks": 34_000,
     "ideas": 34_000,
 }
 
@@ -326,6 +329,15 @@ def audit_repo(repo_root: str | Path | None = None, max_files: int = 500) -> dic
                 path,
                 "Check whether durable choices should move to the decisions document.",
             )
+        if role == "tracks" and doc["decision_word_count"] > 3:
+            add(
+                "low",
+                "medium",
+                "tracks-may-contain-decisions",
+                f"{path} contains repeated decision vocabulary.",
+                path,
+                "Move durable choices to the decisions document and keep tracks focused on active work.",
+            )
         if role == "ideas" and doc["todo_count"] > 3:
             add(
                 "low",
@@ -366,7 +378,13 @@ def audit_repo(repo_root: str | Path | None = None, max_files: int = 500) -> dic
         for doc in docs
         if doc["path"] in finding_paths
         or doc["role"] in {"router", "runtime-wrapper"}
-        or doc["path"] in {"README.md", "docs/decisions.md", "docs/plan.md", "docs/workflows.md"}
+        or doc["path"] in {
+            "README.md",
+            "docs/decisions.md",
+            "docs/plan.md",
+            "docs/tracks.md",
+            "docs/workflows.md",
+        }
     ]
 
     return {
@@ -507,6 +525,8 @@ def classify_document(root: Path, path: Path) -> tuple[str, str]:
         return "decisions", "high"
     if "plan" in name or "roadmap" in name:
         return "plan", "high"
+    if "track" in name:
+        return "tracks", "high"
     if "todo" in name or "task" in name:
         return "todo", "medium"
     if "idea" in name or parent == "ideas":

@@ -25,7 +25,7 @@ repository easy for a later agent or human session to resume from visible files:
 - `AGENTS.md` as the always-loaded router;
 - optional thin runtime wrappers such as `CLAUDE.md`;
 - focused `docs/*.md` files for purpose, terms, architecture, workflows,
-  decisions, plans, todos, ideas, and workbench notes;
+  decisions, plans, optional tracks, todos, ideas, and workbench notes;
 - `.waypoint/config.yaml` only as a locator, not as the source of truth.
 
 Waypoint must not recreate the retired `stateful` model. It does not introduce a
@@ -43,6 +43,7 @@ Classify the user's request and route to the smallest shipped workflow:
 | "audit this repo", "brownfield", "what docs exist?" | Use `init` in brownfield audit-only mode or `doctor` if validation is requested. |
 | "audit docs", "find bloat", "organize docs", "dry-run cleanup", "consolidate decisions" | Use `audit`; it is dry-run by default and applies edits only after explicit approval. |
 | "doctor", "validate", "check routing", "broken docs links" | Use `doctor`. |
+| "tracks", "work items", "epic/story alternative", "larger than todos" | Use `tracks`; it is an optional documentation layer, not a task engine. |
 | "close session", "brief next session" | Say these are planned but out of the MVP; offer to run `doctor` or produce a manual summary without claiming Waypoint has shipped close/brief skills. |
 
 ## Explanation Points
@@ -53,6 +54,8 @@ When explaining Waypoint, keep it concrete:
 - It audits brownfield repositories before suggesting writes.
 - It can run a dry-run documentation audit for bloat, routing drift, role
   mixing, stale plans, and decision consolidation candidates.
+- It can optionally add `docs/tracks.md` for larger active work tracks when
+  plan/todo alone is not enough.
 - It keeps human-readable state in visible docs, not hidden tool-owned state.
 - Its MCP tools are read-only inspectors; the skill owns judgment and user
   interaction.

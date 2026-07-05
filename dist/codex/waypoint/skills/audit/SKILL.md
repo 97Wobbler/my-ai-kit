@@ -29,6 +29,8 @@ Audit finds:
 - document bloat and sections that should be split or archived;
 - content that conflicts with the `AGENTS.md` or `CLAUDE.md` source of truth;
 - role mixing across plans, decisions, workflows, ideas, reports, and archives;
+- optional track/work-item needs when active work has outgrown the plan/todo
+  split;
 - stale work queues or recommendations that were never promoted into live docs;
 - decision records that may be consolidated after a later reversal or correction.
 

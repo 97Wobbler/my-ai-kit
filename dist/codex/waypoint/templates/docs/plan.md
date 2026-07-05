@@ -1,6 +1,8 @@
 # Plan
 
-This is the live roadmap and active work queue.
+This is the live roadmap and active work queue. If a repository opts into
+larger active work tracks, keep those in `docs/tracks.md` and leave this file
+focused on direction and committed roadmap.
 
 ## Current Direction
 
@@ -11,4 +13,3 @@ This is the live roadmap and active work queue.
 | Work item | Status |
 |---|---|
 | TBD | Pending |
-

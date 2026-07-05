@@ -120,6 +120,9 @@ docs/
 .waypoint/config.yaml
 ```
 
+The greenfield template does not create `docs/tracks.md`. Use the separate
+`tracks` skill when a repository wants the optional track/work-item layer.
+
 When requested, it also creates:
 
 ```text

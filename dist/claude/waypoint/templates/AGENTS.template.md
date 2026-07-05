@@ -19,6 +19,7 @@ This repository uses a Waypoint docs-first recovery harness.
 - Repeatable procedures: `docs/workflows.md`.
 - Durable decisions: `docs/decisions.md`.
 - Current roadmap and active work: `docs/plan.md`.
+- Optional larger work tracks: `docs/tracks.md` when present.
 - Short task queue: `docs/todo.md`.
 - Exploratory ideas: `docs/ideas.md`.
 - Scratch notes before promotion: `docs/workbench/`.
@@ -32,6 +33,7 @@ This repository uses a Waypoint docs-first recovery harness.
 | Add or change procedures | `docs/workflows.md` | `docs/workflows.md` |
 | Record durable terminology | `docs/ontology.md` | `docs/ontology.md` |
 | Plan committed work | `docs/plan.md`, `docs/todo.md` | `docs/plan.md`, `docs/todo.md` |
+| Manage larger active work tracks | `docs/plan.md`, `docs/tracks.md` if present, `docs/todo.md` | `docs/tracks.md` if present; otherwise `docs/plan.md` or `docs/todo.md` |
 | Capture exploratory ideas | `docs/ideas.md`, `docs/workbench/` | `docs/ideas.md` |
 | Finish meaningful work | Relevant docs above | Update changed authority homes and record validation gaps |
 
@@ -86,6 +88,7 @@ Document homes:
 - Workflows: `docs/workflows.md`
 - Decisions: `docs/decisions.md`
 - Plan: `docs/plan.md`
+- Tracks: `docs/tracks.md` when present
 - Todo: `docs/todo.md`
 - Ideas: `docs/ideas.md`
 - Workbench: `docs/workbench/`

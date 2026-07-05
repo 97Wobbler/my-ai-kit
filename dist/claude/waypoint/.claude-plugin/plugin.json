@@ -1,7 +1,7 @@
 {
   "name": "waypoint",
-  "version": "0.1.1",
-  "description": "Install and inspect lightweight docs-first repository waypoints.",
+  "version": "0.1.2",
+  "description": "Install, inspect, and guide lightweight docs-first repository waypoints.",
   "author": {
     "name": "97Wobbler",
     "url": "https://github.com/97Wobbler"

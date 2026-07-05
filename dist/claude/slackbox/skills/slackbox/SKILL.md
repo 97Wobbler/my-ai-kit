@@ -101,14 +101,37 @@ Use these two mode names consistently:
 
 When the user asks for setup, distinguish the four setup paths:
 
+- Slack app setup for Local Slackbox: give a novice-friendly sequence before
+  runtime-specific steps. Tell the user to open `https://api.slack.com/apps`,
+  create or open an internal Slack app, go to **OAuth & Permissions**, add
+  User Token Scopes, install or reinstall the app to the workspace, and copy
+  the User OAuth Token beginning with `xoxp-`. Do not ask the user to paste the
+  token into chat.
 - setup local Claude: configure the Slackbox plugin's Claude sensitive
   `userConfig` for the Slack User OAuth Token, enable the plugin, reload if
   needed, use `/mcp` to confirm the Local Slackbox MCP server is connected, and
   run `slackbox_doctor` if tools are available.
-- setup local Codex: provide `SLACK_USER_TOKEN` to the local Slackbox stdio MCP
-  server through Codex plugin/MCP configuration or environment forwarding; use
-  `codex mcp list`, `codex mcp get slackbox`, and the TUI `/mcp` view to
-  confirm the Local Slackbox server is active.
+- setup local Codex: prefer the one-time local config file
+  `~/.slackbox/config.env` instead of telling the user to export environment
+  variables before each run. When MCP tools are available, call
+  `slackbox_setup_guide("codex")` and tell the user to open a new terminal,
+  `cd` into the installed plugin directory, then run the short setup launcher:
+  `scripts/slackbox-setup` on macOS/Linux or
+  `powershell -ExecutionPolicy Bypass -File .\scripts\slackbox-setup.ps1` on
+  Windows. Prefer showing this as two terminal lines, not as a long absolute
+  path to the script and not as a `python3 ... slackbox_cli.py` command. The
+  user should paste the
+  `xoxp-` User OAuth Token into that terminal prompt, not into Codex chat. Use
+  manual `cat > ~/.slackbox/config.env` instructions only as a fallback for
+  technical users. Explain that the file should contain
+  `SLACK_USER_TOKEN=xoxp-...` and
+  `SLACK_FETCH_DATA_DIR=~/.slackbox/data`, should be readable only by the user,
+  and must never be committed. The installed plugin can still forward parent
+  environment variables with Codex `env_vars` for advanced users; fixed
+  literals such as `PYTHONPATH` belong in `env`. Do not suggest `${VAR}`
+  placeholders in Codex MCP `env`, and do not suggest `codex mcp login` for
+  Local Slackbox. Use `codex mcp list`, `codex mcp get slackbox`, and the TUI
+  `/mcp` view to confirm the Local Slackbox server is active.
 - setup remote Claude: configure Slack's Official Slack Remote MCP through the
   official Slack remote HTTP MCP/plugin path, then use `/mcp` to complete OAuth
   and inspect the remote server. Explain that this is not Local Slackbox.
@@ -120,6 +143,13 @@ When the user asks for setup, distinguish the four setup paths:
 If setup is missing, explain only the missing requirement that blocks
 collection, such as a Slack user token, required Slack scopes, or workspace
 permissions. Do not ask the user to paste tokens into chat.
+
+When providing setup instructions, prefer concrete steps over jargon. Mention
+where the user clicks in Slack, that Local Slackbox expects an `xoxp-` User
+OAuth Token rather than an `xoxb-` bot token, where the token is stored
+locally, how to restart the runtime, and how to verify with
+`slackbox_doctor()`. If Slackbox MCP tools are available, call
+`slackbox_setup_guide()` for a token-safe setup guide.
 
 ## Doctor Mode
 
@@ -134,9 +164,12 @@ or `--doctor`, prefer MCP-backed diagnosis when available:
   - Claude Local Slackbox: confirm plugin sensitive `userConfig` contains a
     Slack User OAuth Token, reload the plugin/session if needed, and inspect
     `/mcp` for the Local Slackbox server and tool count.
-  - Codex Local Slackbox: confirm `SLACK_USER_TOKEN` is available to the MCP
-    server through `env` or `env_vars`; inspect `codex mcp list`,
-    `codex mcp get slackbox`, and the TUI `/mcp` view.
+  - Codex Local Slackbox: confirm `~/.slackbox/config.env` exists and contains
+    `SLACK_USER_TOKEN` plus `SLACK_FETCH_DATA_DIR`, or confirm the advanced
+    parent-environment `env_vars` path. Inspect `codex mcp list`,
+    `codex mcp get slackbox`, and the TUI `/mcp` view. If doctor reports no
+    config file, guide the user to create the local config file rather than
+    asking them to edit plugin source or paste a token into chat.
   - Official Slack Remote MCP on Codex: inspect the remote HTTP MCP config and
     use `codex mcp login <server-name>` when OAuth is required.
   - Token shape and scopes: Local Slackbox expects a Slack User OAuth Token
@@ -153,6 +186,7 @@ Choose the smallest tool or sequence that satisfies the collection request.
 
 | User intent | MCP tool | Synthetic example |
 |---|---|---|
+| Get setup instructions | `slackbox_setup_guide(runtime)` | "setup local Codex" |
 | Diagnose setup or runtime health | `slackbox_doctor()` | "run --doctor" |
 | List channels | `list_channels(include_private, include_dm)` | "list channels" |
 | List users or resolve a user id | `list_users()` | "find user U123EXAMPLE" |

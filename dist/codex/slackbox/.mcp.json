@@ -7,10 +7,12 @@
       ],
       "cwd": ".",
       "env": {
-        "SLACK_USER_TOKEN": "${SLACK_USER_TOKEN}",
-        "SLACK_FETCH_DATA_DIR": "${SLACK_FETCH_DATA_DIR}",
         "PYTHONPATH": "mcp"
-      }
+      },
+      "env_vars": [
+        "SLACK_USER_TOKEN",
+        "SLACK_FETCH_DATA_DIR"
+      ]
     }
   }
 }

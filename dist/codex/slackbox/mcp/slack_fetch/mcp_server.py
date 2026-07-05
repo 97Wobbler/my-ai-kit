@@ -11,6 +11,7 @@ from __future__ import annotations
 import json
 import logging
 import importlib.util
+import os
 import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
@@ -19,7 +20,11 @@ from mcp.server import FastMCP
 
 from slack_sdk.errors import SlackApiError
 
-from slack_fetch.config import CrawlerConfig
+from slack_fetch.config import (
+    CrawlerConfig,
+    default_config_paths,
+    has_unexpanded_env_placeholder,
+)
 from slack_fetch.client import create_slack_client
 from slack_fetch.channels import collect_channels
 from slack_fetch.messages import collect_via_search, collect_via_history
@@ -55,9 +60,10 @@ def _setup_blocker_response(errors: list[str] | None = None) -> str:
     return "\n".join([
         "Slackbox setup is incomplete; collection stopped before contacting Slack.",
         f"- Blocker: {blocker}",
-        "- Configure a Slack User OAuth Token through Claude plugin sensitive config or Codex MCP/env forwarding.",
+        "- Configure a Slack User OAuth Token through Claude plugin sensitive config or ~/.slackbox/config.env.",
         "- Expected token type: Slack User OAuth Token beginning with xoxp- plus read scopes for the requested collection.",
         "- Do not paste tokens into chat.",
+        "- Ask for Slackbox setup help or run slackbox_setup_guide() for step-by-step setup.",
         "- Run slackbox_doctor() after setup to verify the Local Slackbox MCP server.",
     ])
 
@@ -73,6 +79,10 @@ def _load_cfg(*, require_token: bool) -> tuple[CrawlerConfig | None, str | None]
         return None, _setup_blocker_response([
             f"configuration could not be loaded ({type(e).__name__})"
         ])
+
+    data_dir_errors = cfg.validate_data_dir()
+    if data_dir_errors:
+        return None, _setup_blocker_response(data_dir_errors)
 
     if require_token:
         errors = cfg.validate()
@@ -178,7 +188,88 @@ def _doctor_data_dir_status(data_dir: Path) -> str:
         return f"not_writable ({type(e).__name__})"
 
 
+def _shell_quote(value: Path) -> str:
+    return "'" + str(value).replace("'", "'\"'\"'") + "'"
+
+
+def _windows_quote(value: Path) -> str:
+    return '"' + str(value).replace('"', '\\"') + '"'
+
+
+def _setup_wizard_command_lines(platform: str | None = None) -> list[str]:
+    plugin_root = Path(__file__).resolve().parents[2]
+    if (platform or os.name) == "nt":
+        return [
+            f"cd {_windows_quote(plugin_root)}",
+            r"powershell -ExecutionPolicy Bypass -File .\scripts\slackbox-setup.ps1",
+        ]
+    return [
+        f"cd {_shell_quote(plugin_root)}",
+        "scripts/slackbox-setup",
+    ]
+
+
 # ── MCP Tools ────────────────────────────────────────────────────
+
+@mcp.tool()
+def slackbox_setup_guide(runtime: str = "codex") -> str:
+    """Slackbox local setup steps without asking for or exposing a token."""
+    normalized_runtime = runtime.strip().lower()
+    config_path = default_config_paths()[0]
+    data_dir = config_path.parent / "data"
+    setup_commands = _setup_wizard_command_lines()
+
+    lines = [
+        "Slackbox local setup guide:",
+        "",
+        "1. Create or open a Slack app.",
+        "   - Open https://api.slack.com/apps.",
+        "   - Create a new app or open an existing internal app for the workspace.",
+        "",
+        "2. Add User Token Scopes in OAuth & Permissions.",
+        "   - Minimum public-channel scopes: channels:read, channels:history, users:read, search:read.",
+        "   - Add private/DM scopes only when needed: groups:read, groups:history, im:read, im:history, mpim:read, mpim:history.",
+        "",
+        "3. Install or reinstall the Slack app to the workspace.",
+        "   - After scope changes, reinstall or reauthorize so the token includes the new scopes.",
+        "",
+        "4. Copy the User OAuth Token.",
+        "   - Use the token beginning with xoxp- from OAuth & Permissions.",
+        "   - Do not use a bot token beginning with xoxb-.",
+        "   - Do not paste the token into chat.",
+        "",
+    ]
+
+    if normalized_runtime == "claude":
+        lines.extend([
+            "5. In Claude Code, put the xoxp token in the Slackbox plugin's sensitive configuration prompt or runtime configuration UI.",
+            "   - Do not store the token in plugin source files or examples.",
+        ])
+    else:
+        lines.extend([
+            "5. In Codex, run the setup wizard in a new terminal.",
+            "   - Open a new terminal window, then copy and run these lines:",
+            f"     {setup_commands[0]}",
+            f"     {setup_commands[1]}",
+            "   - When the wizard asks for a token, paste the xoxp- User OAuth Token there.",
+            "   - Do not paste the token into Codex chat.",
+            "",
+            "6. The wizard saves the token once in a local Slackbox config file.",
+            f"   - Config file: {config_path}",
+            "   - It creates the directory and file with user-only permissions.",
+            "   - Equivalent file content:",
+            "     SLACK_USER_TOKEN=xoxp-your-token-here",
+            f"     SLACK_FETCH_DATA_DIR={data_dir}",
+            "   - Keep this file on your machine. Do not commit it.",
+        ])
+
+    lines.extend([
+        "",
+        "7. Restart the AI runtime so the local MCP server reloads configuration.",
+        "8. Run slackbox_doctor() and expect token_prefix: xoxp- OK and auth_test: ok.",
+    ])
+    return "\n".join(lines)
+
 
 @mcp.tool()
 def slackbox_doctor() -> str:
@@ -191,12 +282,27 @@ def slackbox_doctor() -> str:
         cfg = None
         lines.append(f"- config: load_failed ({type(e).__name__})")
 
+    if cfg and cfg.config_sources:
+        lines.append(
+            "- config_files: "
+            + ", ".join(str(path) for path in cfg.config_sources)
+        )
+    elif cfg:
+        checked_paths = ", ".join(str(path) for path in default_config_paths())
+        lines.append(f"- config_files: none found (checked {checked_paths})")
+
     token = cfg.slack_user_token if cfg else ""
-    token_present = bool(token)
-    lines.append(f"- SLACK_USER_TOKEN: {'present' if token_present else 'missing'}")
+    token_is_placeholder = has_unexpanded_env_placeholder(token)
+    token_present = bool(token) and not token_is_placeholder
+    if token_is_placeholder:
+        lines.append("- SLACK_USER_TOKEN: missing (unexpanded env placeholder received)")
+    else:
+        lines.append(f"- SLACK_USER_TOKEN: {'present' if token_present else 'missing'}")
 
     if not token:
         prefix_state = "missing"
+    elif token_is_placeholder:
+        prefix_state = "unexpanded env placeholder"
     elif token.startswith("xoxp-"):
         prefix_state = "xoxp- OK"
     elif token.startswith("xoxb-"):
@@ -206,8 +312,12 @@ def slackbox_doctor() -> str:
     lines.append(f"- token_prefix: {prefix_state}")
 
     if cfg:
-        lines.append(f"- data_dir: {cfg.data_dir}")
-        lines.append(f"- data_dir_access: {_doctor_data_dir_status(cfg.data_dir)}")
+        if has_unexpanded_env_placeholder(cfg.data_dir):
+            lines.append("- data_dir: configuration_required (unexpanded env placeholder)")
+            lines.append("- data_dir_access: skipped")
+        else:
+            lines.append(f"- data_dir: {cfg.data_dir}")
+            lines.append(f"- data_dir_access: {_doctor_data_dir_status(cfg.data_dir)}")
     else:
         lines.append("- data_dir: unavailable")
         lines.append("- data_dir_access: unknown")

@@ -154,6 +154,12 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
 
 - Local Slackbox mode는 로컬 stdio MCP 서버로 Slack 채널, 사용자, 검색,
   멘션, 스레드 context를 crawl/cache/retrieval하는 플러그인입니다.
+- Codex local mode는 매번 shell 환경변수를 export하지 않고도
+  `~/.slackbox/config.env` 로컬 설정 파일에서 Slack User OAuth Token을
+  읽을 수 있습니다.
+- Codex setup guide는 macOS/Windows용 짧은 setup launcher 실행 절차를
+  안내하며, 사용자는 토큰을 chat이 아니라 새 terminal의 wizard prompt에
+  붙여넣습니다.
 - 현재 MVP는 제한된 범위의 수집과 로컬 조회까지만 다룹니다. 결과 해석
   workflow는 이번 release 범위에 포함하지 않습니다.
 - Official Slack Remote MCP는 별도의 OAuth-backed 경로입니다. `/mcp` 또는
@@ -161,7 +167,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
   로컬 crawl/cache/retrieval 동작과 동일하지 않습니다.
 - 예시는 합성 값만 사용합니다: `#project-updates`, `U123EXAMPLE`,
   `"release checklist"`.
-- 현재 공개 버전은 `0.1.2`입니다.
+- 현재 공개 버전은 `0.1.3`입니다.
 
 #### 스킬 목록
 
@@ -178,7 +184,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
   기존 규칙이나 문서를 덮어쓰지 않습니다.
 - `.waypoint/config.yaml`은 문서 home을 찾기 위한 locator일 뿐이며, primary
   state는 visible docs에 둡니다.
-- 현재 공개 버전은 `0.1.1`입니다.
+- 현재 공개 버전은 `0.1.2`입니다.
 
 #### 스킬 목록
 

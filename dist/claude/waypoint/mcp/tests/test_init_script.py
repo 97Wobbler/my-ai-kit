@@ -19,6 +19,7 @@ def test_greenfield_generation_is_idempotent(tmp_path: Path) -> None:
     assert (tmp_path / "AGENTS.md").is_file()
     assert (tmp_path / "CLAUDE.md").read_text(encoding="utf-8").count("AGENTS.md") >= 1
     assert (tmp_path / ".waypoint" / "config.yaml").is_file()
+    assert not (tmp_path / "docs" / "tracks.md").exists()
     assert ".waypoint/cache/" in (tmp_path / ".gitignore").read_text(encoding="utf-8")
     assert "AGENTS.md" in second["unchanged"]
 

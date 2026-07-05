@@ -109,6 +109,25 @@ Use the minimum Slack scopes and workspace permissions needed for the
 collection task. If token setup or permissions are missing, the skill should
 explain the missing setup and stop before attempting collection.
 
+### Slack App And User Token Setup
+
+Local Slackbox uses Slack Web API calls through a Slack User OAuth Token. This
+is different from Slack's official remote MCP OAuth flow.
+
+1. Open `https://api.slack.com/apps`.
+2. Create a new internal Slack app for the target workspace, or open an
+   existing app you control.
+3. Go to **OAuth & Permissions**.
+4. Under **User Token Scopes**, add only the scopes needed for the collection
+   target.
+5. Install or reinstall the app to the workspace after changing scopes.
+6. Copy the **User OAuth Token** from the OAuth page. It should begin with
+   `xoxp-`. A bot token beginning with `xoxb-` is not the expected token for
+   Local Slackbox.
+
+Do not paste the token into chat. Store it only in the runtime's sensitive
+configuration UI or in the local Slackbox config file described below.
+
 ### Claude Code Local Slackbox Mode
 
 Claude Code local mode uses this plugin's `userConfig` sensitive configuration
@@ -121,31 +140,96 @@ sensitive runtime configuration, not as a public README value.
 
 ### Codex Local Slackbox Mode
 
-Codex local mode should use Codex MCP configuration or environment forwarding
-for `SLACK_USER_TOKEN`. Do not claim that Codex provides a plugin `userConfig`
-secret prompt for this value unless official Codex docs document that behavior.
+Codex local mode should use a one-time local Slackbox config file by default:
 
-For an installed Slackbox plugin, set the environment before starting Codex and
-then verify that the plugin MCP server is visible:
-
-```bash
-export SLACK_USER_TOKEN='<set-this-in-your-shell>'
-codex
-/mcp
+```text
+~/.slackbox/config.env
 ```
 
-For a manually registered local MCP server, prefer Codex's MCP configuration
-commands and pass the token as an environment variable:
+This avoids asking non-technical users to export shell environment variables
+before every Codex run. Prefer the setup wizard over manual file editing.
+
+Ask Slackbox for setup help or run `slackbox_setup_guide()` from the MCP tools.
+The guide prints exact commands for the installed plugin. On macOS or Linux it
+looks like this:
 
 ```bash
-codex mcp add slackbox --env SLACK_USER_TOKEN="$SLACK_USER_TOKEN" -- python3 /path/to/slackbox/mcp/server.py
+cd '/path/to/installed/slackbox'
+scripts/slackbox-setup
+```
+
+On Windows PowerShell it looks like this:
+
+```powershell
+cd "C:\path\to\installed\slackbox"
+powershell -ExecutionPolicy Bypass -File .\scripts\slackbox-setup.ps1
+```
+
+Open a new terminal, paste those lines, and press Enter. When the
+wizard asks for a token, paste the copied `xoxp-` User OAuth Token into the
+terminal prompt. Do not paste the real token into Codex chat. A token beginning
+with `xoxb-` is a bot token and is not the expected token for Local Slackbox.
+
+The wizard creates `~/.slackbox/config.env` with user-only file permissions.
+The equivalent manual setup is:
+
+```bash
+mkdir -p "$HOME/.slackbox"
+chmod 700 "$HOME/.slackbox"
+
+cat > "$HOME/.slackbox/config.env" <<'EOF'
+SLACK_USER_TOKEN=xoxp-your-token-here
+SLACK_FETCH_DATA_DIR=~/.slackbox/data
+EOF
+
+chmod 600 "$HOME/.slackbox/config.env"
+```
+
+Replace `xoxp-your-token-here` locally in the terminal or a local editor. Do
+not paste the real token into chat.
+
+After creating the file, restart Codex and verify:
+
+```text
+/mcp
+$slackbox --doctor
+```
+
+Advanced users may still use environment variables. The installed Codex plugin
+forwards `SLACK_USER_TOKEN` and `SLACK_FETCH_DATA_DIR` with `env_vars`, and
+sets only the fixed `PYTHONPATH` literal through `env`.
+
+Codex MCP `env` values are copied as literal values, so do not put shell-style
+placeholders such as `${SLACK_USER_TOKEN}` in `env`. Reserve `env` for fixed
+values such as `PYTHONPATH`.
+
+Do not claim that Codex provides a plugin `userConfig` secret prompt for this
+value unless official Codex docs document that behavior. `codex mcp login` is
+for OAuth-capable streamable HTTP MCP servers; it does not authenticate this
+local Slackbox stdio server.
+
+For a manually registered local MCP server, prefer `config.toml` when you need
+parent-env forwarding:
+
+```toml
+[mcp_servers.slackbox]
+command = "python3"
+args = ["/path/to/slackbox/mcp/server.py"]
+env_vars = ["SLACK_USER_TOKEN", "SLACK_FETCH_DATA_DIR"]
+```
+
+Codex's `codex mcp add --env KEY=VALUE` CLI flag stores environment values for
+stdio servers. Use it only when that literal value is what you want saved in
+the MCP config.
+
+```bash
 codex mcp list
 codex mcp get slackbox
 ```
 
 In the Codex TUI, use `/mcp` to check whether the Slackbox MCP server is
-active. A project or user `config.toml` can also pass `SLACK_USER_TOKEN`
-through the server's `env` or `env_vars` settings.
+active. Run `slackbox_setup_guide()` or ask for Slackbox setup help when the
+steps are unclear.
 
 ### Official Remote MCP Mode
 
@@ -164,7 +248,7 @@ codex mcp login slack-official
 This configures the official Slack Remote MCP mode only. It does not enable
 Slackbox local cache, crawl, or retrieval behavior.
 
-### Slack App And Token Setup
+### Required Slack Scopes
 
 Slackbox local mode currently expects a Slack User OAuth Token, not a bot
 token. Use a token beginning with `xoxp-`.
@@ -188,7 +272,7 @@ issued user token includes the updated scopes.
 
 ## Official Docs Consulted
 
-Docs consulted on 2026-05-30:
+Docs consulted on 2026-05-30 and 2026-07-05:
 
 - Claude Code MCP documentation:
   `https://code.claude.com/docs/en/mcp`
@@ -196,8 +280,14 @@ Docs consulted on 2026-05-30:
   `https://code.claude.com/docs/en/plugins-reference`
 - OpenAI Codex MCP servers documentation:
   `https://developers.openai.com/codex/configuration/mcp-servers`
+- OpenAI Codex current manual, MCP section:
+  `https://developers.openai.com/codex/mcp`
 - Slack OAuth scopes reference:
   `https://docs.slack.dev/reference/scopes/`
+- Slack tokens reference:
+  `https://docs.slack.dev/authentication/tokens`
+- Slack installing with OAuth guide:
+  `https://docs.slack.dev/authentication/installing-with-oauth`
 - Slack `conversations.history` method:
   `https://docs.slack.dev/reference/methods/conversations.history/`
 - Slack `conversations.replies` method:

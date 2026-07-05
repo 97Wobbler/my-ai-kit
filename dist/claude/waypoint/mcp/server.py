@@ -12,7 +12,7 @@ from waypoint_mcp.inspectors import WaypointInspectError, audit_repo, discover_r
 from waypoint_mcp.protocol import JsonRpcError, JsonRpcProtocol, TOOL_ERROR
 
 SERVER_NAME = "waypoint"
-SERVER_VERSION = "0.1.1"
+SERVER_VERSION = "0.1.2"
 PROTOCOL_VERSION = "2024-11-05"
 TOOL_WAYPOINT_AUDIT = "waypoint_audit"
 TOOL_WAYPOINT_DISCOVER = "waypoint_discover"

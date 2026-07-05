@@ -97,6 +97,32 @@ def test_audit_reports_document_bloat_candidate(tmp_path: Path) -> None:
     assert any(item["code"] == "document-bloat-candidate" for item in result["findings"])
 
 
+def test_discover_classifies_tracks_document(tmp_path: Path) -> None:
+    create_minimal_waypoint_repo(tmp_path)
+    write(tmp_path / "docs/tracks.md", "# Tracks\n")
+
+    result = discover_repo(tmp_path)
+
+    tracks = [item for item in result["documents"] if item["path"] == "docs/tracks.md"]
+    assert tracks == [{"path": "docs/tracks.md", "role": "tracks", "confidence": "high"}]
+
+
+def test_doctor_checks_configured_tracks_home(tmp_path: Path) -> None:
+    create_minimal_waypoint_repo(tmp_path)
+    write(
+        tmp_path / ".waypoint/config.yaml",
+        "documents:\n  agents: AGENTS.md\n  plan: docs/plan.md\n  tracks: docs/tracks.md\n",
+    )
+
+    result = doctor_repo(tmp_path)
+
+    assert result["status"] == "warn"
+    assert any(
+        item["code"] == "document-home-missing" and item["path"] == "docs/tracks.md"
+        for item in result["findings"]
+    )
+
+
 def test_audit_reports_decision_consolidation_candidate(tmp_path: Path) -> None:
     create_minimal_waypoint_repo(tmp_path)
     write(

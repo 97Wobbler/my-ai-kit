@@ -24,6 +24,8 @@ unless the user explicitly approves an apply scope.
 5. Group findings by outcome:
    - fix routing or SSOT drift;
    - split or move mixed content;
+   - propose optional tracks when active work is too large for todos but too
+     operational for the roadmap;
    - archive stale detail;
    - consolidate decision history;
    - no action.
