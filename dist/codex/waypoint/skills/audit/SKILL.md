@@ -1,6 +1,6 @@
 ---
 name: "audit"
-description: "Audit a Waypoint-style docs harness for document bloat, SSOT routing drift, role mixing, stale plans, and decision-consolidation candidates. Use when the user asks to dry-run docs cleanup, find oversized docs, check AGENTS.md or CLAUDE.md governance, consolidate reverted decisions, or organize repository docs."
+description: "Dry-run cleanup/governance audit for Waypoint docs harnesses: bloat, SSOT drift, role mixing, stale plans, and decision consolidation. Use for dry-run docs cleanup, organize docs, 문서 정리 감사, 문서 다이어트, or 정리 후보 찾아줘. For health validation use doctor; for post-milestone sweeps use deep-audit."
 ---
 
 # Audit
@@ -23,6 +23,10 @@ recompile and review the generated output.
 
 Use this skill to review a Waypoint-style documentation harness as an editor,
 not as an automatic document manager.
+
+`audit` is for cleanup and governance findings. For read-only health
+validation, route to `doctor`; for post-milestone multi-perspective sweeps,
+route to `deep-audit`.
 
 Audit finds:
 

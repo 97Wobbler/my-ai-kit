@@ -15,7 +15,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
 
 - 큰 작업을 dependency-aware `workplan.yaml`로 나눈 뒤, 검증과 커밋 단위로
   자동 실행하는 오케스트레이션 워크플로우입니다.
-- `0.3.3` 기준 두 가지 워크플로우를 제공합니다. Full Autorun은 번들 MCP
+- `0.3.4` 기준 두 가지 워크플로우를 제공합니다. Full Autorun은 번들 MCP
   서버로 계획 생성, 검증, task split, 실행 배치, lifecycle 상태 전이,
   active-task readiness filtering, proposal-worker timeout classification,
   advisory task-graph budgeting을 관리합니다.
@@ -44,6 +44,22 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
 
 - `skill-forge-spec`: cross-runtime skill의 원형 spec을 작성.
 - `skill-forge-compile`: spec을 Claude Code와 Codex CLI용 `SKILL.md`로 컴파일.
+
+### `card-review` (Beta)
+
+- 여러 작업, 제안, 문서, diff 같은 항목 목록을 로컬 브라우저에서 카드
+  단위로 검토하는 dependency-free 워크플로우입니다.
+- A/B 분류, 스킵, 메모, 항목 이동, undo/redo, 중단 후 재개, 부분 완료를
+  지원합니다.
+- 원본 입력은 변경하지 않고 안정적인 source ID를 기준으로
+  `{id, result, memo?}` JSONL 결과를 별도 저장합니다.
+- 초기 Beta `0.1.0`은 browser-only MVP이며 TUI Bridge를 요구하거나 포함하지
+  않습니다.
+
+#### 스킬 목록
+
+- `card-review`: 구조화된 입력을 검증하고 로컬 Card Review UI를 실행한 뒤
+  결과 경로, 분류 수, 미해결 항목을 정리.
 
 ### `scribe`
 
@@ -128,7 +144,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
   구조적인 검토와 토론을 돕습니다.
 - 막연한 "전문가처럼 봐줘" 대신, 어떤 관점과 분석 도구로 볼지 명시해
   검토의 밀도와 재현성을 높입니다.
-- 현재 공개 버전은 `0.5.9`입니다.
+- 현재 공개 버전은 `0.5.10`입니다.
 
 #### 스킬 목록
 
@@ -167,7 +183,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
   로컬 crawl/cache/retrieval 동작과 동일하지 않습니다.
 - 예시는 합성 값만 사용합니다: `#project-updates`, `U123EXAMPLE`,
   `"release checklist"`.
-- 현재 공개 버전은 `0.1.3`입니다.
+- 현재 공개 버전은 `0.1.4`입니다.
 
 #### 스킬 목록
 
@@ -185,7 +201,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
   기존 규칙이나 문서를 덮어쓰지 않습니다.
 - `.waypoint/config.yaml`은 문서 home을 찾기 위한 locator일 뿐이며, primary
   state는 visible docs에 둡니다.
-- 현재 공개 버전은 `0.1.3`입니다.
+- 현재 공개 버전은 `0.1.4`입니다.
 
 #### 스킬 목록
 

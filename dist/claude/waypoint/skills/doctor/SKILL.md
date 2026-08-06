@@ -1,6 +1,6 @@
 ---
 name: "doctor"
-description: "Inspect a repository's Waypoint docs harness health. Use when the user asks to validate Waypoint, check AGENTS.md routing, detect missing configured docs, find duplicate waypoint marker blocks, inspect brownfield docs, or run waypoint doctor."
+description: "Read-only health validation for a repository's Waypoint docs harness. Use to validate Waypoint, check AGENTS.md routing, detect missing configured docs, find duplicate waypoint marker blocks, run waypoint doctor, 웨이포인트 진단, 문서 하네스 검증, or 라우팅 깨졌는지 봐줘. Cleanup recommendations use audit."
 ---
 
 # Doctor
@@ -23,6 +23,10 @@ recompile and review the generated output.
 Use this skill to inspect whether a repository has a healthy docs-first recovery
 harness. Doctor is read-only. It reports findings; it does not make durable
 policy decisions or edit files.
+
+`doctor` validates harness health only. For cleanup/governance recommendations,
+route to `audit`; for post-milestone multi-perspective sweeps, route to
+`deep-audit`.
 
 ## What Doctor Checks
 

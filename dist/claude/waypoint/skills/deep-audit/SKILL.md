@@ -1,6 +1,6 @@
 ---
 name: "deep-audit"
-description: "Multi-perspective documentation consistency sweep using read-only lens subagents. Use after a large work phase, pivot, or long commit streak when the user asks for a docs consistency review, big docs cleanup, docs diet, stale-doc sweep, cross-document conflict check, code-versus-docs drift check, or a post-cleanup over-deletion check."
+description: "Post-milestone multi-perspective docs consistency sweep with read-only lens subagents. Use after a large work phase, pivot, or long commit streak for docs consistency, big cleanup, stale-doc sweep, over-deletion check, 큰 문서 정리, 문서 일관성 점검, or 여러 관점으로 문서 감사. Routine cleanup uses audit; health validation uses doctor."
 ---
 
 # Deep Audit
@@ -26,6 +26,10 @@ Use this skill for a post-milestone documentation consistency sweep: several
 read-only lens subagents inspect the doc set from different perspectives, the
 main session adjudicates their findings, and cleanup is applied only after the
 user approves a bounded plan.
+
+`deep-audit` is for large post-milestone or post-cleanup sweeps. For routine
+single-pass cleanup findings, route to `audit`; for read-only harness health
+validation, route to `doctor`.
 
 `deep-audit` complements `audit`. `audit` is the fast single-pass dry-run
 review backed by deterministic inventory heuristics. `deep-audit` is for the

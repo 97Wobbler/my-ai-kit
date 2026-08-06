@@ -1,0 +1,22 @@
+{
+  "name": "card-review",
+  "version": "0.1.0",
+  "description": "Review structured item lists in a local browser with persistent A/B decisions, notes, and JSONL results.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "skills": "./skills/",
+  "keywords": [
+    "claude-code",
+    "codex",
+    "skill",
+    "review",
+    "human-in-the-loop",
+    "classification",
+    "browser"
+  ]
+}

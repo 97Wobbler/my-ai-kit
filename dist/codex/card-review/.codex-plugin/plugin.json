@@ -1,0 +1,40 @@
+{
+  "name": "card-review",
+  "version": "0.1.0",
+  "description": "Review structured item lists in a local browser with persistent A/B decisions, notes, and JSONL results.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "claude-code",
+    "skill",
+    "review",
+    "human-in-the-loop",
+    "classification",
+    "browser"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Card Review",
+    "shortDescription": "Review item lists in a persistent local card UI",
+    "longDescription": "Card Review turns structured tasks, proposals, documents, diffs, or other item lists into a dependency-free local browser workflow with A/B classification, skip, memo, navigation, undo/redo, resume, partial completion, and stable JSONL results.",
+    "developerName": "97Wobbler",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write",
+      "Interactive"
+    ],
+    "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
+    "defaultPrompt": [
+      "Use Card Review to review these items",
+      "Open these proposals in the Card Review browser UI"
+    ],
+    "brandColor": "#7C3AED"
+  }
+}

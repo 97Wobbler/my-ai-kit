@@ -1,6 +1,6 @@
 {
   "name": "my-ai-kit",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "interface": {
     "displayName": "My AI Kit"
   },
@@ -34,6 +34,18 @@
       "source": {
         "source": "local",
         "path": "./dist/codex/skill-forge"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "card-review",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/card-review"
       },
       "policy": {
         "installation": "AVAILABLE",

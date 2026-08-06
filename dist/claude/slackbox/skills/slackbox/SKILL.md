@@ -1,6 +1,6 @@
 ---
 name: "slackbox"
-description: "Route Slackbox collection requests to local MCP tools. Use when the user asks to list Slack channels or users, collect channel or user messages, search Slack messages, collect mentions or threads, retrieve already collected Slackbox data, or asks what Slackbox can collect. This skill is collection-only; defer analysis and reporting to a future slackbox:analyze skill."
+description: "Route Slackbox collection requests to local MCP tools. Use to list Slack channels/users, collect channel/user messages, search Slack messages, collect mentions or threads, retrieve collected data, or for 슬랙 채널 목록, 슬랙 메시지 수집, 멘션 수집, or 스레드 수집. Collection-only; defer analysis/reporting to a future slackbox:analyze skill."
 ---
 
 # Slackbox
@@ -33,6 +33,8 @@ Use this skill when the user asks to:
 - search messages by keyword or query;
 - collect messages that mention a user;
 - collect threads;
+- collect Korean-scoped Slack requests such as "슬랙 채널 목록", "슬랙 메시지 수집",
+  "멘션 수집", or "스레드 수집";
 - view data already collected by Slackbox;
 - understand what Slackbox can collect, run doctor checks, or identify what
   setup is missing.

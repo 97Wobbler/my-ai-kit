@@ -1,6 +1,6 @@
 ---
 name: "waypoint"
-description: "Router and explainer for the Waypoint docs-first repository harness. Use when the user asks what Waypoint is, wants a repo recovery waypoint, wants to initialize, audit, deep-audit, organize, or validate a docs harness, or mentions waypoint init, audit, deep-audit, or doctor."
+description: "Router/explainer for Waypoint overview/help or ambiguous Waypoint routing. Use for what Waypoint is, which workflow fits, repo recovery waypoint, or unclear Waypoint requests. Do not use for explicit init, audit, deep-audit, doctor, or tracks; route directly to the subskill."
 ---
 
 # Waypoint
@@ -35,6 +35,10 @@ graphs.
 ## Route Requests
 
 Classify the user's request and route to the smallest shipped workflow:
+
+If the user directly asks for a shipped subskill by name or clearly requests
+its workflow, use that subskill directly. Use this router only for Waypoint
+overview/help or when the requested Waypoint workflow is unclear.
 
 | Request | Route |
 |---|---|

@@ -1,0 +1,36 @@
+{
+  "version": "1",
+  "option": {
+    "title": "Card Review Demo",
+    "groupAName": "Keep",
+    "groupBName": "Drop",
+    "fields": {
+      "title": {
+        "label": "Title",
+        "render": "h2"
+      },
+      "body": {
+        "label": "Details",
+        "render": "markdown"
+      },
+      "path": {
+        "label": "Source",
+        "render": "text"
+      }
+    }
+  },
+  "items": [
+    {
+      "id": "demo-001",
+      "title": "Preserve stable source IDs",
+      "body": "## Why\n\n- Results remain traceable\n- Resume state stays deterministic",
+      "path": "docs/example.md"
+    },
+    {
+      "id": "demo-002",
+      "title": "Write review results separately",
+      "body": "The source document should never be overwritten by a classification result.",
+      "path": "review-results.jsonl"
+    }
+  ]
+}

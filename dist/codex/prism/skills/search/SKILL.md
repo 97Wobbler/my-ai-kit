@@ -1,6 +1,6 @@
 ---
 name: "search"
-description: "Proactive Prism catalog recommender for curated analytical instruments. Use before designing agents, skills, reviews, threat models, curricula, research plans, strategy docs, decision frameworks, or structured analysis workflows. Read-only catalog lookup; never creates, edits, or generates instruments. For creation, route to the `prism` skill; for loading selected instruments into subagent prompts, route to the `fetch` skill."
+description: "Proactive Prism catalog recommender for curated analytical instruments. Search first before designing agents, skills, reviews, threat models, curricula, research plans, strategy docs, or decision frameworks, especially when it is unclear whether a requested instrument/framework already exists. Read-only lookup; creation routes to `prism`, loading routes to `fetch`."
 ---
 
 # Search
@@ -40,10 +40,15 @@ Trigger on lookup-shaped requests. Examples:
 - "Do we already have a frame for prioritization?"
 - "What's in the Prism catalog?"
 - "Any heuristics for decision making under uncertainty?"
+- "Prepare a STRIDE-style framework if we already have one."
 
 A good test: the user is asking a question answerable by reading
 `catalog.yml` entries and filtering them. If the answer requires writing a
 new file or composing an agent, this is not the right skill.
+
+When the user asks for an instrument, framework, lens, or model and it is not
+clear whether the catalog already contains one, search first. If no suitable
+entry exists and the user wants creation, then route to the `prism` skill.
 
 ## When NOT to invoke this skill
 
@@ -200,5 +205,5 @@ with the plugin name, runtime, expected behavior, and observed behavior.
 
 ## Runtime Overrides
 
-In Codex, plugin skills are invoked through the installed skill name, for example `$search`, `use prism:search`, or a natural-language request that matches this skill.
+In Codex, prefer plugin-qualified wording such as `use prism:search`, or a natural-language request that matches this skill. Avoid recommending bare `$search` unless the installed skill name is unambiguous in the current runtime.
 Use `rg`/file reads to inspect catalog layers. Ask concise plain-text clarification questions in Default mode if the lookup target is ambiguous.

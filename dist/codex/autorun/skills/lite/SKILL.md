@@ -1,6 +1,6 @@
 ---
 name: "lite"
-description: "Lightweight Autorun workflow for small, clear coding tasks that need durable\nworkplan.yaml state, visible progress, verification, explicit path staging,\nand one commit per task without the Autorun MCP planning loop. Use when the\nuser asks for \"autorun lite\", \"autorun:lite\", \"lite workplan\", or a small\nautomatic task run. Do not use for broad, high-risk, security-sensitive, or\nunclear multi-surface work; escalate those to full Autorun."
+description: "Lightweight Autorun workflow for small, clear coding tasks that need durable\nworkplan.yaml state, visible progress, verification, explicit path staging,\nand one commit per task without the Autorun MCP planning loop. Use when the\nuser asks for \"autorun lite\", \"autorun:lite\", \"lite workplan\", or a small\nautomatic task run, including \"라이트로 돌려줘\", \"가벼운 자동 실행\", or\n\"작은 작업 자동 처리\". Do not use for broad, high-risk, security-sensitive,\nor unclear multi-surface work; escalate those to full Autorun."
 ---
 
 # Lite

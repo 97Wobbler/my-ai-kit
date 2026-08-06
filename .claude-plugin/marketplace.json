@@ -1,6 +1,6 @@
 {
   "name": "my-ai-kit",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "owner": {
     "name": "97Wobbler"
   },
@@ -19,6 +19,10 @@
     {
       "name": "skill-forge",
       "source": "./dist/claude/skill-forge"
+    },
+    {
+      "name": "card-review",
+      "source": "./dist/claude/card-review"
     },
     {
       "name": "scribe",
