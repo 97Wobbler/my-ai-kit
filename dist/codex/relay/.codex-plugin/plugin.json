@@ -1,0 +1,37 @@
+{
+  "name": "relay",
+  "version": "0.1.1",
+  "description": "Recover and adapt context across sessions, recipients, and documents.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "context",
+    "sessions",
+    "handoff",
+    "documentation"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Relay",
+    "shortDescription": "Recover and transfer context",
+    "longDescription": "Relay traces relevant local sessions, creates copy-ready handoffs, and repairs documents for readers who do not share their creation context.",
+    "developerName": "97Wobbler",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive"
+    ],
+    "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
+    "defaultPrompt": [
+      "Recover prior context for this work",
+      "Prepare a handoff for another session",
+      "Make this document independently understandable"
+    ],
+    "brandColor": "#6D28D9"
+  }
+}

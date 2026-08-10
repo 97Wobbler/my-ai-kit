@@ -1,6 +1,6 @@
 {
   "name": "my-ai-kit",
-  "version": "0.1.13",
+  "version": "0.1.14",
   "owner": {
     "name": "97Wobbler"
   },
@@ -39,6 +39,10 @@
     {
       "name": "lucid",
       "source": "./dist/claude/lucid"
+    },
+    {
+      "name": "relay",
+      "source": "./dist/claude/relay"
     },
     {
       "name": "edu-sim",

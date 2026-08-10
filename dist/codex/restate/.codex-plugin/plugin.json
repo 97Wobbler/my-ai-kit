@@ -1,7 +1,7 @@
 {
   "name": "restate",
-  "version": "0.1.3",
-  "description": "Restate and verify user intent before execution.",
+  "version": "0.1.4",
+  "description": "Check interpretation, ambiguity, problem diagnosis, and solution quality before execution.",
   "author": {
     "name": "97Wobbler",
     "url": "https://github.com/97Wobbler"
@@ -19,8 +19,8 @@
   "skills": "./skills/",
   "interface": {
     "displayName": "Restate",
-    "shortDescription": "Verify user intent before execution",
-    "longDescription": "Restate pauses execution and turns the user's latest request into a concise requirements check: goal, scope, constraints, assumptions, unclear aspects, and confirmation.",
+    "shortDescription": "Check reasoning before execution",
+    "longDescription": "Restate provides independent checks for the most plausible interpretation, material ambiguity, XY problems, and whether a plan balances change cost with effect.",
     "developerName": "97Wobbler",
     "category": "Productivity",
     "capabilities": [
@@ -29,7 +29,10 @@
     "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
     "defaultPrompt": [
       "Restate my request",
-      "Check your understanding before executing"
+      "Check your understanding before executing",
+      "Find material ambiguity in this request",
+      "Check whether this solves the actual problem",
+      "Re-weigh this plan for a more elegant path"
     ],
     "brandColor": "#0F766E"
   }
