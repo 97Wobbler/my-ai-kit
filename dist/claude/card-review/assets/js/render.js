@@ -1,4 +1,5 @@
 import { renderValue } from "./markdown.js";
+import { icon } from "./icons.js";
 
 function escapeHtml(value) {
   return String(value ?? "")
@@ -69,7 +70,7 @@ function renderDrawer(session, drawerOpen) {
           <div class="eyebrow">진행상황</div>
           <h2>${summary.a + summary.b} / ${summary.total} 분류됨</h2>
         </div>
-        <button class="icon-button" data-ui-action="close-drawer" aria-label="진행상황 닫기">×</button>
+        <button class="icon-button" data-ui-action="close-drawer" aria-label="진행상황 닫기">${icon("x")}</button>
       </div>
       <div class="summary-grid">
         <div class="summary-cell summary-a"><strong>${summary.a}</strong><span>${escapeHtml(option.groupAName)}</span></div>
@@ -85,7 +86,7 @@ function renderFinished(session) {
   const { option, summary } = session;
   return `
     <section class="finished-panel">
-      <div class="finished-mark">✓</div>
+      <div class="finished-mark">${icon("check")}</div>
       <h2>검토가 종료되었습니다</h2>
       <p>결과는 JSONL 파일에 저장되었습니다.</p>
       <div class="finished-summary">
@@ -120,7 +121,7 @@ function renderReviewStage(session, busy) {
     <section class="review-stage" aria-busy="${busy ? "true" : "false"}">
       <div class="decision-zone decision-a">
         <button class="decision-button" data-action="classify" data-result="A" ${busy ? "disabled" : ""}>
-          <span class="decision-arrow">←</span>
+          <span class="decision-arrow">${icon("arrow-left")}</span>
           <span class="decision-name">${escapeHtml(option.groupAName)}</span>
           <span class="decision-hint">왼쪽 방향키</span>
         </button>
@@ -143,14 +144,14 @@ function renderReviewStage(session, busy) {
       </div>
       <div class="decision-zone decision-b">
         <button class="decision-button" data-action="classify" data-result="B" ${busy ? "disabled" : ""}>
-          <span class="decision-arrow">→</span>
+          <span class="decision-arrow">${icon("arrow-right")}</span>
           <span class="decision-name">${escapeHtml(option.groupBName)}</span>
           <span class="decision-hint">오른쪽 방향키</span>
         </button>
       </div>
       <div class="decision-zone decision-skip">
         <button class="decision-button" data-action="skip" ${busy ? "disabled" : ""}>
-          <span class="decision-arrow">↓</span>
+          <span class="decision-arrow">${icon("arrow-down")}</span>
           <span class="decision-name">일단 스킵</span>
           <span class="decision-hint">목록에 남겨두기</span>
         </button>
@@ -200,12 +201,13 @@ export function renderApp(root, model, handlers) {
         <h1 title="${escapeHtml(option.title)}">${escapeHtml(option.title)}</h1>
         <div class="topbar-actions">
           <button class="progress-chip" data-ui-action="open-drawer" aria-label="진행상황 열기">
+            ${icon("list-checks")}
             <span>${summary.a + summary.b} / ${summary.total}</span>
             <span class="button-text">진행상황</span>
           </button>
-          <button class="icon-button" data-action="undo" ${session.canUndo && !ui.busy ? "" : "disabled"} aria-label="실행 취소">↶<span class="button-text">Undo</span></button>
-          <button class="icon-button" data-action="redo" ${session.canRedo && !ui.busy ? "" : "disabled"} aria-label="다시 실행">↷<span class="button-text">Redo</span></button>
-          <button class="finish-button" data-action="finish" ${ui.busy ? "disabled" : ""}><span class="finish-icon">✓</span><span class="button-text">저장하고 종료</span></button>
+          <button class="icon-button" data-action="undo" ${session.canUndo && !ui.busy ? "" : "disabled"} aria-label="실행 취소">${icon("undo-2")}<span class="button-text">Undo</span></button>
+          <button class="icon-button" data-action="redo" ${session.canRedo && !ui.busy ? "" : "disabled"} aria-label="다시 실행">${icon("redo-2")}<span class="button-text">Redo</span></button>
+          <button class="finish-button" data-action="finish" ${ui.busy ? "disabled" : ""}>${icon("check", "finish-icon")}<span class="button-text">저장하고 종료</span></button>
         </div>
       </div>
       <div class="progress-line"><span style="width:${percent}%"></span></div>

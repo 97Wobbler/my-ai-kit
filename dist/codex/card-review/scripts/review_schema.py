@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import Any
 
 
-ALLOWED_RENDERERS = {"h1", "h2", "h3", "markdown", "ol", "ul", "text", "link"}
+ALLOWED_RENDERERS = {"h1", "h2", "h3", "image", "markdown", "ol", "ul", "text", "link"}
 
 
 def fail(message: str) -> None:
@@ -63,5 +63,12 @@ def load_and_validate_input(path: Path) -> dict[str, Any]:
         if item_id in ids:
             fail(f"Duplicate item id: {item_id}")
         ids.add(item_id)
+        for key, spec in fields.items():
+            renderer = spec if isinstance(spec, str) else spec.get("render")
+            if renderer != "image":
+                continue
+            value = item.get(key, item.get("fields", {}).get(key) if isinstance(item.get("fields"), dict) else None)
+            if value is not None and (not isinstance(value, str) or not value.strip()):
+                fail(f"items[{index}].{key} must be a non-empty local image path.")
 
     return data

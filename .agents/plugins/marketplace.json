@@ -1,6 +1,6 @@
 {
   "name": "my-ai-kit",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "interface": {
     "displayName": "My AI Kit"
   },
@@ -142,6 +142,18 @@
       "source": {
         "source": "local",
         "path": "./dist/codex/waypoint"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    },
+    {
+      "name": "inquiry",
+      "source": {
+        "source": "local",
+        "path": "./dist/codex/inquiry"
       },
       "policy": {
         "installation": "AVAILABLE",

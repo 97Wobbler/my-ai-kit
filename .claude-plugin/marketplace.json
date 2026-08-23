@@ -1,6 +1,6 @@
 {
   "name": "my-ai-kit",
-  "version": "0.1.14",
+  "version": "0.1.15",
   "owner": {
     "name": "97Wobbler"
   },
@@ -55,6 +55,10 @@
     {
       "name": "waypoint",
       "source": "./dist/claude/waypoint"
+    },
+    {
+      "name": "inquiry",
+      "source": "./dist/claude/inquiry"
     }
   ]
 }

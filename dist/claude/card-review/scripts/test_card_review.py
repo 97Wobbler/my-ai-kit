@@ -8,6 +8,7 @@ import tempfile
 import threading
 import unittest
 import urllib.request
+import urllib.error
 from http.server import ThreadingHTTPServer
 from pathlib import Path
 
@@ -49,6 +50,66 @@ class CardReviewTest(unittest.TestCase):
         self.input_path.write_text(json.dumps(data), encoding="utf-8")
         with self.assertRaisesRegex(ValueError, "Duplicate item id"):
             load_and_validate_input(self.input_path)
+
+    def test_image_renderer_requires_a_non_empty_string(self) -> None:
+        data = sample_input()
+        data["option"]["fields"]["image"] = {"label": "Preview", "render": "image"}
+        data["items"][0]["image"] = []
+        self.input_path.write_text(json.dumps(data), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "non-empty local image path"):
+            load_and_validate_input(self.input_path)
+
+    def test_image_renderer_serves_only_declared_image_files(self) -> None:
+        image_path = Path(self.tempdir.name) / "preview.png"
+        image_path.write_bytes(b"\x89PNG\r\n\x1a\ncard-review-test")
+        unrelated_path = Path(self.tempdir.name) / "secret.png"
+        unrelated_path.write_bytes(b"\x89PNG\r\n\x1a\nnot-declared")
+        data = sample_input()
+        data["option"]["fields"]["image"] = {"label": "Preview", "render": "image"}
+        data["items"][0]["image"] = "preview.png"
+        self.input_path.write_text(json.dumps(data), encoding="utf-8")
+        store = ReviewStore(self.input_path, self.output_path)
+        public = store._public_state(include_static=True)
+        media_url = public["items"][0]["image"]
+        self.assertRegex(media_url, r"^/media/[0-9a-f]{64}$")
+        self.assertNotIn(str(image_path), json.dumps(public))
+        self.assertEqual(len(store.media_by_token), 1)
+        self.assertNotIn(unrelated_path, store.media_by_token.values())
+
+        class BoundHandler(RequestHandler):
+            pass
+
+        BoundHandler.store = store
+        server = ThreadingHTTPServer(("127.0.0.1", 0), BoundHandler)
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
+        base_url = f"http://127.0.0.1:{server.server_port}"
+        try:
+            with urllib.request.urlopen(f"{base_url}{media_url}", timeout=2) as response:
+                self.assertEqual(response.headers.get_content_type(), "image/png")
+                self.assertEqual(response.read(), image_path.read_bytes())
+            with self.assertRaises(urllib.error.HTTPError) as error:
+                urllib.request.urlopen(f"{base_url}/media/not-declared", timeout=2)
+            self.assertEqual(error.exception.code, 404)
+        finally:
+            server.shutdown()
+            server.server_close()
+            thread.join(timeout=2)
+
+    def test_image_renderer_rejects_missing_or_non_image_files(self) -> None:
+        data = sample_input()
+        data["option"]["fields"]["image"] = "image"
+        data["items"][0]["image"] = "missing.png"
+        self.input_path.write_text(json.dumps(data), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "Image file does not exist"):
+            ReviewStore(self.input_path, self.output_path)
+
+        text_path = Path(self.tempdir.name) / "not-image.txt"
+        text_path.write_text("no", encoding="utf-8")
+        data["items"][0]["image"] = text_path.name
+        self.input_path.write_text(json.dumps(data), encoding="utf-8")
+        with self.assertRaisesRegex(ValueError, "is not an image file"):
+            ReviewStore(self.input_path, self.output_path)
 
     def test_classify_skip_undo_and_redo(self) -> None:
         store = ReviewStore(self.input_path, self.output_path)
@@ -148,6 +209,13 @@ class CardReviewTest(unittest.TestCase):
     def test_plugin_assets_and_loopback_policy(self) -> None:
         self.assertEqual(APP_PATH, SKILL_ROOT / "assets" / "index.html")
         self.assertTrue(APP_PATH.is_file())
+        self.assertTrue((SKILL_ROOT / "assets" / "js" / "icons.js").is_file())
+        app_source = (SKILL_ROOT / "assets" / "js" / "app.js").read_text(encoding="utf-8")
+        self.assertIn("dispatch(payload, { showBusy: false })", app_source)
+        styles = (SKILL_ROOT / "assets" / "styles.css").read_text(encoding="utf-8")
+        self.assertRegex(styles, r"(?s)\.card-fields\s*\{[^}]*touch-action:\s*pan-y")
+        license_path = SKILL_ROOT / "references" / "third-party-licenses.md"
+        self.assertIn("Lucide Icons", license_path.read_text(encoding="utf-8"))
         self.assertTrue(is_loopback_host("localhost"))
         self.assertTrue(is_loopback_host("127.0.0.1"))
         self.assertTrue(is_loopback_host("::1"))

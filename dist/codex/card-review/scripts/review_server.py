@@ -88,9 +88,46 @@ class ReviewStore:
         self.input_fingerprint = input_fingerprint(self.data)
         self.items = self.data["items"]
         self.item_by_id = {item["id"]: item for item in self.items}
+        self.media_by_token: dict[str, Path] = {}
+        self.public_items = self._prepare_public_items()
         self.lock = threading.RLock()
         self.state = self._load_state()
         self._write_results()
+
+    @staticmethod
+    def _field_value(item: dict[str, Any], key: str) -> Any:
+        if key in item:
+            return item[key]
+        nested = item.get("fields")
+        return nested.get(key) if isinstance(nested, dict) else None
+
+    def _prepare_public_items(self) -> list[dict[str, Any]]:
+        public_items = deepcopy(self.items)
+        fields = self.data["option"]["fields"]
+        image_keys = [
+            key
+            for key, raw_spec in fields.items()
+            if (raw_spec if isinstance(raw_spec, str) else raw_spec.get("render")) == "image"
+        ]
+        for source, public in zip(self.items, public_items, strict=True):
+            for key in image_keys:
+                value = self._field_value(source, key)
+                if value is None:
+                    continue
+                path = Path(value).expanduser()
+                if not path.is_absolute():
+                    path = self.input_path.parent / path
+                path = path.resolve()
+                if not path.is_file():
+                    fail(f"Image file does not exist for item {source['id']!r}, field {key!r}: {value}")
+                content_type = mimetypes.guess_type(path.name)[0] or ""
+                if not content_type.startswith("image/"):
+                    fail(f"Image field {key!r} for item {source['id']!r} is not an image file: {value}")
+                token = hashlib.sha256(f"{source['id']}\0{key}\0{path}".encode("utf-8")).hexdigest()
+                self.media_by_token[token] = path
+                target = public if key in public else public.setdefault("fields", {})
+                target[key] = f"/media/{token}"
+        return public_items
 
     def _empty_snapshot(self) -> dict[str, Any]:
         return {
@@ -321,7 +358,7 @@ class ReviewStore:
             }
             if include_static:
                 result["option"] = self.data["option"]
-                result["items"] = self.items
+                result["items"] = self.public_items
             return result
 
     def _write_results(self) -> None:
@@ -484,6 +521,14 @@ class RequestHandler(BaseHTTPRequestHandler):
                 self._send_json({"error": "Invalid asset path"}, HTTPStatus.BAD_REQUEST)
                 return
             self._send_file(asset_path)
+            return
+        if route.startswith("/media/"):
+            token = unquote(route.removeprefix("/media/")).strip("/")
+            media_path = self.store.media_by_token.get(token)
+            if media_path is None:
+                self._send_json({"error": "Unknown media"}, HTTPStatus.NOT_FOUND)
+                return
+            self._send_file(media_path)
             return
         self._send_json({"error": "Not found"}, HTTPStatus.NOT_FOUND)
 

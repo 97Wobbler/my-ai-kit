@@ -60,6 +60,43 @@ card order, labels, and rendering.
 Do not place source document bodies in the result file. The result is keyed by
 stable item ID.
 
+Before building the full input, check that Card Review fits the decision:
+
+- every item can answer the same independent A/B question, with `null` meaning
+  unresolved rather than a third structured outcome;
+- one card asks one decision and does not depend on an answer from a previous
+  card;
+- the reviewer can decide from the information and media shown on that card;
+- fields do not expose scores, automatic selections, experiment conditions, or
+  other hints the reviewer should not know; and
+- obvious duplicates, overlapping intervals, or equivalent candidates have
+  been removed or intentionally grouped before review.
+
+If the task is a multi-step questionnaire, uses different decision semantics
+across items, or needs coupled answers, explain that it needs a task-specific
+review harness instead of forcing it into Card Review.
+
+Build a presentation packet for the decision rather than copying the source
+schema wholesale. `option.fields` defines the available field order and
+renderers, but each item should contain only the fields relevant to that item;
+missing fields are not displayed. Use `image` for a local image that must be
+seen in the card itself. Keep explanations in the reviewer's language and
+include only the context needed to make the judgment.
+
+For a large, blind, media-heavy, structurally varied, or expensive-to-rebuild
+review, inspect two or three representative normalized cards before generating
+and launching the full set. Confirm the decision labels, field order, necessary
+context, prohibited hints, and whether media is legible. This is an internal
+preflight; ask the user only when it exposes a material choice that cannot be
+resolved from the request or source evidence.
+
+For blind review, put only anonymized reviewer-visible material in the Card
+Review input. Keep candidate identity, model or strategy name, automatic
+scores, experiment conditions, and deterministic shuffle mappings in a
+separate analysis file. Do not reveal or combine that mapping until the review
+is finished. If a launched review exposed a material answer cue, preserve its
+artifacts but do not treat its results as blind evidence.
+
 ### 2. Validate input
 
 Run:
@@ -87,6 +124,31 @@ The dependency-free server binds to loopback, selects a free local port, opens
 the default browser, and continuously saves the result and adjacent resume
 state. Keep the process running while the user reviews. Report the printed URL,
 result path, and resume-state path.
+
+#### Optional remote viewing
+
+Do not check for, install, or suggest `cloudflared` during an ordinary local
+review. If the user is working through Codex Remote, Claude Remote, or another
+remote session and asks to view a loopback-only Card Review GUI from their own
+device, check whether `cloudflared` is already available in that environment.
+
+When it is available and the user wants this access, a Cloudflare Quick Tunnel
+may forward the printed loopback URL:
+
+```bash
+cloudflared tunnel --url http://127.0.0.1:<port> --no-autoupdate
+```
+
+Explain before exposing the review that a Quick Tunnel is temporary and
+unauthenticated: anyone who obtains its public URL can access the review GUI
+and API. Use it only for review material the user has authorized for this
+temporary exposure. Report the generated URL, keep both processes running
+while the review is active, and stop the tunnel when the review ends or the
+user asks to close it.
+
+If `cloudflared` is absent, state only that Quick Tunnel support is unavailable
+in the current environment. Do not install it or recommend installing it unless
+the user separately asks for setup guidance.
 
 ### 4. Explain controls
 
@@ -132,7 +194,11 @@ the same input and output paths.
 - Treat `null` as unresolved. Use the resume-state file only when distinguishing
   skipped from untouched items is necessary.
 - Keep the local server on loopback. Do not expose the unauthenticated review
-  API to a LAN or public interface.
+  API to a LAN or public interface. The user-authorized Quick Tunnel workflow
+  above is the only supported exception and must still target the loopback
+  server rather than rebinding it.
+- Treat image values as explicit local-file grants. Do not add unrelated files
+  to the input merely to make them browser-accessible.
 - Read the result only after the latest valid write completes.
 - Run bundled validation before launch and report failures clearly.
 

@@ -23,6 +23,9 @@ LIFECYCLE_FIELD_ORDER = (
     "committed_at",
     "worker_id",
     "execution_plane",
+    "attempt_count",
+    "last_recovered_at",
+    "recovery_reason",
     "commit",
 )
 TASK_FIELD_ORDER = (

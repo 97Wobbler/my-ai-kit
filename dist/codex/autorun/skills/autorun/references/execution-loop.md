@@ -169,8 +169,11 @@ spawn_agent({
 ```
 
 **verify 실패 시:**
-1. 1차 실패 → 원인 분석 후 재시도 1회 (subagent 새로 위임)
-2. 2차 실패 → 즉시 정지. 사용자에게 보고.
+1. 먼저 implementation / task-design / infrastructure·collection 실패로 분류한다.
+2. implementation 1차 실패 → 원인 분석 후 focused repair를 새 subagent에 위임한다.
+3. implementation 2차 실패 → 즉시 정지하지 말고 태스크를 분할하거나 replacement task를 작성한다. 안전한 자동 재계획이 불가능할 때만 사용자에게 보고하고 정지한다.
+4. task-design 실패 → 같은 구현을 재시도하지 않고 즉시 분할·대체·재계획한다.
+5. infrastructure·collection 실패 → 구현 실패 횟수에 포함하지 않는다. 기존 worker의 terminal event와 artifact를 먼저 회수하고 복구 불가능할 때만 재실행한다.
 
 ## Step 7: COMMIT
 
@@ -227,7 +230,9 @@ git commit -m "chore(autorun): complete workplan — <한 줄 요약>"
 | `human_gate: execute` 태스크만 남음 | 유지 | 준비물 + 요청 사항 정리하여 보고 |
 | auto 실행 가능 태스크 0 (gate 대기 등 미완료 잔존) | 유지 | 정상 종료. 상태 요약 |
 | VERIFY 1회 실패 | 유지 | 원인 분석 + 재시도 1회 |
-| VERIFY 2회 연속 실패 | 유지 | 즉시 정지, 사용자 보고 |
+| VERIFY implementation 2회 연속 실패 | 유지 | 태스크 분할/replacement 자동 작성 후 계속. 안전한 재계획이 불가능할 때만 정지 |
+| task-design 실패 | 유지 | 동일 구현 재시도 금지. 태스크/불변식/의존성을 재계획 |
+| infrastructure/collection 실패 | 유지 | 실패 횟수에서 제외. terminal artifact 회수 후 복구 또는 재실행 |
 | spec 불명확 | 유지 | 해석 가능하면 최선 해석 + 검수 강화. 불가능하면 정지 |
 | API 한도/리소스 고갈 | 유지 (wip 주석 추가) | `wip:` 태그로 부분 커밋 + workplan 주석 기록 → 정지 |
 | 구조적 문제 발견 (워크플랜 재설계 필요) | 유지 | 즉시 정지, 재설계 제안 |
@@ -241,5 +246,6 @@ git commit -m "chore(autorun): complete workplan — <한 줄 요약>"
 1. workplan.yaml SCAN → done 필드로 중단 지점 파악
 2. `git log --oneline -20`으로 `chore(autorun): start workplan` 이후 커밋 확인
 3. 마지막 진행 태스크에 wip 주석이 있으면 그 지점부터 재개
-4. background 태스크가 미완료로 남았던 흔적이 있으면 확인 (가능하면 재실행)
+4. background 태스크가 미완료로 남았던 흔적이 있으면 먼저 기존 worker artifact를 수집한다. `turn.completed`와 schema-valid result가 있으면 recovered success로 처리하고, 복구할 증거가 없을 때만 재실행한다.
+5. 이전 attempt가 인프라/수집 실패로 끝났고 구현 결과를 인증할 수 없으면 `autorun_task_mark_recoverable`로 `started → pending` 전이하며 사유를 기록한다. MCP가 없으면 lifecycle의 `last_recovered_at`, `recovery_reason`, `attempt_count`를 보존하면서 동일하게 YAML을 갱신한다.
 5. `update_plan`으로 미완료 태스크 재등록 (사전 로딩 5번)

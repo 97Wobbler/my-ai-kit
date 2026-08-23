@@ -248,13 +248,36 @@ def next_batch(arguments: Mapping[str, Any]) -> dict[str, Any]:
 
 def task_mark_started(arguments: Mapping[str, Any]) -> dict[str, Any]:
     execution_plane = _execution_plane_argument(arguments)
+    plan = _load(arguments)
+    task = _task_by_id(plan, _required_str(arguments, "task_id"))
+    lifecycle = _lifecycle(task)
+    attempt_count = lifecycle.get("attempt_count")
+    if isinstance(attempt_count, str) and attempt_count.isdigit():
+        attempt_count = int(attempt_count)
+    if isinstance(attempt_count, bool) or not isinstance(attempt_count, int):
+        attempt_count = 0
     return _transition(
         arguments,
         PENDING,
         STARTED,
         timestamp_field="started_at",
         done=False,
-        lifecycle_updates={"execution_plane": execution_plane} if execution_plane else None,
+        lifecycle_updates={
+            "execution_plane": execution_plane,
+            "attempt_count": attempt_count + 1,
+        },
+    )
+
+
+def task_mark_recoverable(arguments: Mapping[str, Any]) -> dict[str, Any]:
+    reason = _required_str(arguments, "reason")
+    return _transition(
+        arguments,
+        STARTED,
+        PENDING,
+        timestamp_field="last_recovered_at",
+        done=False,
+        lifecycle_updates={"recovery_reason": reason},
     )
 
 

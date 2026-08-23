@@ -35,7 +35,11 @@ async function transition(payload, exitDirection, enterDirection = "stack", orig
   clearTimeout(memoTimer);
   try {
     await animateCardOut(root, exitDirection, origin);
-    const session = await dispatch(payload);
+    // The card has already animated out. Emitting a busy-state render here
+    // would recreate the old card at its resting position while the request is
+    // in flight, producing a visible snap between the exit and the next card.
+    // interactionLocked still prevents input until the transition completes.
+    const session = await dispatch(payload, { showBusy: false });
     if (session && !session.finished) await animateCardIn(root, enterDirection);
     return session;
   } finally {

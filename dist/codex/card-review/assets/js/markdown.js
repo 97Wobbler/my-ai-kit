@@ -1,3 +1,5 @@
+import { icon } from "./icons.js";
+
 function escapeHtml(value) {
   return String(value ?? "")
     .replace(/&/g, "&amp;")
@@ -94,6 +96,27 @@ export function renderValue(value, renderer) {
     link.target = "_blank";
     link.rel = "noreferrer";
     link.textContent = href;
+    wrapper.appendChild(link);
+    return wrapper;
+  }
+
+  if (renderer === "image") {
+    const href = String(value ?? "");
+    const link = document.createElement("a");
+    link.className = "review-image-link";
+    link.href = href.startsWith("/media/") ? href : "#";
+    link.target = "_blank";
+    link.rel = "noreferrer";
+    const image = document.createElement("img");
+    image.className = "review-image";
+    image.src = link.href;
+    image.alt = "검토 이미지";
+    image.loading = "eager";
+    link.appendChild(image);
+    const expand = document.createElement("span");
+    expand.className = "review-image-expand";
+    expand.innerHTML = icon("maximize-2");
+    link.appendChild(expand);
     wrapper.appendChild(link);
     return wrapper;
   }

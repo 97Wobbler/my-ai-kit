@@ -2,13 +2,13 @@
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import re
 import signal
 import subprocess
 import tempfile
-import hashlib
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
@@ -736,6 +736,10 @@ def _terminate_pid(pid: int) -> None:
 
 
 def _refresh_worker_state(state_root: Path, worker: dict[str, Any]) -> dict[str, Any]:
+    recovered = _recover_completed_worker(state_root, worker)
+    if recovered is not None:
+        return recovered
+
     status = worker.get("status")
     returncode = worker.get("returncode")
     if status in {CANCELLED, TIMED_OUT_CANCELLED}:
@@ -804,6 +808,67 @@ def _refresh_worker_state(state_root: Path, worker: dict[str, Any]) -> dict[str,
     worker["updated_at"] = _now()
     save_worker_state(state_root, worker)
     return worker
+
+
+def _recover_completed_worker(state_root: Path, worker: dict[str, Any]) -> dict[str, Any] | None:
+    """Reconcile stale process state from Codex terminal events and a valid result artifact."""
+    if worker.get("status") in {CANCELLED, TIMED_OUT_CANCELLED}:
+        return None
+    worker_id = worker.get("worker_id")
+    if not isinstance(worker_id, str):
+        return None
+    paths = worker_artifact_paths(state_root, worker_id)
+    if not _has_completed_turn(paths["events_path"]):
+        return None
+    result_digest = _valid_json_artifact_digest(paths["result_path"])
+    if result_digest is None:
+        return None
+
+    completed_at = _now()
+    worker["status"] = SUCCEEDED
+    worker["returncode"] = 0
+    worker["updated_at"] = completed_at
+    worker["completed_at"] = worker.get("completed_at") or completed_at
+    worker["terminal_reason"] = "recovered_completed_artifact"
+    worker["result_validation"] = {
+        "format": "json",
+        "sha256": result_digest,
+    }
+    worker["recovered"] = True
+    process = _PROCESSES.pop(worker_id, None)
+    if process is not None and process.poll() is None:
+        _terminate_process(process)
+    save_worker_state(state_root, worker)
+    return worker
+
+
+def _has_completed_turn(events_path: Path) -> bool:
+    if not events_path.exists() or not events_path.is_file():
+        return False
+    try:
+        with events_path.open("r", encoding="utf-8", errors="replace") as handle:
+            for line in handle:
+                try:
+                    event = json.loads(line)
+                except json.JSONDecodeError:
+                    continue
+                if isinstance(event, dict) and event.get("type") in {"turn.completed", "task_complete"}:
+                    return True
+    except OSError:
+        return False
+    return False
+
+
+def _valid_json_artifact_digest(result_path: Path) -> str | None:
+    if not result_path.exists() or not result_path.is_file() or result_path.stat().st_size == 0:
+        return None
+    try:
+        payload = json.loads(result_path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeDecodeError, json.JSONDecodeError):
+        return None
+    if not isinstance(payload, (dict, list)):
+        return None
+    return hashlib.sha256(result_path.read_bytes()).hexdigest()
 
 
 def _timeout_expired(worker: Mapping[str, Any]) -> bool:

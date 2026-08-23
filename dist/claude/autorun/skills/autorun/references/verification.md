@@ -108,16 +108,24 @@ Agent({
 
 **중요**: 검증 subagent에게 **spec과 변경 파일 경로만** 주고, 구현 subagent의 결론이나 self-check 결과는 **주지 말 것**. 독립성 유지가 핵심.
 
-## 실패 대응
+## 실패 분류와 대응
+
+검증 실패를 횟수에 넣기 전에 먼저 분류한다.
+
+- **implementation defect**: 태스크 spec은 유효하지만 구현이 요구사항을 충족하지 못함. 구체적 repair를 위임한다.
+- **task-design defect**: 태스크의 계약, 범위, 불변식 또는 의존성이 자체적으로 실행 불가능하거나 반례로 무효화됨. 같은 구현을 재시도하지 말고 태스크를 분할·대체하거나 workplan을 재계획한다.
+- **infrastructure/collection defect**: worker process, MCP transport, timeout, state 기록, artifact 수집 또는 부수 검증 명령의 실패. 구현 실패 횟수에 포함하지 않는다. 기존 terminal event와 artifact를 먼저 회수하고, 복구 불가능할 때만 worker를 다시 실행한다.
+
+`turn.completed`와 schema-valid result artifact가 함께 있으면 final prose가 비었거나 state가 `running`이어도 recoverable success로 취급한다.
 
 | 단계 | 실패 횟수 | 행동 |
 |---|---|---|
 | L2 | 1회 | 원인 분석 후 subagent 재위임 (더 구체적인 수정 지시) |
-| L2 | 2회 | 즉시 정지, 사용자 보고 |
+| L2 | implementation 2회 | 태스크 분할 또는 replacement task 자동 작성; 안전한 재계획이 불가능할 때만 정지 |
 | L3 | 1회 | 수정 subagent 위임 (WARN 항목만 타겟) |
-| L3 | 2회 | 정지 또는 태스크 자체 재설계 고려 |
+| L3 | implementation 2회 | 태스크 자체 재설계·분할 후 계속; 자동 재계획이 불가능할 때만 정지 |
 | L3+ | 1회 | 구현 subagent에 구체적 수정 지시 재위임 |
-| L3+ | 2회 | 정지, 워크플랜 재검토 |
+| L3+ | implementation 2회 | 워크플랜 재검토 후 replacement task로 계속; 구조적 권한·제품 결정이 필요할 때만 정지 |
 
 **재위임 프롬프트 예:**
 ```

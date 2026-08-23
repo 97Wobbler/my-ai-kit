@@ -28,6 +28,7 @@ TOOL_AUTORUN_DECOMPOSITION_REVIEW = "autorun_decomposition_review"
 TOOL_AUTORUN_TASK_SPLIT = "autorun_task_split"
 TOOL_AUTORUN_NEXT_BATCH = "autorun_next_batch"
 TOOL_AUTORUN_TASK_MARK_STARTED = "autorun_task_mark_started"
+TOOL_AUTORUN_TASK_MARK_RECOVERABLE = "autorun_task_mark_recoverable"
 TOOL_AUTORUN_TASK_MARK_VERIFIED = "autorun_task_mark_verified"
 TOOL_AUTORUN_TASK_MARK_COMMITTED = "autorun_task_mark_committed"
 TOOL_AUTORUN_PLAN_STATUS = "autorun_plan_status"
@@ -214,6 +215,16 @@ def tools_list(_params: Mapping[str, Any]) -> dict[str, Any]:
                 TOOL_AUTORUN_TASK_MARK_STARTED,
                 "Mark a pending task as started.",
             ),
+            _tool(
+                TOOL_AUTORUN_TASK_MARK_RECOVERABLE,
+                "Return a stale started task to pending after artifact reconciliation.",
+                {
+                    **_plan_properties(),
+                    "task_id": _string("Task id."),
+                    "reason": _string("Why the prior attempt is recoverable rather than an implementation failure."),
+                },
+                ["repo_root", "task_id", "reason"],
+            ),
             _task_lifecycle_tool(
                 TOOL_AUTORUN_TASK_MARK_VERIFIED,
                 "Mark a started task as verified.",
@@ -352,6 +363,8 @@ def _call_tool(name: Any, arguments: Mapping[str, Any]) -> dict[str, Any]:
         return planner.next_batch(arguments)
     if name == TOOL_AUTORUN_TASK_MARK_STARTED:
         return planner.task_mark_started(arguments)
+    if name == TOOL_AUTORUN_TASK_MARK_RECOVERABLE:
+        return planner.task_mark_recoverable(arguments)
     if name == TOOL_AUTORUN_TASK_MARK_VERIFIED:
         return planner.task_mark_verified(arguments)
     if name == TOOL_AUTORUN_TASK_MARK_COMMITTED:

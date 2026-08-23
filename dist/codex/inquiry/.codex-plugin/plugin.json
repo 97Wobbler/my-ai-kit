@@ -1,0 +1,39 @@
+{
+  "name": "inquiry",
+  "version": "0.1.1",
+  "description": "Apply scientific inquiry to investigate and improve probabilistic LLM systems.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "claude-code",
+    "skill",
+    "experimentation",
+    "evaluation",
+    "llm"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Inquiry",
+    "shortDescription": "Investigate and improve LLM systems scientifically",
+    "longDescription": "Inquiry turns prompts, skills, agent chains, loops, graphs, and evaluation harnesses into observable questions, testable hypotheses, controlled experiments, and evidence-backed improvement decisions.",
+    "developerName": "97Wobbler",
+    "category": "Productivity",
+    "capabilities": [
+      "Read",
+      "Write",
+      "Interactive"
+    ],
+    "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
+    "defaultPrompt": [
+      "Design an experiment to improve this LLM workflow",
+      "Investigate this agent chain with scientific methods"
+    ],
+    "brandColor": "#2563EB"
+  }
+}

@@ -41,6 +41,14 @@ button, textarea { font: inherit; }
 button { color: inherit; cursor: pointer; }
 button:disabled { cursor: not-allowed; opacity: .42; }
 
+.lucide-icon {
+  display: inline-block;
+  width: 1.1em;
+  height: 1.1em;
+  flex: 0 0 auto;
+  vertical-align: -.16em;
+}
+
 button:focus-visible,
 textarea:focus-visible {
   outline: 3px solid rgba(64, 92, 245, .24);
@@ -136,6 +144,7 @@ textarea:focus-visible {
   font-size: 13px;
   font-weight: 700;
 }
+.progress-chip .lucide-icon { width: 16px; height: 16px; }
 
 .icon-button {
   min-width: 38px;
@@ -162,7 +171,7 @@ textarea:focus-visible {
 }
 
 .finish-button:hover { color: #fff; background: #293548; border-color: #293548; }
-.finish-icon { font-size: 13px; }
+.finish-icon { width: 15px; height: 15px; }
 
 .progress-line {
   width: min(1320px, 100%);
@@ -249,7 +258,8 @@ textarea:focus-visible {
   box-shadow: 0 12px 30px rgba(32, 45, 66, .12);
 }
 
-.decision-arrow { font-size: clamp(21px, 2vw, 26px); font-weight: 450; line-height: 1; }
+.decision-arrow { display: grid; place-items: center; line-height: 1; }
+.decision-arrow .lucide-icon { width: clamp(21px, 2vw, 26px); height: clamp(21px, 2vw, 26px); }
 .decision-name { font-size: 14px; font-weight: 760; }
 .decision-hint { color: var(--muted); font-size: 11px; }
 
@@ -397,6 +407,7 @@ textarea:focus-visible {
   overflow-y: auto;
   overscroll-behavior: contain;
   scrollbar-gutter: stable;
+  touch-action: pan-y;
 }
 
 .card-field + .card-field { margin-top: 24px; }
@@ -433,6 +444,36 @@ textarea:focus-visible {
   font-size: .9em;
 }
 .field-value a { color: var(--accent); }
+.review-image-link {
+  position: relative;
+  display: block;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--panel-muted);
+}
+.review-image {
+  display: block;
+  width: 100%;
+  max-height: min(54vh, 680px);
+  object-fit: contain;
+}
+.review-image-expand {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 1px solid rgba(255, 255, 255, .72);
+  border-radius: 10px;
+  background: rgba(23, 32, 45, .72);
+  color: #fff;
+  box-shadow: 0 5px 16px rgba(23, 32, 45, .2);
+  backdrop-filter: blur(6px);
+}
+.review-image-expand .lucide-icon { width: 17px; height: 17px; }
 
 .memo-box {
   padding: 13px 20px 16px;
@@ -666,8 +707,8 @@ textarea:focus-visible {
   .decision-a { grid-column: 1; }
   .decision-skip { grid-column: 2; }
   .decision-b { grid-column: 3; }
-  .decision-arrow,
-  .decision-skip .decision-arrow { font-size: 18px; }
+  .decision-arrow .lucide-icon,
+  .decision-skip .decision-arrow .lucide-icon { width: 18px; height: 18px; }
   .decision-name { overflow: hidden; font-size: 12px; text-overflow: ellipsis; white-space: nowrap; }
 
   .stack-card { inset: 6px 8px -5px; border-radius: 16px; }

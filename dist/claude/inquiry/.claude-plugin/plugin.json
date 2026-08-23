@@ -1,0 +1,21 @@
+{
+  "name": "inquiry",
+  "version": "0.1.1",
+  "description": "Apply scientific inquiry to investigate and improve probabilistic LLM systems.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "skills": "./skills/",
+  "keywords": [
+    "claude-code",
+    "codex",
+    "skill",
+    "experimentation",
+    "evaluation",
+    "llm"
+  ]
+}

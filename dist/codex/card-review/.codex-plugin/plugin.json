@@ -1,6 +1,6 @@
 {
   "name": "card-review",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Review structured item lists in a local browser with persistent A/B decisions, notes, and JSONL results.",
   "author": {
     "name": "97Wobbler",
