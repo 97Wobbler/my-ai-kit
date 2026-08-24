@@ -1,6 +1,6 @@
 {
   "name": "relay",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Recover and adapt context across sessions, recipients, and documents.",
   "author": {
     "name": "97Wobbler",
@@ -32,6 +32,8 @@
       "Prepare a handoff for another session",
       "Make this document independently understandable"
     ],
-    "brandColor": "#6D28D9"
+    "brandColor": "#14B8A6",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
   }
 }

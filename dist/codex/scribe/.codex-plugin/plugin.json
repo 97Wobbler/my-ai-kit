@@ -1,6 +1,6 @@
 {
   "name": "scribe",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Transcribe local audio with Scribe STT jobs and reconcile canonical transcripts.",
   "author": {
     "name": "97Wobbler",
@@ -36,6 +36,8 @@
       "Transcribe this local audio file with Scribe",
       "Use scribe:canon on these transcript files"
     ],
-    "brandColor": "#475569"
+    "brandColor": "#8B5CF6",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
   }
 }

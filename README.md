@@ -13,11 +13,11 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
 
 ### `autorun`
 
-- 현재 공개 버전은 `0.3.5`입니다.
+- 현재 공개 버전은 `0.3.6`입니다.
 
 - 큰 작업을 dependency-aware `workplan.yaml`로 나눈 뒤, 검증과 커밋 단위로
   자동 실행하는 오케스트레이션 워크플로우입니다.
-- `0.3.5` 기준 두 가지 워크플로우를 제공합니다. Full Autorun은 번들 MCP
+- `0.3.6` 기준 두 가지 워크플로우를 제공합니다. Full Autorun은 번들 MCP
   서버로 계획 생성, 검증, task split, 실행 배치, lifecycle 상태 전이,
   active-task readiness filtering, proposal-worker timeout classification,
   advisory task-graph budgeting을 관리합니다.
@@ -36,7 +36,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
 
 ### `inquiry`
 
-- 현재 공개 버전은 `0.1.1`입니다.
+- 현재 공개 버전은 `0.1.2`입니다.
 
 - 비결정적인 LLM 프롬프트, 스킬, 에이전트 체인, 루프, 그래프와 그 라우팅,
   컨텍스트, 평가, 후처리 하네스를 과학적 방법론으로 조사하고 개선합니다.
@@ -71,7 +71,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
   관리하기 위한 작성/컴파일 도구입니다.
 - 같은 workflow를 두 런타임에 따로 손으로 맞추는 대신, 하나의 원형을
   관리하고 런타임 차이만 명시적으로 분리합니다.
-- 현재 공개 버전은 `0.1.6`입니다.
+- 현재 공개 버전은 `0.1.7`입니다.
 
 #### 스킬 목록
 
@@ -88,7 +88,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
   판단에 필요한 정보, 블라인드 평가에서 숨겨야 할 단서를 사전 점검합니다.
 - 원본 입력은 변경하지 않고 안정적인 source ID를 기준으로
   `{id, result, memo?}` JSONL 결과를 별도 저장합니다.
-- Beta `0.1.1`은 browser-only이며 개선된 검토 패킷과 시각 표현, 안정적인
+- Beta `0.1.2`은 browser-only이며 개선된 검토 패킷과 시각 표현, 안정적인
   스와이프 동작, 명시적으로 요청된 원격 세션의 선택적 보기 안내를 포함합니다.
   TUI Bridge를 요구하거나 포함하지
   않습니다.
@@ -102,7 +102,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
 
 - 로컬 STT로 음성 파일을 전사하고, 같은 음성에서 나온 여러 STT 전사본을
   비교해 canonical transcript를 작성하는 기록 정리 워크플로우입니다.
-- Scribe 0.1.4 기준, 로컬 STT MCP MVP는 사용자 머신에 설치된
+- Scribe 0.1.5 기준, 로컬 STT MCP MVP는 사용자 머신에 설치된
   `faster-whisper`, `ffmpeg`, 모델 파일을 사용합니다. STT 모델은
   플러그인에 포함되지 않습니다.
 - `scribe_stt_status`는 로컬 STT 의존성 상태와 간단한 설치 안내를
@@ -143,7 +143,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
   확인합니다.
 - 작은 오해가 큰 구현 낭비로 이어지기 전에, 에이전트가 이해한 내용을 먼저
   드러내고 사용자가 바로잡을 수 있게 합니다.
-- 현재 공개 버전은 `0.1.4`입니다.
+- 현재 공개 버전은 `0.1.5`입니다.
 
 #### 스킬 목록
 
@@ -157,7 +157,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
 - 모호한 요청을 실행 전에 선택 가능한 해석과 결정 옵션으로 나눕니다.
 - 선택이 끝난 뒤에는 목표, 범위, 결정, 요구사항, 성공 기준, 미결사항을 담은
   실행 브리프로 고정합니다.
-- 현재 공개 버전은 `0.1.1`입니다.
+- 현재 공개 버전은 `0.1.2`입니다.
 
 #### 스킬 목록
 
@@ -169,7 +169,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
 
 세션·수신자·문서 사이에서 공유되지 않은 맥락을 복원하거나 전달합니다.
 
-- 현재 공개 버전은 `0.1.1`입니다.
+- 현재 공개 버전은 `0.1.2`입니다.
 
 - `traceback`: 관련 로컬 Claude/Codex 세션에서 과거 판단과 작업 맥락을 복원.
 - `handoff`: 다른 세션이나 수신자가 이어갈 수 있는 전달물을 생성.
@@ -179,7 +179,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
 
 - 에듀테크 정책, 기능, 사업 전략, 실험안을 한국 교사 30명 고정 페르소나에
   전수 시뮬레이션하고, 의외 반응과 블라인드스팟 중심의 보고서를 생성합니다.
-- 현재 공개 버전은 `0.1.2`입니다.
+- 현재 공개 버전은 `0.1.3`입니다.
 - 대표성 추정이나 다수 의견 요약이 아니라, 놓치기 쉬운 우려와 기회를 찾는
   사용자 리서치 보조 워크플로우입니다.
 
@@ -194,7 +194,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
   구조적인 검토와 토론을 돕습니다.
 - 막연한 "전문가처럼 봐줘" 대신, 어떤 관점과 분석 도구로 볼지 명시해
   검토의 밀도와 재현성을 높입니다.
-- 현재 공개 버전은 `0.5.10`입니다.
+- 현재 공개 버전은 `0.5.11`입니다.
 
 #### 스킬 목록
 
@@ -209,7 +209,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
   학습 코치입니다.
 - 무엇을 알고 모르는지부터 정리해, 학습을 일회성 메모가 아니라 이어지는
   프로젝트로 관리합니다.
-- 현재 공개 버전은 `0.1.2`입니다.
+- 현재 공개 버전은 `0.1.3`입니다.
 
 #### 스킬 목록
 
@@ -233,7 +233,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
   로컬 crawl/cache/retrieval 동작과 동일하지 않습니다.
 - 예시는 합성 값만 사용합니다: `#project-updates`, `U123EXAMPLE`,
   `"release checklist"`.
-- 현재 공개 버전은 `0.1.4`입니다.
+- 현재 공개 버전은 `0.1.5`입니다.
 
 #### 스킬 목록
 
@@ -251,7 +251,7 @@ runtime, expected behavior, observed behavior를 포함해 issue를 열어주세
   기존 규칙이나 문서를 덮어쓰지 않습니다.
 - `.waypoint/config.yaml`은 문서 home을 찾기 위한 locator일 뿐이며, primary
   state는 visible docs에 둡니다.
-- 현재 공개 버전은 `0.1.4`입니다.
+- 현재 공개 버전은 `0.1.5`입니다.
 
 #### 스킬 목록
 

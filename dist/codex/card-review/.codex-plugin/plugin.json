@@ -1,6 +1,6 @@
 {
   "name": "card-review",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Review structured item lists in a local browser with persistent A/B decisions, notes, and JSONL results.",
   "author": {
     "name": "97Wobbler",
@@ -35,6 +35,8 @@
       "Use Card Review to review these items",
       "Open these proposals in the Card Review browser UI"
     ],
-    "brandColor": "#7C3AED"
+    "brandColor": "#EC4899",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
   }
 }

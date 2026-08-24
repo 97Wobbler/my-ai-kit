@@ -1,6 +1,6 @@
 {
   "name": "prism",
-  "version": "0.5.10",
+  "version": "0.5.11",
   "description": "Create domain-expert analysis agents by composing structured instruments: lenses, frames, models, stances, and heuristics.",
   "author": {
     "name": "97Wobbler",
@@ -33,6 +33,8 @@
     "defaultPrompt": [
       "Find Prism instruments for a security review"
     ],
-    "brandColor": "#5B6EE1"
+    "brandColor": "#A855F7",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
   }
 }

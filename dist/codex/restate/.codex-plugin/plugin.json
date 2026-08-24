@@ -1,6 +1,6 @@
 {
   "name": "restate",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Check interpretation, ambiguity, problem diagnosis, and solution quality before execution.",
   "author": {
     "name": "97Wobbler",
@@ -34,6 +34,8 @@
       "Check whether this solves the actual problem",
       "Re-weigh this plan for a more elegant path"
     ],
-    "brandColor": "#0F766E"
+    "brandColor": "#06B6D4",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
   }
 }

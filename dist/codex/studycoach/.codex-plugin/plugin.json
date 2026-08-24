@@ -1,6 +1,6 @@
 {
   "name": "studycoach",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Coach project-local self-study sessions with a Rumsfeld Known/Unknown matrix.",
   "author": {
     "name": "97Wobbler",
@@ -35,6 +35,8 @@
       "Use Study Coach to start a self-study project",
       "Use Study Coach to resume studying"
     ],
-    "brandColor": "#2563EB"
+    "brandColor": "#22C55E",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
   }
 }

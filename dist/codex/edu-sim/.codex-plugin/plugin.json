@@ -1,6 +1,6 @@
 {
   "name": "edu-sim",
-  "version": "0.1.2",
+  "version": "0.1.3",
   "description": "Run a 30-teacher Korean edutech persona simulation and synthesize blind spots.",
   "author": {
     "name": "97Wobbler",
@@ -36,6 +36,8 @@
       "Use edu-sim to simulate teacher reactions to this proposal",
       "Use edu-sim to find blind spots in this edutech strategy"
     ],
-    "brandColor": "#0F766E"
+    "brandColor": "#84CC16",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
   }
 }

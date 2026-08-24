@@ -1,6 +1,6 @@
 {
   "name": "skill-forge",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "description": "Create runtime-neutral skill specs and compile them into Claude Code and Codex CLI skills.",
   "author": {
     "name": "97Wobbler",
@@ -32,6 +32,8 @@
       "Create a cross-runtime skill spec",
       "Compile this skill spec for Claude and Codex"
     ],
-    "brandColor": "#4F46E5"
+    "brandColor": "#EF4444",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
   }
 }

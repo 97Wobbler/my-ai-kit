@@ -1,6 +1,6 @@
 {
   "name": "lucid",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Clarify ambiguous requests into selectable branches and executable briefs.",
   "author": {
     "name": "97Wobbler",
@@ -32,6 +32,8 @@
       "Use lucid:branch to split this request into options",
       "Use lucid:brief to turn these decisions into an execution brief"
     ],
-    "brandColor": "#0E7490"
+    "brandColor": "#0EA5E9",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "restate",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Check interpretation, ambiguity, problem diagnosis, and solution quality before execution.",
   "author": {
     "name": "97Wobbler",

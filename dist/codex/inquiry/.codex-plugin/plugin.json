@@ -1,6 +1,6 @@
 {
   "name": "inquiry",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Apply scientific inquiry to investigate and improve probabilistic LLM systems.",
   "author": {
     "name": "97Wobbler",
@@ -34,6 +34,8 @@
       "Design an experiment to improve this LLM workflow",
       "Investigate this agent chain with scientific methods"
     ],
-    "brandColor": "#2563EB"
+    "brandColor": "#2563EB",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "waypoint",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Install, inspect, and guide lightweight docs-first repository waypoints.",
   "author": {
     "name": "97Wobbler",
@@ -39,6 +39,8 @@
       "Find oversized docs and consolidation candidates",
       "Enable optional Waypoint tracks"
     ],
-    "brandColor": "#2563EB"
+    "brandColor": "#EAB308",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
   }
 }

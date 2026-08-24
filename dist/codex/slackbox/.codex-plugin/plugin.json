@@ -1,6 +1,6 @@
 {
   "name": "slackbox",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Collect Slack channel, user, search, mention, and thread context through a local MCP workflow.",
   "author": {
     "name": "97Wobbler",
@@ -34,6 +34,8 @@
       "Use slackbox to collect Slack context",
       "Fetch Slack channel messages for local review"
     ],
-    "brandColor": "#4A154B"
+    "brandColor": "#6366F1",
+    "composerIcon": "./assets/icon.png",
+    "logo": "./assets/logo.png"
   }
 }
