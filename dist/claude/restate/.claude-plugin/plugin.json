@@ -1,6 +1,6 @@
 {
   "name": "restate",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Check interpretation, ambiguity, problem diagnosis, and solution quality before execution.",
   "author": {
     "name": "97Wobbler",
@@ -10,6 +10,14 @@
   "repository": "https://github.com/97Wobbler/my-ai-kit",
   "license": "MIT",
   "skills": "./skills/",
+  "mcpServers": {
+    "restate-clarify": {
+      "command": "python3",
+      "args": [
+        "${CLAUDE_PLUGIN_ROOT}/mcp/server.py"
+      ]
+    }
+  },
   "keywords": [
     "claude-code",
     "codex",

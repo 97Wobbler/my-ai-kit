@@ -1,6 +1,6 @@
 {
   "name": "restate",
-  "version": "0.1.5",
+  "version": "0.1.6",
   "description": "Check interpretation, ambiguity, problem diagnosis, and solution quality before execution.",
   "author": {
     "name": "97Wobbler",
@@ -17,10 +17,11 @@
     "clarification"
   ],
   "skills": "./skills/",
+  "mcpServers": "./.mcp.json",
   "interface": {
     "displayName": "Restate",
     "shortDescription": "Check reasoning before execution",
-    "longDescription": "Restate provides independent checks for the most plausible interpretation, material ambiguity, XY problems, and whether a plan balances change cost with effect.",
+    "longDescription": "Restate provides independent checks for interpretation, material ambiguity, XY problems, and solution quality, plus a Clarify interview with persistent decision items, visible round progress, and contextual review.",
     "developerName": "97Wobbler",
     "category": "Productivity",
     "capabilities": [
@@ -32,7 +33,8 @@
       "Check your understanding before executing",
       "Find material ambiguity in this request",
       "Check whether this solves the actual problem",
-      "Re-weigh this plan for a more elegant path"
+      "Re-weigh this plan for a more elegant path",
+      "Run a tracked requirements interview with restate:clarify"
     ],
     "brandColor": "#06B6D4",
     "composerIcon": "./assets/icon.png",
