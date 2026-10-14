@@ -1,0 +1,13 @@
+{
+  "source_sha256": "bec090e66e38ae147183e7b3f3788a16fa6da7aa853677b627b0a5ab4f6e49e8",
+  "compiler": "Version 5.3.3",
+  "libraries": {
+    "cytoscape": "3.34.3"
+  },
+  "files": {
+    "index.html": "269724d27e0d11d0c6231aa483c3cdbdb95fdbde174be02a4a827331fbbd95c0",
+    "app.js": "8d5256a294d8b8422e8ee6a5ccd9fc2d40457f07979753181460abe3eac84cb0",
+    "styles.css": "4595d9eea0b1fda950080e1d6f32e6f3e90f8fda53fce416679eb3eedfed082a",
+    "demo.json": "1f0a7ddc2245e06158fea39459f23c3292465358d0034101226cc17b9ac26c9b"
+  }
+}

@@ -1,7 +1,7 @@
 {
   "name": "inquiry",
-  "version": "0.1.2",
-  "description": "Apply scientific inquiry to investigate and improve probabilistic LLM systems.",
+  "version": "0.1.3",
+  "description": "Beta: Scientific experiments and traceable research strategies, decisions, and evidence.",
   "author": {
     "name": "97Wobbler",
     "url": "https://github.com/97Wobbler"

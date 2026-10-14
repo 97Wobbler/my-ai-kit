@@ -1,0 +1,34 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Inquiry · 연구 경로</title>
+  <link rel="stylesheet" href="./styles.css">
+  <script defer src="./app.js"></script>
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-icon">i</span><div><strong>Inquiry</strong><span class="brand-sub">연구 경로</span></div></div>
+    <div class="top-actions"><span class="local-label">로컬 · 읽기 전용</span><button id="demo">예시 보기</button><label class="file-button" for="file">연구 파일 열기</label><input id="file" type="file" accept=".json,application/json"></div>
+  </header>
+  <main>
+    <section class="intro">
+      <div><p class="eyebrow">RESEARCH OVERVIEW</p><h1 id="title">전체 목표에서 다음 판단까지</h1><p id="subtitle">연구 파일을 열어 현재 경로와 대안, 당시 선택의 근거를 함께 살펴보세요.</p></div>
+      <div id="meta" class="meta"></div>
+    </section>
+    <div id="error" role="alert" hidden></div>
+    <div id="empty" class="empty"><div class="empty-symbol">↗</div><h2>지금 선택한 길의 이유를 남기세요</h2><p>목표, 가설, 실험, 판단을 하나의 기록으로 연결합니다.<br>예시에서는 실패한 A를 A′로 바꾸고 B–C–D를 이어갑니다.</p><button id="empty-demo" class="primary">예시 연구 살펴보기</button><small>파일은 이 브라우저에서만 읽습니다. 업로드하지 않습니다.</small></div>
+    <section id="workspace" hidden>
+      <div class="toolbar"><label>목표<select id="goal" aria-label="목표 필터"></select></label><label>경로<select id="path" aria-label="경로 필터"></select></label><label>배치<select id="layout" aria-label="그래프 배치"><option value="network">관계 중심</option><option value="route">진행 순서</option></select></label><label class="check"><input id="expanded" type="checkbox">전체 기록 펼치기</label><button id="fit">화면 맞추기</button><div class="zoom"><button id="zoom-out" aria-label="축소">−</button><span id="zoom-value">100%</span><button id="zoom-in" aria-label="확대">+</button></div></div>
+      <div class="workspace-grid">
+        <div class="graph-panel"><div class="panel-head"><span id="view-name">현재 주요 경로</span><div class="graph-meta"><span id="counts"></span><label class="node-finder">노드<select id="node" aria-label="노드 선택"></select></label></div></div><div class="type-legend" aria-label="노드 유형"><span><i class="type-dot goal"></i>목표</span><span><i class="type-dot milestone"></i>마일스톤</span><span><i class="type-dot hypothesis"></i>가설</span><span><i class="type-dot experiment"></i>실험</span><span><i class="type-dot decision"></i>판단</span></div><div id="graph-wrap"><div id="graph" role="group" aria-label="연구 전략 그래프"></div><div id="graph-empty" hidden>이 보기에 노드가 없습니다. 전체 기록을 펼치거나 다른 경로를 선택하세요.</div></div><div class="legend"><span><i class="line supported"></i>진행 근거 확보</span><span><i class="line unknown"></i>미확인</span><span><i class="line challenged"></i>반박 근거</span><span>드래그로 이동 · 스크롤로 확대 · 노드 선택으로 관계 강조</span></div></div>
+        <aside id="inspector" aria-live="polite"><p class="eyebrow">DECISION CONTEXT</p><h2>노드를 선택하세요</h2><p>조건과 증거, 판단 이유, 접힌 대안을 확인할 수 있습니다.</p></aside>
+      </div>
+      <div class="lower-grid"><section class="card"><h2>다음 판단과 복구 한도</h2><div id="recovery"></div></section><section class="card"><h2><span id="alternative-title">접힌 경로</span> <span id="hidden-count"></span></h2><div id="alternatives"></div></section></div>
+      <section class="card history"><div class="panel-head"><h2>판단 이력</h2><span>당시 근거 · 비교한 대안 · 검토 의견</span></div><div id="history"></div></section>
+    </section>
+  </main>
+  <footer>Inquiry · 목표와 근거는 함께, 충분한 지점에서는 다음 단계로.</footer>
+</body>
+</html>

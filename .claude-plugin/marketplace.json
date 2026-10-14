@@ -1,6 +1,6 @@
 {
   "name": "my-ai-kit",
-  "version": "0.1.17",
+  "version": "0.1.18",
   "owner": {
     "name": "97Wobbler"
   },
@@ -8,6 +8,11 @@
     "description": "Personal Claude Code and Codex plugin marketplace."
   },
   "plugins": [
+    {
+      "name": "folio",
+      "source": "./dist/claude/folio",
+      "description": "Beta: Analyze original materials and create evidence-linked single HTML or Markdown reports."
+    },
     {
       "name": "restate",
       "source": "./dist/claude/restate"
@@ -58,7 +63,8 @@
     },
     {
       "name": "inquiry",
-      "source": "./dist/claude/inquiry"
+      "source": "./dist/claude/inquiry",
+      "description": "Beta: Scientific experiments and traceable research strategies, decisions, and evidence."
     }
   ]
 }

@@ -1,7 +1,7 @@
 {
   "name": "inquiry",
-  "version": "0.1.2",
-  "description": "Apply scientific inquiry to investigate and improve probabilistic LLM systems.",
+  "version": "0.1.3",
+  "description": "Beta: Scientific experiments and traceable research strategies, decisions, and evidence.",
   "author": {
     "name": "97Wobbler",
     "url": "https://github.com/97Wobbler"
@@ -19,9 +19,9 @@
   ],
   "skills": "./skills/",
   "interface": {
-    "displayName": "Inquiry",
-    "shortDescription": "Investigate and improve LLM systems scientifically",
-    "longDescription": "Inquiry turns prompts, skills, agent chains, loops, graphs, and evaluation harnesses into observable questions, testable hypotheses, controlled experiments, and evidence-backed improvement decisions.",
+    "displayName": "Inquiry (Beta)",
+    "shortDescription": "Experiments and traceable research strategy",
+    "longDescription": "Inquiry designs controlled experiments and tracks multi-goal research strategies, milestones, alternative paths and decision evidence in workspace records with a local graph viewer.",
     "developerName": "97Wobbler",
     "category": "Productivity",
     "capabilities": [
@@ -32,7 +32,8 @@
     "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
     "defaultPrompt": [
       "Design an experiment to improve this LLM workflow",
-      "Investigate this agent chain with scientific methods"
+      "Investigate this agent chain with scientific methods",
+      "Track this research strategy and show its goals, alternatives, and decision evidence"
     ],
     "brandColor": "#2563EB",
     "composerIcon": "./assets/icon.png",

@@ -1,0 +1,37 @@
+{
+  "name": "folio",
+  "version": "0.1.1",
+  "description": "Beta: Analyze original materials and create evidence-linked single HTML or Markdown reports.",
+  "author": {
+    "name": "97Wobbler",
+    "url": "https://github.com/97Wobbler"
+  },
+  "homepage": "https://github.com/97Wobbler/my-ai-kit",
+  "repository": "https://github.com/97Wobbler/my-ai-kit",
+  "license": "MIT",
+  "keywords": [
+    "codex",
+    "reports",
+    "evidence",
+    "analysis",
+    "citations"
+  ],
+  "skills": "./skills/",
+  "interface": {
+    "displayName": "Folio (Beta)",
+    "shortDescription": "Evidence-linked single-file reports",
+    "longDescription": "Analyze surveys, interviews and documents, verify against originals, and share portable HTML or Markdown reports. Each stage also works independently.",
+    "developerName": "97Wobbler",
+    "category": "Productivity",
+    "capabilities": [
+      "Interactive"
+    ],
+    "websiteURL": "https://github.com/97Wobbler/my-ai-kit",
+    "defaultPrompt": [
+      "Create a source-grounded report from these materials",
+      "Verify these insights against the original sources",
+      "Render a single HTML or Markdown report"
+    ],
+    "brandColor": "#315BB5"
+  }
+}

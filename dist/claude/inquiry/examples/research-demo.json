@@ -1,0 +1,547 @@
+{
+  "schema": "inquiry-research/v1",
+  "research_id": "synthetic-image-study",
+  "title": "사용할 수 있는 이미지를 더 적은 시행으로",
+  "revision": 3,
+  "authority": {
+    "mode": "B",
+    "approved_scope": "합성 예시: 이미지 일관성·비용 경로를 비교하는 전략 초안. 실제 실행 승인이 아닙니다.",
+    "experiment_contracts": [
+      {
+        "id": "contract-demo",
+        "reference": "synthetic://contract/demo",
+        "approved_by_user": false,
+        "scope_summary": "합성 예시; 실제 모델 호출 없음"
+      }
+    ]
+  },
+  "budget": {
+    "unit": "calls",
+    "limit": 30,
+    "spent": 8
+  },
+  "nodes": [
+    {
+      "id": "G",
+      "type": "goal",
+      "label": "생성 이미지를 실제로 활용",
+      "state": "active",
+      "summary": "국지적 형태 점수보다 사용 가능한 결과를 목표로 한다.",
+      "conditions": [
+        "합성 예시 · 실제 효과 검증 아님"
+      ],
+      "evidence_refs": [],
+      "document_refs": [
+        "vision-v1"
+      ],
+      "success_criterion": "대표 작업에서 사용자가 결과를 활용할 수 있다.",
+      "priority": "primary",
+      "mandatory": false
+    },
+    {
+      "id": "GQ",
+      "type": "goal",
+      "label": "형태 일관성 확보",
+      "state": "active",
+      "summary": "정성적 활용 기준과 반복 관찰로 평가한다.",
+      "conditions": [
+        "합성 예시 · 실제 효과 검증 아님"
+      ],
+      "evidence_refs": [],
+      "document_refs": [
+        "vision-v1"
+      ],
+      "parent_id": "G",
+      "success_criterion": "중요한 형태가 일관되고 사용자가 충분하다고 판단한다.",
+      "priority": "primary",
+      "mandatory": false
+    },
+    {
+      "id": "GC",
+      "type": "goal",
+      "label": "생성 비용 한도 준수",
+      "state": "active",
+      "summary": "품질과 비용의 충돌을 단일 점수로 숨기지 않는다.",
+      "conditions": [
+        "합성 예시 · 실제 효과 검증 아님"
+      ],
+      "evidence_refs": [],
+      "document_refs": [
+        "vision-v1"
+      ],
+      "parent_id": "G",
+      "success_criterion": "승인된 전체 호출 한도 안에서 의미 있는 관찰을 얻는다.",
+      "priority": "secondary",
+      "mandatory": true
+    },
+    {
+      "id": "A",
+      "type": "hypothesis",
+      "label": "A · 텍스트만으로 생성",
+      "state": "exhausted",
+      "summary": "현재 조건에서 형태 일관성을 얻지 못했다. B 자체가 반증된 것은 아니다.",
+      "conditions": [
+        "합성 예시 · 실제 효과 검증 아님"
+      ],
+      "evidence_refs": [
+        "failure-a"
+      ],
+      "document_refs": [
+        "vision-v1"
+      ],
+      "evidence_state": "challenged"
+    },
+    {
+      "id": "AP",
+      "type": "hypothesis",
+      "label": "A′ · 참조 이미지 사용",
+      "state": "complete",
+      "summary": "형태 근거를 바꾸어 기존 다음 마일스톤으로 합류한다.",
+      "conditions": [
+        "합성 예시 · 실제 효과 검증 아님"
+      ],
+      "evidence_refs": [
+        "pilot-ap"
+      ],
+      "document_refs": [
+        "vision-v1"
+      ],
+      "evidence_state": "supported"
+    },
+    {
+      "id": "A2",
+      "type": "hypothesis",
+      "label": "A″ · 두 단계로 생성",
+      "state": "draft",
+      "summary": "아직 시험하지 않은 대안. 기존 A와 다른 개입이다.",
+      "conditions": [
+        "합성 예시 · 실제 효과 검증 아님"
+      ],
+      "evidence_refs": [],
+      "document_refs": [
+        "vision-v1"
+      ],
+      "evidence_state": "not_tested"
+    },
+    {
+      "id": "B",
+      "type": "milestone",
+      "label": "B · 사용 가능한 형태",
+      "state": "complete",
+      "summary": "참조 이미지 파일럿으로 중간 성과의 진행 근거를 확보했다. 무한한 정밀화보다 다음 위험을 검토한다.",
+      "conditions": [
+        "합성 예시 · 실제 효과 검증 아님"
+      ],
+      "evidence_refs": [
+        "pilot-ap"
+      ],
+      "document_refs": [
+        "vision-v1"
+      ],
+      "success_criterion": "대표 사례에서 형태가 충분히 유지됨"
+    },
+    {
+      "id": "C",
+      "type": "milestone",
+      "label": "C · 여러 조건에서 확인",
+      "state": "active",
+      "summary": "현재 다음 판단점. 국지적 점수 개선 대신 다운스트림 조건을 확인한다.",
+      "conditions": [
+        "합성 예시 · 실제 효과 검증 아님"
+      ],
+      "evidence_refs": [],
+      "document_refs": [
+        "vision-v1"
+      ]
+    },
+    {
+      "id": "D",
+      "type": "milestone",
+      "label": "D · 실제 작업에 적용",
+      "state": "draft",
+      "summary": "C와 비용 경로 Y의 근거가 함께 필요하다.",
+      "conditions": [
+        "합성 예시 · 실제 효과 검증 아님"
+      ],
+      "evidence_refs": [],
+      "document_refs": [
+        "vision-v1"
+      ]
+    },
+    {
+      "id": "X",
+      "type": "hypothesis",
+      "label": "X · 더 저렴한 방식",
+      "state": "active",
+      "summary": "목표와 필수 조건을 만족할 가능성이 있는 비용 대안을 병렬로 살펴본다.",
+      "conditions": [
+        "합성 예시 · 실제 효과 검증 아님"
+      ],
+      "evidence_refs": [],
+      "document_refs": [
+        "vision-v1"
+      ],
+      "evidence_state": "inconclusive"
+    },
+    {
+      "id": "Y",
+      "type": "milestone",
+      "label": "Y · 비용 근거 확인",
+      "state": "active",
+      "summary": "확인 전에는 비용 개선을 주장하지 않는다.",
+      "conditions": [
+        "합성 예시 · 실제 효과 검증 아님"
+      ],
+      "evidence_refs": [],
+      "document_refs": [
+        "vision-v1"
+      ]
+    }
+  ],
+  "edges": [
+    {
+      "id": "a-b",
+      "from": "A",
+      "to": "B",
+      "type": "supports",
+      "assessment": "challenged",
+      "conditions": [
+        "합성 예시의 승인 범위"
+      ]
+    },
+    {
+      "id": "ap-b",
+      "from": "AP",
+      "to": "B",
+      "type": "supports",
+      "assessment": "supported",
+      "conditions": [
+        "합성 예시의 승인 범위"
+      ]
+    },
+    {
+      "id": "a2-b",
+      "from": "A2",
+      "to": "B",
+      "type": "supports",
+      "assessment": "unknown",
+      "conditions": [
+        "합성 예시의 승인 범위"
+      ]
+    },
+    {
+      "id": "b-c",
+      "from": "B",
+      "to": "C",
+      "type": "requires",
+      "assessment": "supported",
+      "conditions": [
+        "합성 예시의 승인 범위"
+      ]
+    },
+    {
+      "id": "c-d",
+      "from": "C",
+      "to": "D",
+      "type": "requires",
+      "assessment": "unknown",
+      "conditions": [
+        "합성 예시의 승인 범위"
+      ]
+    },
+    {
+      "id": "d-quality",
+      "from": "D",
+      "to": "GQ",
+      "type": "contributes_to",
+      "assessment": "unknown",
+      "conditions": [
+        "합성 예시의 승인 범위"
+      ]
+    },
+    {
+      "id": "quality-purpose",
+      "from": "GQ",
+      "to": "G",
+      "type": "contributes_to",
+      "assessment": "unknown",
+      "conditions": [
+        "합성 예시의 승인 범위"
+      ]
+    },
+    {
+      "id": "x-y",
+      "from": "X",
+      "to": "Y",
+      "type": "supports",
+      "assessment": "unknown",
+      "conditions": [
+        "합성 예시의 승인 범위"
+      ]
+    },
+    {
+      "id": "y-cost",
+      "from": "Y",
+      "to": "GC",
+      "type": "contributes_to",
+      "assessment": "unknown",
+      "conditions": [
+        "합성 예시의 승인 범위"
+      ]
+    },
+    {
+      "id": "cost-purpose",
+      "from": "GC",
+      "to": "G",
+      "type": "contributes_to",
+      "assessment": "unknown",
+      "conditions": [
+        "합성 예시의 승인 범위"
+      ]
+    },
+    {
+      "id": "ap-a",
+      "from": "AP",
+      "to": "A",
+      "type": "supersedes",
+      "assessment": "supported",
+      "conditions": [
+        "합성 예시의 승인 범위"
+      ]
+    }
+  ],
+  "prerequisites": [
+    {
+      "id": "b-rationale",
+      "target_id": "B",
+      "operator": "any",
+      "members": [
+        "A",
+        "AP",
+        "A2"
+      ]
+    },
+    {
+      "id": "d-prerequisites",
+      "target_id": "D",
+      "operator": "all",
+      "members": [
+        "C",
+        "Y"
+      ]
+    }
+  ],
+  "paths": [
+    {
+      "id": "main",
+      "label": "참조 이미지 → 실제 활용",
+      "node_ids": [
+        "AP",
+        "B",
+        "C",
+        "D"
+      ],
+      "goal_ids": [
+        "G",
+        "GQ",
+        "GC"
+      ],
+      "state": "adopted",
+      "rationale": "A′로 합류해 B–C–D를 이어가되 충분한 지점에서는 다음 위험을 확인한다.",
+      "cost_estimate": "실제 비용은 미측정; 후보당 1~3회 예상",
+      "likelihood_estimate": "정성적 후보 판단; 성공 확률을 수치로 추정하지 않음",
+      "decision_id": "d2"
+    },
+    {
+      "id": "failed",
+      "label": "텍스트만 사용하는 이전 경로",
+      "node_ids": [
+        "A",
+        "B",
+        "C",
+        "D"
+      ],
+      "goal_ids": [
+        "G",
+        "GQ",
+        "GC"
+      ],
+      "state": "exhausted",
+      "rationale": "이 조건에서 A의 추진 근거가 상실됐다.",
+      "cost_estimate": "실제 비용은 미측정; 후보당 1~3회 예상",
+      "likelihood_estimate": "정성적 후보 판단; 성공 확률을 수치로 추정하지 않음",
+      "decision_id": "d1"
+    },
+    {
+      "id": "alternative",
+      "label": "두 단계 생성 대안",
+      "node_ids": [
+        "A2",
+        "B",
+        "C",
+        "D"
+      ],
+      "goal_ids": [
+        "G",
+        "GQ",
+        "GC"
+      ],
+      "state": "draft",
+      "rationale": "현재는 접어두지만 미검토 대안으로 남긴다.",
+      "cost_estimate": "실제 비용은 미측정; 후보당 1~3회 예상",
+      "likelihood_estimate": "정성적 후보 판단; 성공 확률을 수치로 추정하지 않음"
+    },
+    {
+      "id": "parallel",
+      "label": "비용을 확인하는 병렬 경로",
+      "node_ids": [
+        "X",
+        "Y"
+      ],
+      "goal_ids": [
+        "G",
+        "GC"
+      ],
+      "state": "adopted",
+      "rationale": "메인이 전체 예산을 관리하고 별도 결과를 검토한다.",
+      "cost_estimate": "실제 비용은 미측정; 후보당 1~3회 예상",
+      "likelihood_estimate": "정성적 후보 판단; 성공 확률을 수치로 추정하지 않음",
+      "decision_id": "d2"
+    }
+  ],
+  "documents": [
+    {
+      "id": "vision-v1",
+      "reference": "synthetic://docs/vision-v1",
+      "version": "v1",
+      "summary": "실제 활용과 승인 비용 한도라는 원래 목적. 제품 목적의 새 SSOT가 아님."
+    }
+  ],
+  "evidence": [
+    {
+      "id": "failure-a",
+      "reference": "synthetic://runs/text-only",
+      "summary": "A가 대표 조건에서 실패한 합성 결과",
+      "provenance": "experiment_observed",
+      "conditions": [
+        "합성 예시"
+      ]
+    },
+    {
+      "id": "pilot-ap",
+      "reference": "synthetic://runs/reference-image",
+      "summary": "A′의 조건부 지지를 나타내는 합성 파일럿",
+      "provenance": "experiment_observed",
+      "conditions": [
+        "미리 정한 대표 조건; 전체 확증 아님"
+      ]
+    }
+  ],
+  "decisions": [
+    {
+      "id": "d1",
+      "timestamp": "2026-10-13T09:00:00+09:00",
+      "actor": "user",
+      "action": "adopt_strategy",
+      "summary": "원래 경로를 작은 실험으로 확인",
+      "rationale": "충분성 기준은 잠정적으로 두고 전체 호출 한도를 정했다.",
+      "node_ids": [
+        "A",
+        "B"
+      ],
+      "evidence_refs": [],
+      "document_refs": [
+        "vision-v1"
+      ],
+      "alternatives": [],
+      "reviews": [],
+      "authorization_ref": "synthetic://user-message/initial-strategy",
+      "mode_at_decision": "B"
+    },
+    {
+      "id": "d2",
+      "timestamp": "2026-10-13T09:00:00+09:00",
+      "actor": "user",
+      "action": "pivot",
+      "summary": "A′로 합류하고 다음 위험을 확인",
+      "rationale": "A의 실패를 B–C–D 반증으로 전파하지 않는다. 남은 예산으로 다운스트림과 비용을 확인하는 편이 더 가치 있다.",
+      "node_ids": [
+        "A",
+        "AP",
+        "A2",
+        "B",
+        "C"
+      ],
+      "evidence_refs": [
+        "failure-a",
+        "pilot-ap"
+      ],
+      "document_refs": [
+        "vision-v1"
+      ],
+      "alternatives": [
+        "failed",
+        "alternative",
+        "parallel"
+      ],
+      "reviews": [
+        {
+          "perspective": "전체 목적·실용성",
+          "claim": "형태를 더 미세하게 개선하기보다 실제 조건과 비용을 확인한다.",
+          "disposition": "accepted",
+          "reason": "이미 중간 성과를 지지하는 근거가 있으며 전체 활용 위험이 미확인이다."
+        },
+        {
+          "perspective": "증거·추론",
+          "claim": "파일럿으로 모든 조건의 일관성이 증명됐다.",
+          "disposition": "rejected",
+          "reason": "조건부 파일럿은 전체 범위의 확증이 아니다."
+        }
+      ],
+      "authorization_ref": "synthetic://user-message/approve-alternative",
+      "mode_at_decision": "B"
+    },
+    {
+      "id": "d3",
+      "timestamp": "2026-10-13T09:00:00+09:00",
+      "actor": "agent",
+      "action": "advance",
+      "summary": "C에서 적용 범위를 확인",
+      "rationale": "다음 실험이 행동을 바꾸는지 확인하고 미확인 전제를 남긴다.",
+      "node_ids": [
+        "C",
+        "D",
+        "Y"
+      ],
+      "evidence_refs": [],
+      "document_refs": [
+        "vision-v1"
+      ],
+      "alternatives": [],
+      "reviews": [],
+      "criterion_before": "형태를 더 정밀하게 유지",
+      "criterion_after": "대표 실제 조건에서 충분한 형태와 비용",
+      "authorization_ref": "synthetic://approved-program-envelope",
+      "mode_at_decision": "B"
+    }
+  ],
+  "recoveries": [
+    {
+      "id": "recovery-a",
+      "path_id": "failed",
+      "failed_premise_id": "A",
+      "adopted_at_decision_id": "d1",
+      "backtracks": 1,
+      "backtrack_limit": 2,
+      "reviewed_points": [
+        "d1"
+      ],
+      "attempts_at_point": 1,
+      "attempt_limit": 3,
+      "spent": 3,
+      "status": "resolved",
+      "started_reason": "A의 실패 후 A′로 같은 다음 마일스톤에 합류",
+      "reset_evidence_refs": []
+    }
+  ]
+}
